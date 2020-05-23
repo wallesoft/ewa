@@ -1,11 +1,5 @@
-# ewa
-
-#### 介绍
-Easy wechat  微信开发go语言非官方支持框架
-
-#### 文档
-
-[文档 http://wallesoft.gitee.io/ewa](http://wallesoft.gitee.io/ewa) 
+# Ewa
+Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模块
 
 #### 开始之前
 
@@ -25,8 +19,9 @@ Easy wechat  微信开发go语言非官方支持框架
 #### 加入
 
 另外，你可以通过以下方式参与进来，为广大开发者提供优质的开源服务：
-* 贡献代码 [wallesoft/ewa](https://gitee.com/wallesoft/ewa) - Gitee仓库地址(为什么不是github，你懂得,)
+* (https://gitee.com/wallesoft/ewa)贡献代码 [wallesoft/ewa](https://gitee.com/wallesoft/ewa) - Gitee仓库地址
 
+[![Walle/ewa](https://gitee.com/wallesoft/ewa/widgets/widget_card.svg?colors=393222,ebdfc1,fffae5,d8ca9f,393222,a28b40)](https://gitee.com/wallesoft/ewa)
 
 #### 感谢
 * [GF (Go Frame)](https://goframe.org) - 是一款模块化、高性能、生产级的Go基础开发框架
