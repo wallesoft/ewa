@@ -1,4 +1,4 @@
-# EWA <small>beta</small>
+# **EWA** <small>beta</small>
 
 遇见那不经意的美好
 
@@ -8,4 +8,4 @@
 
 
 [Gitee](https://gitee.com/wallesoft/ewa)
-[Getting started](#ewa)
+[开始之旅](#ewa)
