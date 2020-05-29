@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"gitee.com/wallesoft/ewa/miniprogram"
 	"github.com/gogf/gf/frame/g"
 )
@@ -17,10 +15,11 @@ func main() {
 	//t := new(Test)
 	//err := gconv.Struct(c, t)
 	//g.Dump(t)
-	err := miniprogram.Config(c)
-	g.Dump(miniprogram.MiniProgram{})
-	if err != nil {
-		fmt.Println(err)
-	}
+	//mp, err := miniprogram.Config(c)
+	m := miniprogram.Instance(c)
+	g.Dump(m)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 	//fmt.Println(miniprogram.Miniprogram)
 }
