@@ -39,7 +39,6 @@ func Config(config map[string]interface{}) (*MiniProgram, error) {
 func Instance(config map[string]interface{}) *MiniProgram {
 	mp, err := Config(config)
 	if err != nil {
-		// logger
+		// log
 	}
-	return mp
 }
