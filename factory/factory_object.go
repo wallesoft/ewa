@@ -9,5 +9,5 @@ import (
 
 //小程序
 func MiniProgram(cfg map[string]interface{}) *miniprogram.MiniProgram {
-	``
+	
 }

@@ -13,16 +13,17 @@ import (
 )
 
 type MiniProgram struct {
-	Appid        string // appid
-	Secret       string // secret
+	config   	 MiniProgramConfig
 	ResponseType string // 返回类型
 	// Logger specifies the logger for miniprogram
 	Logger *glog.Logger
-	// auth
-	Auth *Auth
+}
+type MiniProgramConfig struct {
+	Appid  		string  // appid
+	Secret 		string  // scret
 }
 
-func Config(config map[string]interface{}) (*MiniProgram, error) {
+func ConfigFromMap(config map[string]interface{}) (*MiniProgram, error) {
 	mp := new(MiniProgram)
 	if config == nil || len(config) == 0 {
 		return mp, errors.New("Miniprogram configuration cannot be empty")
