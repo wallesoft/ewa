@@ -1,0 +1,5 @@
+package openplatform
+
+type Message {
+	
+}
