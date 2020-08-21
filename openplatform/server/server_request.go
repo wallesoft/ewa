@@ -1,6 +1,6 @@
-package openplatform
+package server
 
-//MessageReq
+//Request
 type Request struct {
 	Timestamp    string
 	Nonce        string
@@ -9,6 +9,7 @@ type Request struct {
 	BodyRaw      []byte
 }
 
+//CreateRequest  create request
 func CreateRequest() (request *Request) {
 	request = &Request{}
 	return
