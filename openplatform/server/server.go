@@ -99,13 +99,14 @@ func (mux *ServeMux) getMuxEntryGroup(pattern string) MuxEntryGroup {
 	return nil
 }
 
-func (s *Server) Serve() error {
+func (s *Server) Serve() Response {
 	// type := s.Message.Type()
 	if s.Handler == nil {
 		DefaultServeMux.ServeMessage(s.Message)
 	}
 	s.Handler.ServeMessage(s.Message)
-	return nil
+	response = &Response{}
+	return response
 }
 
 func Handle(pattern string, handler Handler) {
@@ -116,7 +117,7 @@ func HandleFunc(pattern string, handler func(*Message)) {
 }
 
 //Serve
-func Serve(message Message, handler Handler) error {
+func Serve(message Message, handler Handler) Response {
 	server := &Server{Message: message, Handler: handler}
 	return server.Serve()
 	//return DefaultServeMux.Serve(request, handler)
