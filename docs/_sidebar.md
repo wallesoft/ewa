@@ -11,7 +11,7 @@
   - [小程序码](/miniprogram/app_code)
   - [客服消息](/miniprogram/customer_service)
   - [微信登录](/miniprogram/auth)
-- [开放平台](/openplatform)
+- [开放平台](/openplatform/)
   - [服务端](/openplatform/server)
 - [企业微信](/work)
 - [小微商户](/microMerchant)
