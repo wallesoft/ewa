@@ -1,8 +1,12 @@
 package kernel
 
-type ServerGuard struct {
-	Request *Request
+import (
+	"github.com/gogf/gf/container/gmap"
+)
 
+type ServerGuard struct {
+	Request        *Request
+	Config         *gmap.StrAnyMap
 	AlwaysValidate bool
 	// Response *Response
 }
@@ -12,7 +16,7 @@ func (s *ServerGuard) ParseMessage() {
 }
 
 func (s *ServerGuard) signature() {
-
+	token := s.Config.GetVar("token").String()
 }
 
 //Validate validate request source

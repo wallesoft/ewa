@@ -3,6 +3,7 @@ package server
 import (
 	"sync"
 
+	kernel "gitee.com/wallesoft/ewa/kernel/server"
 	"github.com/gogf/gf/container/gtype"
 	"github.com/gogf/gf/os/glog"
 )
@@ -41,8 +42,10 @@ type muxEntry struct {
 
 //Server
 type Server struct {
-	Request *Request
-	Message Message
+	//App   *OpenPlatform
+	*kernel.ServerGuard
+	//Request *Request
+	//Message Message
 	//Config
 	debug   *gtype.Bool
 	logger  *glog.Logger
