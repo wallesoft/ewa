@@ -1,14 +1,16 @@
 package kernel
 
-//Request
+//Request abstract request.
 type Request struct {
+	Signature    string
 	Timestamp    string
 	Nonce        string
 	EncryptType  string
 	MsgSignature string
-	BodyRaw      []byte
+	RawBody      []byte
 }
 
-func (r *Request) IsSafeMode() bool {
-	return r.
-}
+// //IsSafeMode check the request message is the safe mode.
+// func (r *Request) IsSafeMode() bool {
+// 	return r.Signature != "" && r.EncryptType == "aes"
+// }

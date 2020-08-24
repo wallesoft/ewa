@@ -1,6 +1,7 @@
 package server
 
 type Response struct {
+	Raw     []byte
 	Content string
 }
 
@@ -14,4 +15,8 @@ func (r *Response) GetContent() (content ResponseContent) {
 		content = defualtResponseContent
 	}
 	return
+}
+
+func (r *Response) GetRaw() {
+
 }
