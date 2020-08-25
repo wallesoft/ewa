@@ -26,4 +26,5 @@ Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模
 #### 感谢
 * [GF (Go Frame)](https://goframe.org) - 是一款模块化、高性能、生产级的Go基础开发框架
 * [跳转猫®](https://tiaozhuanmao.com) - 给予的赞助与支持
+* [EasyWechat](https://easywechat.com) -  是一个基于 MIT 协议开源的非官方微信 SDK (PHP版本) 给予的启发
 * [Gitee](https://gitee.com) - 码云
