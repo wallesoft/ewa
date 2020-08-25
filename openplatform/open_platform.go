@@ -29,7 +29,8 @@ func New(config map[string]interface{}) *OpenPlatform {
 
 func (op *OpenPlatform) Server() *server.Server {
 	return &server.Server{
-		App: op,
-		config: op.config
+		//App:    op,
+		Logger: op.logger,
+		Config: op.config,
 	}
 }
