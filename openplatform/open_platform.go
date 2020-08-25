@@ -1,6 +1,7 @@
 package openplatform
 
 import (
+	kernel "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/container/gmap"
 	"github.com/gogf/gf/os/glog"
@@ -29,8 +30,9 @@ func New(config map[string]interface{}) *OpenPlatform {
 
 func (op *OpenPlatform) Server() *server.Server {
 	return &server.Server{
-		//App:    op,
-		Logger: op.logger,
-		Config: op.config,
+		&kernel.ServerGuard{
+			Logger:op.logger,
+			Config: op.config,
+		}
 	}
 }
