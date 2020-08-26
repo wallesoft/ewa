@@ -1,4 +1,4 @@
-package kernel
+package server
 
 import (
 	"errors"
@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gogf/gf/container/gmap"
 	"github.com/gogf/gf/crypto/gsha1"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/glog"
@@ -15,10 +14,16 @@ import (
 type ServerGuard struct {
 	//App			 *Openplatform
 	Request        *Request
-	Config         *gmap.StrAnyMap
+	Config         *Config
 	AlwaysValidate bool
 	// Response *Response
 	Logger *glog.Logger
+}
+type Config struct {
+	Appid  string `c:"app_id"`
+	Secret string `c:"secret"`
+	Token  string `c:"token"`
+	AesKey string `c:"aes_key"`
 }
 
 func (s *ServerGuard) Serve() {
@@ -35,8 +40,7 @@ func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
 }
 
 func (s *ServerGuard) signature() string {
-	token := s.Config.GetVar("token").String()
-	a := []string{token, s.Request.Timestamp, s.Request.Nonce}
+	a := []string{s.Config.Token, s.Request.Timestamp, s.Request.Nonce}
 	// sort
 	sort.Strings(a)
 	return gsha1.Encrypt(strings.Join(a, ""))

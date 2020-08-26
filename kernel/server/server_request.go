@@ -1,4 +1,4 @@
-package kernel
+package server
 
 //Request abstract request.
 type Request struct {
