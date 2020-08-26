@@ -19,8 +19,12 @@ type Config *gmap.StrAnyMap
 // 	Token	string
 // 	AesKey	string
 // }
-
+//这地方需要改动 参考 glog setconfigfrommap
+//Config 结构需要改动
 func New(config map[string]interface{}) *OpenPlatform {
+	if config == nil || lne(config) == 0 {
+		return 
+	}
 	c := gmap.NewStrAnyMapFrom(config)
 	return &OpenPlatform{
 		config: c,
