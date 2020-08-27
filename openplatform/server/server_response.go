@@ -2,7 +2,7 @@ package server
 
 type Response struct {
 	Raw     []byte
-	Content string
+	Content ResponseContent
 }
 
 const defualtResponseContent = "success"
@@ -11,7 +11,7 @@ type ResponseContent string
 
 func (r *Response) GetContent() (content ResponseContent) {
 	content = r.Content
-	if content == nil {
+	if content == "" {
 		content = defualtResponseContent
 	}
 	return

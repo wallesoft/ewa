@@ -3,8 +3,10 @@ package openplatform
 import (
 	"errors"
 
-	serverguard "gitee.com/wallesoft/ewa/kernel/server"
+	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
+	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gutil"
@@ -18,11 +20,16 @@ type OpenPlatform struct {
 // type Config *gmap.StrAnyMap
 
 type Config struct {
-	*serverguard.Config
-	// AppId  string
-	// Secret string
-	// Token  string
-	// AesKey string
+	Appid  string `c:"app_id"`
+	Secret string `c:"secret"`
+	Token  string `c:"token"`
+	AesKey string `c:"aes_key"`
+}
+
+//Get get value from config
+func (c *Config) Get(pattern string) interface{} {
+	j := gjson.New(c)
+	return j.Get(pattern)
 }
 
 //这地方需要改动 参考 glog setconfigfrommap
@@ -34,11 +41,14 @@ func New(config map[string]interface{}) (*OpenPlatform, error) {
 	config = gutil.MapCopy(config)
 
 	log := glog.New()
+
 	_, logVal := gutil.MapPossibleItemByKey(config, "Logger")
 	if logVal != nil {
 		if err := log.SetConfigWithMap(gconv.Map(logVal)); err != nil {
 			return nil, err
 		}
+	} else {
+		log.SetDebug(false)
 	}
 	// debug
 	_, debugVal := gutil.MapPossibleItemByKey(config,
@@ -46,24 +56,23 @@ func New(config map[string]interface{}) (*OpenPlatform, error) {
 	if debugVal != nil {
 		log.SetDebug(gconv.Bool(debugVal))
 	}
-	c := serverguard.Config{}
+	var c *Config
 	if err := gconv.Struct(config, &c); err != nil {
 		return nil, err
 	}
-
+	g.Dump(c)
 	return &OpenPlatform{
-		config: &Config{
-			&c,
-		},
+		config: c,
 		logger: log,
 	}, nil
 }
 
 func (op *OpenPlatform) Server() *server.Server {
-	return &server.Server{
-		&serverguard.ServerGuard{
+	s := server.Server{
+		ServerGuard: guard.ServerGuard{
 			Logger: op.logger,
 			Config: op.config,
-		},
-	}
+		}}
+	return &s
+	//server.Server{Guard: s}
 }

@@ -6,4 +6,5 @@ type TicketHandler struct {
 
 func (t *TicketHandler) ServeMessage(Message) bool {
 	//缓存
+	return true
 }

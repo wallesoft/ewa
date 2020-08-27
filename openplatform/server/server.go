@@ -3,7 +3,7 @@ package server
 import (
 	"sync"
 
-	kernel "gitee.com/wallesoft/ewa/kernel/server"
+	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"github.com/gogf/gf/container/gtype"
 	"github.com/gogf/gf/os/glog"
 )
@@ -43,9 +43,9 @@ type muxEntry struct {
 //Server
 type Server struct {
 	//App   *OpenPlatform
-	*kernel.ServerGuard
+	guard.ServerGuard
 	//Request *Request
-	//Message Message
+	Message Message
 	//Config
 	debug   *gtype.Bool
 	logger  *glog.Logger
@@ -62,6 +62,7 @@ var defaultHandler = map[string]Handler{
 //Handle registers the hanlder for the given pattern
 func (mux *ServeMux) Handle(pattern string, handler Handler) (h Handler, patter string) {
 	////
+	return nil, ""
 }
 
 func (mux *ServeMux) HandleFunc(patter string, handler func(*Message)) {
@@ -108,7 +109,7 @@ func (s *Server) Serve() Response {
 		DefaultServeMux.ServeMessage(s.Message)
 	}
 	s.Handler.ServeMessage(s.Message)
-	response = &Response{}
+	response := Response{}
 	return response
 }
 

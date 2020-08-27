@@ -3,10 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
-	"sort"
-	"strings"
 
-	"github.com/gogf/gf/crypto/gsha1"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/glog"
 )
@@ -14,20 +11,24 @@ import (
 type ServerGuard struct {
 	//App			 *Openplatform
 	Request        *Request
-	Config         *Config
+	Config         Config
 	AlwaysValidate bool
 	// Response *Response
 	Logger *glog.Logger
 }
-type Config struct {
-	Appid  string `c:"app_id"`
-	Secret string `c:"secret"`
-	Token  string `c:"token"`
-	AesKey string `c:"aes_key"`
+type Config interface {
+	Get(pattern string) interface{}
 }
 
-func (s *ServerGuard) Serve() {
+// type Config struct {
+// 	Appid  string `c:"app_id"`
+// 	Secret string `c:"secret"`
+// 	Token  string `c:"token"`
+// 	AesKey string `c:"aes_key"`
+// }
 
+func (s *ServerGuard) Serve() {
+	//s.Logger.Debug
 }
 
 //ParseMessage parse message from raw input.
@@ -40,10 +41,11 @@ func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
 }
 
 func (s *ServerGuard) signature() string {
-	a := []string{s.Config.Token, s.Request.Timestamp, s.Request.Nonce}
-	// sort
-	sort.Strings(a)
-	return gsha1.Encrypt(strings.Join(a, ""))
+	// a := []string{s.Config.Token, s.Request.Timestamp, s.Request.Nonce}
+	// // sort
+	// sort.Strings(a)
+	// return gsha1.Encrypt(strings.Join(a, ""))
+	return ""
 }
 
 //Validate validate request source
