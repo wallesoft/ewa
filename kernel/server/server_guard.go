@@ -3,13 +3,17 @@ package server
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 
+	"github.com/gogf/gf/crypto/gsha1"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/glog"
+	"github.com/gogf/gf/util/gconv"
 )
 
 type ServerGuard struct {
-	//App			 *Openplatform
+	//App			*Openplatform
 	Request        *Request
 	Config         Config
 	AlwaysValidate bool
@@ -29,6 +33,8 @@ type Config interface {
 
 func (s *ServerGuard) Serve() {
 	//s.Logger.Debug
+	s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
+
 }
 
 //ParseMessage parse message from raw input.
@@ -40,12 +46,21 @@ func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
 	return j, nil
 }
 
+//GetMessage
+func (s *ServerGuard) GetMessage() (*gjson.Json, error) {
+	message, err := s.ParseMessage()
+	if err != nil {
+		if s.IsSafeMode() && message.IsNil() {
+			//decrypt
+		}
+	}
+}
 func (s *ServerGuard) signature() string {
-	// a := []string{s.Config.Token, s.Request.Timestamp, s.Request.Nonce}
-	// // sort
-	// sort.Strings(a)
-	// return gsha1.Encrypt(strings.Join(a, ""))
-	return ""
+	token := gconv.String(s.Config.Get("token"))
+	a := []string{token, s.Request.Timestamp, s.Request.Nonce}
+	// sort
+	sort.Strings(a)
+	return gsha1.Encrypt(strings.Join(a, ""))
 }
 
 //Validate validate request source

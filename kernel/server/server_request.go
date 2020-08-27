@@ -8,6 +8,7 @@ type Request struct {
 	EncryptType  string
 	MsgSignature string
 	RawBody      []byte
+	Uri          string
 }
 
 // //IsSafeMode check the request message is the safe mode.

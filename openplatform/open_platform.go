@@ -6,7 +6,6 @@ import (
 	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gutil"
@@ -32,8 +31,7 @@ func (c *Config) Get(pattern string) interface{} {
 	return j.Get(pattern)
 }
 
-//这地方需要改动 参考 glog setconfigfrommap
-//Config 结构需要改动
+//New get openplatform from config
 func New(config map[string]interface{}) (*OpenPlatform, error) {
 	if config == nil || len(config) == 0 {
 		return nil, errors.New("Openplatform configuration cannot be empty")
@@ -60,7 +58,6 @@ func New(config map[string]interface{}) (*OpenPlatform, error) {
 	if err := gconv.Struct(config, &c); err != nil {
 		return nil, err
 	}
-	g.Dump(c)
 	return &OpenPlatform{
 		config: c,
 		logger: log,
@@ -74,5 +71,4 @@ func (op *OpenPlatform) Server() *server.Server {
 			Config: op.config,
 		}}
 	return &s
-	//server.Server{Guard: s}
 }
