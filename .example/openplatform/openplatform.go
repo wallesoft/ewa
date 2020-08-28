@@ -23,6 +23,6 @@ func main() {
 	// 	"content": "sasdfasdf",
 	// })
 	g.Dump(a)
-	a.ServerGuard.Serve()
+	a.Serve()
 
 }

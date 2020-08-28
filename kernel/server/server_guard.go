@@ -3,11 +3,10 @@ package server
 import (
 	"errors"
 	"fmt"
-	"sort"
-	"strings"
 
-	"github.com/gogf/gf/crypto/gsha1"
+	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/util/gconv"
 )
@@ -18,7 +17,8 @@ type ServerGuard struct {
 	Config         Config
 	AlwaysValidate bool
 	// Response *Response
-	Logger *glog.Logger
+	Logger    *glog.Logger
+	Encryptor *encryptor.Encryptor
 }
 type Config interface {
 	Get(pattern string) interface{}
@@ -34,7 +34,12 @@ type Config interface {
 func (s *ServerGuard) Serve() {
 	//s.Logger.Debug
 	s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
-
+	s.Validate().resolve()
+}
+func (s *ServerGuard) resolve() {
+	message, err := s.GetMessage()
+	g.Dump(message)
+	g.Dump(err)
 }
 
 //ParseMessage parse message from raw input.
@@ -50,17 +55,29 @@ func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
 func (s *ServerGuard) GetMessage() (*gjson.Json, error) {
 	message, err := s.ParseMessage()
 	if err != nil {
-		if s.IsSafeMode() && message.IsNil() {
-			//decrypt
-		}
+		return nil, err
 	}
+	if s.IsSafeMode() && message.Contains("Encrypt") {
+		//decrypt
+		msg, err := s.DecryptMessage(message)
+		if err != nil {
+			return nil, err
+		}
+		j, err := gjson.DecodeToJson(msg)
+		if err != nil {
+			return nil, err
+		}
+		return j, nil
+	}
+	return message.GetJson("Encrypt"), nil
 }
 func (s *ServerGuard) signature() string {
 	token := gconv.String(s.Config.Get("token"))
 	a := []string{token, s.Request.Timestamp, s.Request.Nonce}
 	// sort
-	sort.Strings(a)
-	return gsha1.Encrypt(strings.Join(a, ""))
+	return encryptor.Signature(a)
+	// sort.Strings(a)
+	// return gsha1.Encrypt(strings.Join(a, ""))
 }
 
 //Validate validate request source
@@ -83,4 +100,19 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
 	return s.Request.Signature != "" && s.Request.EncryptType != "aes"
+}
+
+//DecryptMessage decrypt message
+func (s *ServerGuard) DecryptMessage(message *gjson.Json) ([]byte, error) {
+	token := gconv.String(s.Config.Get("token"))
+	a := []string{token, s.Request.Timestamp, s.Request.Nonce, message.GetString("Encrypt")}
+
+	if message.GetString("msg_signature") != encryptor.Signature(a) {
+		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")
+	}
+	content, err := s.Encryptor.Decrypt(message.GetBytes("Encrypt"))
+	if err != nil {
+		return nil, err
+	}
+	return content, nil
 }
