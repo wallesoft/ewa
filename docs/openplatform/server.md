@@ -25,14 +25,15 @@ import (
 
     .....
 
-    request := server.CreateRequest()
+    request := server.NewRequest()
     // 将微信post过来的相关参数映射给request
     // reqeust.Timestamp
     // reqeust.Noce
     // reqeust.EncryptType
     // reqeust.MsgSignature
-    // reqeust.BodyRaw
-    message := server.GetMessageFromRequest(request)
+    // reqeust.RawBody
+    // request.Uri // 非必须参数
+    //message := server.GetMessageFromRequest(request)
     response := server.Serve(message)
     
     ....

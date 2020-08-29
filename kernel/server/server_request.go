@@ -11,7 +11,7 @@ type Request struct {
 	Uri          string
 }
 
-// //IsSafeMode check the request message is the safe mode.
-// func (r *Request) IsSafeMode() bool {
-// 	return r.Signature != "" && r.EncryptType == "aes"
+// // func (r *Request) Config(m map[string]interface{}) r *Reqeust
+// type Request interface{}{
+
 // }
