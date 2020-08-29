@@ -120,9 +120,9 @@ func HandleFunc(pattern string, handler func(*Message)) {
 	DefaultServeMux.HandleFunc(pattern, handler)
 }
 
-//Serve
-func Serve(message Message, handler Handler) Response {
-	server := &Server{Message: message, Handler: handler}
-	return server.Serve()
-	//return DefaultServeMux.Serve(request, handler)
-}
+// //Serve
+// func Serve(message Message, handler Handler) Response {
+// 	server := &Server{Message: message, Handler: handler}
+// 	return server.Serve()
+// 	//return DefaultServeMux.Serve(request, handler)
+// }

@@ -13,7 +13,7 @@ import (
 
 type ServerGuard struct {
 	//App			*Openplatform
-	Request        *Request
+	Request        *DefaultRequest
 	Config         Config
 	AlwaysValidate bool
 	// Response *Response
@@ -30,10 +30,19 @@ type Config interface {
 // 	Token  string `c:"token"`
 // 	AesKey string `c:"aes_key"`
 // }
+func New() *ServerGuar{
+
+}
 
 func (s *ServerGuard) Serve() {
 	//s.Logger.Debug
-	s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
+	//s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
+	s.Logger.Debug(map[string]interface{}{
+		"Request Received": map[string]string{
+			"uri":     s.Request.GetUrl(),
+			"content": gconv.String(s.Request.GetRaw()),
+		},
+	})
 	s.Validate().resolve()
 }
 func (s *ServerGuard) resolve() {
@@ -44,7 +53,7 @@ func (s *ServerGuard) resolve() {
 
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
-	j, err := gjson.DecodeToJson(s.Request.RawBody)
+	j, err := gjson.DecodeToJson(s.Request.GetRaw())
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
 	}
@@ -73,7 +82,7 @@ func (s *ServerGuard) GetMessage() (*gjson.Json, error) {
 }
 func (s *ServerGuard) signature() string {
 	token := gconv.String(s.Config.Get("token"))
-	a := []string{token, s.Request.Timestamp, s.Request.Nonce}
+	a := []string{token, gconv.String(s.Request.Get("timestamp")), gconv.String(s.Request.Get("nonce"))}
 	// sort
 	return encryptor.Signature(a)
 	// sort.Strings(a)
@@ -85,7 +94,7 @@ func (s *ServerGuard) Validate() *ServerGuard {
 	if !s.AlwaysValidate && !s.IsSafeMode() {
 		return s
 	}
-	if s.Request.Signature != s.signature() {
+	if gconv.String(s.Request.Get("signature")) != s.signature() {
 		// response
 	}
 	return s
@@ -99,7 +108,7 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return s.Request.Signature != "" && s.Request.EncryptType != "aes"
+	return gconv.String(s.Request.) != "" && s.Request.EncryptType != "aes"
 }
 
 //DecryptMessage decrypt message

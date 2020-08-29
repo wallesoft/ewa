@@ -1,7 +1,13 @@
 package server
 
+type Request interface {
+	Get(key string, def ...interface{}) interface{}
+	GetRaw() []byte
+	GetUrl() string
+}
+
 //Request abstract request.
-type Request struct {
+type DefaultRequest struct {
 	Signature    string
 	Timestamp    string
 	Nonce        string
