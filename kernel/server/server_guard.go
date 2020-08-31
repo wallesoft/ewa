@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
+	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
 )
 
@@ -31,11 +33,11 @@ type Config interface {
 // 	AesKey string `c:"aes_key"`
 // }
 func New(r Request, c Config, l *glog.Logger) *ServerGuard {
-	g.Dump(c)
+	g.Dump(r)
 	encrypt, err := encryptor.New(map[string]interface{}{
 		"AppId":     c.Get("app_id"),
 		"Token":     c.Get("token"),
-		"AesKey":    c.Get("aes_key"),
+		"AesKey":    gconv.String(c.Get("aes_key")) + "=",
 		"BlockSize": 32,
 	})
 	if err != nil {
@@ -66,14 +68,19 @@ func (s *ServerGuard) Serve() {
 	s.Validate().resolve()
 }
 func (s *ServerGuard) resolve() {
-	message, err := s.GetMessage()
+	message, _ := s.GetMessage()
 	g.Dump(message)
-	g.Dump(err)
 }
 
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
-	j, err := gjson.DecodeToJson(s.Request.GetRaw())
+	g.Dump("aaaaaaaaaaaaaaaaaaaaaaaaa")
+	//j, err := gjson.DecodeToJson(s.Request.GetRaw())
+	content := s.Request.GetRaw()
+	g.Dump(checkDataType(content))
+	j, err := gjson.LoadContent(content)
+	//g.Dump(err)
+	g.Dump(j.Get("appid"))
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
 	}
@@ -128,7 +135,7 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return gconv.String(s.Request.Get("Signature")) != "" && gconv.String(s.Request.Get("EncryptType")) != "aes"
+	return gconv.String(s.Request.Get("Signature")) != "" && gconv.String(s.Request.Get("EncryptType")) == "aes"
 }
 
 //DecryptMessage decrypt message
@@ -144,4 +151,19 @@ func (s *ServerGuard) DecryptMessage(message *gjson.Json) ([]byte, error) {
 		return nil, err
 	}
 	return content, nil
+}
+func checkDataType(content []byte) string {
+	if json.Valid(content) {
+		return "json"
+	} else if gregex.IsMatch(`^<.+>[\S\s]+<.+>$`, content) {
+		return "xml"
+	} else if gregex.IsMatch(`^[\s\t]*[\w\-]+\s*:\s*.+`, content) || gregex.IsMatch(`\n[\s\t]*[\w\-]+\s*:\s*.+`, content) {
+		return "yml"
+	} else if (gregex.IsMatch(`^[\s\t\[*\]].?*[\w\-]+\s*=\s*.+`, content) || gregex.IsMatch(`\n[\s\t\[*\]]*[\w\-]+\s*=\s*.+`, content)) && gregex.IsMatch(`\n[\s\t]*[\w\-]+\s*=*\"*.+\"`, content) == false && gregex.IsMatch(`^[\s\t]*[\w\-]+\s*=*\"*.+\"`, content) == false {
+		return "ini"
+	} else if gregex.IsMatch(`^[\s\t]*[\w\-\."]+\s*=\s*.+`, content) || gregex.IsMatch(`\n[\s\t]*[\w\-\."]+\s*=\s*.+`, content) {
+		return "toml"
+	} else {
+		return ""
+	}
 }

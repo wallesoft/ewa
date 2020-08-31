@@ -105,6 +105,7 @@ func (mux *ServeMux) getMuxEntryGroup(pattern string) MuxEntryGroup {
 
 func (s *Server) Serve() Response {
 	// type := s.Message.Type()
+	s.ServerGuard.Serve()
 	if s.Handler == nil {
 		DefaultServeMux.ServeMessage(s.Message)
 	}

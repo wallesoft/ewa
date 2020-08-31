@@ -9,7 +9,6 @@ import (
 	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/crypto/gsha1"
 	"github.com/gogf/gf/encoding/gbase64"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/text/gstr"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/grand"
@@ -40,7 +39,6 @@ const (
 )
 
 func New(config map[string]interface{}) (*Encryptor, error) {
-	g.Dump(config)
 	if config == nil || len(config) == 0 {
 		return nil, errors.New("Encryptor configuration cannot be empty")
 	}
