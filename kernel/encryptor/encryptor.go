@@ -19,7 +19,7 @@ type Encryptor struct {
 	AppId     string
 	Token     string
 	AesKey    string
-	blockSize int
+	BlockSize int
 }
 
 const (
@@ -62,7 +62,7 @@ func New(config map[string]interface{}) (*Encryptor, error) {
 //Encrypt encrypt message.
 func (e *Encryptor) Encrypt(rawXML []byte, nonce string, timestamp int) ([]byte, error) {
 	text := bytes.Join([][]byte{grand.B(16), gconv.Bytes(gconv.Uint32(len(rawXML))), rawXML, gconv.Bytes(e.AppId)}, []byte(""))
-	xml := PKCS7Pad(text, e.blockSize)
+	xml := PKCS7Pad(text, e.BlockSize)
 	encrypted, err := gaes.Encrypt(xml, gconv.Bytes(e.AesKey), gconv.Bytes(gstr.SubStr(e.AesKey, 0, 16)))
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (e *Encryptor) Decrypt(content []byte) ([]byte, error) {
 		return nil, NewError(ERROR_DECRYPT_AES, err.Error())
 	}
 	//unpad
-	result, err := PKCS7Unpad(decrypted, e.blockSize)
+	result, err := PKCS7Unpad(decrypted, e.BlockSize)
 	if err != nil {
 		return nil, err
 	}
