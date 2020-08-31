@@ -13,7 +13,7 @@ import (
 
 type ServerGuard struct {
 	//App			*Openplatform
-	Request        *DefaultRequest
+	Request        Request
 	Config         Config
 	AlwaysValidate bool
 	// Response *Response
@@ -30,7 +30,7 @@ type Config interface {
 // 	Token  string `c:"token"`
 // 	AesKey string `c:"aes_key"`
 // }
-func New() *ServerGuar{
+func New() *ServerGuard {
 
 }
 
@@ -108,13 +108,13 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return gconv.String(s.Request.) != "" && s.Request.EncryptType != "aes"
+	return gconv.String(s.Request.Get("signature")) != "" && s.Request.EncryptType != "aes"
 }
 
 //DecryptMessage decrypt message
 func (s *ServerGuard) DecryptMessage(message *gjson.Json) ([]byte, error) {
 	token := gconv.String(s.Config.Get("token"))
-	a := []string{token, s.Request.Timestamp, s.Request.Nonce, message.GetString("Encrypt")}
+	a := []string{token, gconv.String(s.Request.Get("Timestamp")), gconv.String(s.Request.Get("Nonce")), message.GetString("Encrypt")}
 
 	if message.GetString("msg_signature") != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")

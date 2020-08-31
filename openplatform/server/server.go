@@ -120,9 +120,13 @@ func HandleFunc(pattern string, handler func(*Message)) {
 	DefaultServeMux.HandleFunc(pattern, handler)
 }
 
-// //Serve
+// //Serve request parse validate ...
 // func Serve(message Message, handler Handler) Response {
 // 	server := &Server{Message: message, Handler: handler}
 // 	return server.Serve()
 // 	//return DefaultServeMux.Serve(request, handler)
 // }
+
+func Serve(requet guard.Request) {
+
+}
