@@ -30,8 +30,24 @@ type Config interface {
 // 	Token  string `c:"token"`
 // 	AesKey string `c:"aes_key"`
 // }
-func New() *ServerGuard {
+func New(r Request, c Config, l *glog.Logger) (*ServerGuard, error) {
+	encrypt, err := encryptor.New(map[string]interface{}{
+		"AppId":     c.Get("AppId"),
+		"Tonek":     c.Get("Token"),
+		"AesKey":    c.Get("AesKey"),
+		"BlockSize": 32,
+	})
+	if err != nil {
+		return nil, err
+	}
 
+	return &ServerGuard{
+		Request:        r,
+		Encryptor:      encrypt,
+		Config:         c,
+		Logger:         l,
+		AlwaysValidate: false,
+	}, nil
 }
 
 func (s *ServerGuard) Serve() {
@@ -108,7 +124,7 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return gconv.String(s.Request.Get("signature")) != "" && s.Request.EncryptType != "aes"
+	return gconv.String(s.Request.Get("Signature")) != "" && gconv.String(s.Request.Get("EncryptType")) != "aes"
 }
 
 //DecryptMessage decrypt message
