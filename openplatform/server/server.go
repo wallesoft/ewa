@@ -43,7 +43,7 @@ type muxEntry struct {
 //Server
 type Server struct {
 	//App   *OpenPlatform
-	guard.ServerGuard
+	*guard.ServerGuard
 	//Request *Request
 	Message Message
 	//Config
@@ -121,8 +121,8 @@ func HandleFunc(pattern string, handler func(*Message)) {
 }
 
 //Serve
-func Serve(message Message, handler Handler) Response {
-	server := &Server{Message: message, Handler: handler}
-	return server.Serve()
-	//return DefaultServeMux.Serve(request, handler)
-}
+// func Serve(message Message, handler Handler) Response {
+// 	server := &Server{Message: message, Handler: handler}
+// 	return server.Serve()
+// 	//return DefaultServeMux.Serve(request, handler)
+// }

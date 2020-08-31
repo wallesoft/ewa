@@ -30,15 +30,16 @@ type Config interface {
 // 	Token  string `c:"token"`
 // 	AesKey string `c:"aes_key"`
 // }
-func New(r Request, c Config, l *glog.Logger) (*ServerGuard, error) {
+func New(r Request, c Config, l *glog.Logger) *ServerGuard {
+	g.Dump(c)
 	encrypt, err := encryptor.New(map[string]interface{}{
-		"AppId":     c.Get("AppId"),
-		"Tonek":     c.Get("Token"),
-		"AesKey":    c.Get("AesKey"),
+		"AppId":     c.Get("app_id"),
+		"Token":     c.Get("token"),
+		"AesKey":    c.Get("aes_key"),
 		"BlockSize": 32,
 	})
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	return &ServerGuard{
@@ -47,9 +48,12 @@ func New(r Request, c Config, l *glog.Logger) (*ServerGuard, error) {
 		Config:         c,
 		Logger:         l,
 		AlwaysValidate: false,
-	}, nil
+	}
 }
 
+func (s *ServerGuard) SetLogger(logger *glog.Logger) {
+	s.Logger = logger
+}
 func (s *ServerGuard) Serve() {
 	//s.Logger.Debug
 	//s.Logger.Debug(map[string]interface{}{"Request received": s.Request})

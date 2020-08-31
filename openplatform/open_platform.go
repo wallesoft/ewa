@@ -3,6 +3,7 @@ package openplatform
 import (
 	"errors"
 
+	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/glog"
@@ -63,8 +64,12 @@ func New(config map[string]interface{}) (*OpenPlatform, error) {
 	}, nil
 }
 
-func (op *OpenPlatform) Server() *server.Server {
-	return guard.New()
+func (op *OpenPlatform) Server(r guard.Request) *server.Server {
+	sg := guard.New(r, op.config, op.logger)
+	return &server.Server{
+		ServerGuard: sg,
+	}
+	///return guard.New()
 	// s := server.Server{
 	// 	ServerGuard: guard.ServerGuard{
 	// 		Logger: op.logger,

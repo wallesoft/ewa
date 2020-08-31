@@ -39,10 +39,10 @@ type UpdateAuthorizedMessage struct {
 	PreAuthCode                  string
 }
 
-func GetMessageFromRequest(r Request) (m Message) {
-	//验证来源
-	//解密
-	//解析类型
-	//赋值到相应message
-	return
-}
+// func GetMessageFromRequest(r Request) (m Message) {
+// 	//验证来源
+// 	//解密
+// 	//解析类型
+// 	//赋值到相应message
+// 	return
+// }

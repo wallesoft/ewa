@@ -35,13 +35,13 @@ func (r *DefaultRequest) GetRaw() []byte {
 }
 
 //GetUrl
-func (r *DefaultRequset) GetUrl() string {
+func (r *DefaultRequest) GetUrl() string {
 	return r.URL
 }
 
 //New return new DefaultRequest
-func (r *DefaultRequest) New(c map[string]interface{}) (*DefaultRequest, error) {
-	r = &DefaultRequset{}
+func NewRequest(c map[string]interface{}) (*DefaultRequest, error) {
+	r := &DefaultRequest{}
 	if err := gconv.Struct(c, r); err != nil {
 		return nil, err
 	}
