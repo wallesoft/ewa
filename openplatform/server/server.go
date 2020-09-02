@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	guard "gitee.com/wallesoft/ewa/kernel/server"
+	"gitee.com/wallesoft/ewa/openplatform"
 	"github.com/gogf/gf/container/gtype"
 	"github.com/gogf/gf/os/glog"
 )
@@ -50,6 +51,10 @@ type Server struct {
 	debug   *gtype.Bool
 	logger  *glog.Logger
 	Handler Handler
+}
+
+func New(ctx *openplatform.Context) *Server {
+
 }
 
 var defaultHandler = map[string]Handler{

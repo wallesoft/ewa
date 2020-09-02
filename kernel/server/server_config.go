@@ -1,6 +1,6 @@
 package server
 
-type Config interface {
+type Config struct {
 	AppID          string `json:"app_id"`           //appid
 	AppSecret      string `json:"app_secret"`       //appsecret
 	Token          string `json:"token"`            //token

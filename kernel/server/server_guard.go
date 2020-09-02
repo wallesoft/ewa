@@ -16,8 +16,8 @@ import (
 type ServerGuard struct {
 	*Config
 	//App			*Openplatform
-	Request        Request
-	Config         Config
+	// Request        Request
+	// Config         Config
 	AlwaysValidate bool
 	// Response *Response
 	Logger    *glog.Logger

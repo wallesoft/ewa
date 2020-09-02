@@ -5,7 +5,7 @@ import (
 )
 
 type Server struct {
-	*Context
+	*Config
 	Writer  http.ResponseWriter
 	Request *http.Request
 }
