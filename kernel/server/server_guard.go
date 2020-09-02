@@ -14,6 +14,7 @@ import (
 )
 
 type ServerGuard struct {
+	*Config
 	//App			*Openplatform
 	Request        Request
 	Config         Config
@@ -22,9 +23,10 @@ type ServerGuard struct {
 	Logger    *glog.Logger
 	Encryptor *encryptor.Encryptor
 }
-type Config interface {
-	Get(pattern string) interface{}
-}
+
+// type Config interface {
+// 	Get(pattern string) interface{}
+// }
 
 // type Config struct {
 // 	Appid  string `c:"app_id"`
