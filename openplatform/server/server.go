@@ -51,6 +51,9 @@ type Server struct {
 	logger  *glog.Logger
 	Handler Handler
 }
+func New(ctx *openplatform.Context,r *http.Reqeust,w http.ResponseWriter) {
+	
+}
 
 var defaultHandler = map[string]Handler{
 	//"authorized":
