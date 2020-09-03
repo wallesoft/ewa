@@ -52,8 +52,13 @@ func New(config *Config) *OpenPlatform {
 }
 
 func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter) *server.Server {
+<<<<<<< HEAD
 	//s := server.New(op.Context)
 	//return server.GetServer(request, writer)
+=======
+	s := server.New(op.Context)
+	return s.GetServer(request, writer)
+>>>>>>> ec6b845837707c21d03897bdc21c74910260df4b
 }
 
 //New get openplatform from config
