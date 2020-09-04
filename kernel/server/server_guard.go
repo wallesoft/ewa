@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
+	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
@@ -14,9 +15,9 @@ import (
 )
 
 type ServerGuard struct {
-	*Config
+	config Config
 	//App			*Openplatform
-	// Request        Request
+	Request *ehttp.Request
 	// Config         Config
 	AlwaysValidate bool
 	// Response *Response
@@ -34,27 +35,31 @@ type ServerGuard struct {
 // 	Token  string `c:"token"`
 // 	AesKey string `c:"aes_key"`
 // }
-func New(r Request, c Config, l *glog.Logger) *ServerGuard {
-	g.Dump(r)
-	encrypt, err := encryptor.New(map[string]interface{}{
-		"AppId":     c.Get("app_id"),
-		"Token":     c.Get("token"),
-		"AesKey":    gconv.String(c.Get("aes_key")) + "=",
-		"BlockSize": 32,
-	})
-	if err != nil {
-		panic(err)
-	}
+// func New(r Request, c Config, l *glog.Logger) *ServerGuard {
+// 	g.Dump(r)
+// 	encrypt, err := encryptor.New(map[string]interface{}{
+// 		"AppId":     c.Get("app_id"),
+// 		"Token":     c.Get("token"),
+// 		"AesKey":    gconv.String(c.Get("aes_key")) + "=",
+// 		"BlockSize": 32,
+// 	})
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
+// 	return &ServerGuard{
+// 		Request:        r,
+// 		Encryptor:      encrypt,
+// 		Config:         c,
+// 		Logger:         l,
+// 		AlwaysValidate: false,
+// 	}
+// }
+func New(config Config) *ServerGuard {
 	return &ServerGuard{
-		Request:        r,
-		Encryptor:      encrypt,
-		Config:         c,
-		Logger:         l,
-		AlwaysValidate: false,
+		config: config,
 	}
 }
-
 func (s *ServerGuard) SetLogger(logger *glog.Logger) {
 	s.Logger = logger
 }
@@ -63,8 +68,8 @@ func (s *ServerGuard) Serve() {
 	//s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
 	s.Logger.Debug(map[string]interface{}{
 		"Request Received": map[string]string{
-			"uri":     s.Request.GetUrl(),
-			"content": gconv.String(s.Request.GetRaw()),
+			"uri":     s.Request.GetURL(),
+			"content": gconv.String(s.Request.GetBody()),
 		},
 	})
 	s.Validate().resolve()
@@ -78,7 +83,7 @@ func (s *ServerGuard) resolve() {
 func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
 	g.Dump("aaaaaaaaaaaaaaaaaaaaaaaaa")
 	//j, err := gjson.DecodeToJson(s.Request.GetRaw())
-	content := s.Request.GetRaw()
+	content := s.Request.GetBody()
 	g.Dump(checkDataType(content))
 	j, err := gjson.LoadContent(content)
 	//g.Dump(err)
@@ -110,8 +115,8 @@ func (s *ServerGuard) GetMessage() (*gjson.Json, error) {
 	return message.GetJson("Encrypt"), nil
 }
 func (s *ServerGuard) signature() string {
-	token := gconv.String(s.Config.Get("token"))
-	a := []string{token, gconv.String(s.Request.Get("timestamp")), gconv.String(s.Request.Get("nonce"))}
+	//token := gconv.String(s.Config.Get("token"))
+	a := []string{s.config.Token, s.Request.GetString("timestamp"), s.Request.GetString("nonce")}
 	// sort
 	return encryptor.Signature(a)
 	// sort.Strings(a)
@@ -123,7 +128,7 @@ func (s *ServerGuard) Validate() *ServerGuard {
 	if !s.AlwaysValidate && !s.IsSafeMode() {
 		return s
 	}
-	if gconv.String(s.Request.Get("signature")) != s.signature() {
+	if s.Request.GetString("signature") != s.signature() {
 		// response
 	}
 	return s
@@ -137,13 +142,13 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return gconv.String(s.Request.Get("Signature")) != "" && gconv.String(s.Request.Get("EncryptType")) == "aes"
+	return s.Request.GetString("Signature") != "" && s.Request.GetString("EncryptType") == "aes"
 }
 
 //DecryptMessage decrypt message
 func (s *ServerGuard) DecryptMessage(message *gjson.Json) ([]byte, error) {
-	token := gconv.String(s.Config.Get("token"))
-	a := []string{token, gconv.String(s.Request.Get("Timestamp")), gconv.String(s.Request.Get("Nonce")), message.GetString("Encrypt")}
+	//token := s.config.Token//gconv.String(s.Config.Get("token"))
+	a := []string{s.config.Token, s.Request.GetString("Timestamp"), s.Request.GetString("Nonce"), message.GetString("Encrypt")}
 
 	if message.GetString("msg_signature") != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")

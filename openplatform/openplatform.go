@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"gitee.com/wallesoft/ewa/kernel/cache"
+	"gitee.com/wallesoft/ewa/kernel/encryptor"
+	ehttp "gitee.com/wallesoft/ewa/kernel/http"
+	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/glog"
@@ -13,13 +16,13 @@ import (
 type OpenPlatform struct {
 	// config *Config
 	// logger *glog.Logger
-	*Context
+	config Config
 }
 
 //Context struct
-type Context struct {
-	*Config
-}
+// type Context struct {
+// 	Config
+// }
 
 // type Config *gmap.StrAnyMap
 
@@ -38,27 +41,44 @@ func (c *Config) Get(pattern string) interface{} {
 
 //New new OpenPlatform
 //@see glog https://goframe.org/os/glog/index
-func New(config *Config) *OpenPlatform {
+func New(config Config) *OpenPlatform {
 	if config.Cache == nil {
 		config.Cache = cache.NewMemCache()
 	}
 	if config.Logger == nil {
 		config.Logger = glog.New()
 	}
-	ctx := &Context{
-		Config: config,
+
+	return &OpenPlatform{
+		config: config,
 	}
-	return &OpenPlatform{ctx}
 }
 
 func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter) *server.Server {
-<<<<<<< HEAD
-	//s := server.New(op.Context)
-	//return server.GetServer(request, writer)
-=======
-	s := server.New(op.Context)
-	return s.GetServer(request, writer)
->>>>>>> ec6b845837707c21d03897bdc21c74910260df4b
+	gs := guard.New(guard.Config{
+		AppID:          op.config.AppID,
+		AppSecret:      op.config.AppSecret,
+		Token:          op.config.Token,
+		EncodingAESKey: op.config.EncodingAESKey,
+	})
+	gs.Request = &ehttp.Request{Request: request}
+	gs.Logger = op.config.Logger
+	server := &server.Server{
+		ServerGuard: gs,
+	}
+	//aesKey, err := gbase64.DecodeToString(op.config.EncodingAESKey + '=')
+	// if err != nil {
+	// 	panic(err)
+	// }
+	server.Encryptor = encryptor.New(encryptor.Config{
+		AppID:          op.config.AppID,
+		Token:          op.config.Token,
+		EncodingAESKey: op.config.EncodingAESKey,
+		BlockSize:      32,
+	})
+	return server
+	// s := server.New(op.Context)
+	// return s.GetServer(request, writer)
 }
 
 //New get openplatform from config
