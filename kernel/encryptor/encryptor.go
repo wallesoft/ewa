@@ -9,6 +9,7 @@ import (
 	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/crypto/gsha1"
 	"github.com/gogf/gf/encoding/gbase64"
+	"github.com/gogf/gf/encoding/gbinary"
 	"github.com/gogf/gf/text/gstr"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/grand"
@@ -88,7 +89,7 @@ func New(config Config) *Encryptor {
 
 //Encrypt encrypt message.
 func (e *Encryptor) Encrypt(rawXML []byte, nonce string, timestamp int) ([]byte, error) {
-	text := bytes.Join([][]byte{grand.B(16), gconv.Bytes(gconv.Uint32(len(rawXML))), rawXML, gconv.Bytes(e.AppID)}, []byte(""))
+	text := bytes.Join([][]byte{grand.B(16), gbinary.BeEncodeUint32(gconv.Uint32(len(rawXML))), rawXML, gconv.Bytes(e.AppID)}, []byte(""))
 	xml := PKCS7Pad(text, e.BlockSize)
 	encrypted, err := gaes.Encrypt(xml, gconv.Bytes(e.AesKey), gconv.Bytes(gstr.SubStr(e.AesKey, 0, 16)))
 	if err != nil {
@@ -113,15 +114,14 @@ func (e *Encryptor) Decrypt(content []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	// len := len(result)
 	contents := result[16:]
-	contentsLen := gconv.Int(contents[:4])
-
-	if gconv.String(contents[contentsLen+4:]) != e.AppID {
+	//网络字节序为大端序
+	msgLen := gbinary.BeDecodeToUint32(contents[:4])
+	if gconv.String(contents[msgLen+4:]) != e.AppID {
 		return nil, NewError(ERROR_INVALID_APP_ID, "Invalid appId.")
 	}
-	return contents[4:contentsLen], nil
+	return contents[4 : msgLen+4], nil
 }
 
 //GetToken is this necessary?

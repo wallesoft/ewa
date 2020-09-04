@@ -3,11 +3,11 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
@@ -81,17 +81,32 @@ func (s *ServerGuard) resolve() {
 
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
-	g.Dump("aaaaaaaaaaaaaaaaaaaaaaaaa")
 	//j, err := gjson.DecodeToJson(s.Request.GetRaw())
 	content := s.Request.GetBody()
-	g.Dump(checkDataType(content))
-	j, err := gjson.LoadContent(content)
-	//g.Dump(err)
-	g.Dump(j.Get("appid"))
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
+	mtype := checkDataType(content)
+	if mtype == "xml" {
+		//with out root 'xml'
+		m, err := gxml.DecodeWithoutRoot(content)
+		if err != nil {
+			return nil, err
+		}
+		return gjson.New(m), nil
+		// j, err := gjson.New(m)
+		// if err != nil {
+		// 	return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
+		// }
+		// return j, nil
 	}
-	return j, nil
+	if mtype == "json" {
+		return gjson.New(content), nil
+		// j, err := gjson.New(content)
+		// if err != nil {
+		// 	return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
+		// }
+		// return j, nil
+	}
+
+	return nil, errors.New("Invalid message content: unknow message type.")
 }
 
 //GetMessage
@@ -164,13 +179,6 @@ func checkDataType(content []byte) string {
 		return "json"
 	} else if gregex.IsMatch(`^<.+>[\S\s]+<.+>$`, content) {
 		return "xml"
-	} else if gregex.IsMatch(`^[\s\t]*[\w\-]+\s*:\s*.+`, content) || gregex.IsMatch(`\n[\s\t]*[\w\-]+\s*:\s*.+`, content) {
-		return "yml"
-	} else if (gregex.IsMatch(`^[\s\t\[*\]].?*[\w\-]+\s*=\s*.+`, content) || gregex.IsMatch(`\n[\s\t\[*\]]*[\w\-]+\s*=\s*.+`, content)) && gregex.IsMatch(`\n[\s\t]*[\w\-]+\s*=*\"*.+\"`, content) == false && gregex.IsMatch(`^[\s\t]*[\w\-]+\s*=*\"*.+\"`, content) == false {
-		return "ini"
-	} else if gregex.IsMatch(`^[\s\t]*[\w\-\."]+\s*=\s*.+`, content) || gregex.IsMatch(`\n[\s\t]*[\w\-\."]+\s*=\s*.+`, content) {
-		return "toml"
-	} else {
-		return ""
 	}
+	return ""
 }
