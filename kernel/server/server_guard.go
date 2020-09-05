@@ -79,55 +79,148 @@ func (s *ServerGuard) resolve() {
 	g.Dump(message)
 }
 
-//ParseMessage parse message from raw input.
-func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
-	//j, err := gjson.DecodeToJson(s.Request.GetRaw())
-	content := s.Request.GetBody()
-	mtype := checkDataType(content)
-	if mtype == "xml" {
-		//with out root 'xml'
-		m, err := gxml.DecodeWithoutRoot(content)
-		if err != nil {
-			return nil, err
-		}
-		return gjson.New(m), nil
-		// j, err := gjson.New(m)
-		// if err != nil {
-		// 	return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
-		// }
-		// return j, nil
+//return response
+func (s *ServerGuard) handleRequst() {
+	originMessage, err := s.GetMessage()
+	if err != nil {
+		//
 	}
-	if mtype == "json" {
-		return gjson.New(content), nil
-		// j, err := gjson.New(content)
-		// if err != nil {
-		// 	return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
-		// }
-		// return j, nil
-	}
-
-	return nil, errors.New("Invalid message content: unknow message type.")
+	//处理相关信息类型，生成对应map，返回相关response
 }
 
-//GetMessage
-func (s *ServerGuard) GetMessage() (*gjson.Json, error) {
-	message, err := s.ParseMessage()
+//ParseMessage parse message from raw input.
+func (s *ServerGuard) parseMessage() (msg *Message, err error) {
+	content := s.Request.GetBody()
+	mtype := checkDataType(content)
+	switch mtype {
+	case "xml":
+		msg, err = s.parseXMLMessage(content)
+		return
+	case "json":
+		msg, err = s.parseJSONMessage(content)
+		return
+	default:
+		return nil, errors.New("invalid message content: unsupported message type")
+	}
+	// var err error
+	// var msg *gjson.Json
+	// content := s.Request.GetBody()
+	// mtype := checkDataType(content)
+	// switch mtype {
+	// case "xml":
+	// 	m, xerr := gxml.DecodeWithoutRoot(content)
+	// 	if xerr != nil {
+	// 		err = xerr
+	// 	}
+	// 	msg = gjson.New(m)
+	// case "json":
+	// 	msg = gjson.New(content)
+	// default:
+	// 	//msg = nil
+	// 	err = errors.New("invalid message content: unsupported message type")
+	// }
+	// // if mtype == "xml" {
+	// // 	//with out root 'xml'
+	// // 	m, err := gxml.DecodeWithoutRoot(content)
+	// // 	if err != nil {
+	// // 		return nil, err
+	// // 	}
+	// // 	msg := gjson.New(m)
+	// // }
+	// // if mtype == "json" {
+	// // 	msg := gjson.New(content)
+	// // }
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if msg != nil {
+	// 	if s.IsSafeMode() && msg.Contains("Encrypt") {
+	// 		//decrypt
+	// 		//msg, err := s.DecryptMessage(msg)
+	// 		decrypted, decrypterr := s.decryptMessage(msg)
+	// 		if decrypterr != nil {
+	// 			return nil, decrypterr
+	// 		}
+
+	// 		if j, err := gjson.DecodeToJson(decrypted); err == nil {
+	// 			return &Message{
+	// 				Json: j,
+	// 			}, nil
+	// 		} else {
+	// 			return nil, err
+	// 		}
+
+	// 		// }
+
+	// 		// if err != nil {
+	// 		// 	return nil, err
+	// 		// }
+	// 		// j, err := gjson.DecodeToJson(msg)
+	// 		// if err != nil {
+	// 		// 	return nil, err
+	// 		// }
+	// 		// return j, nil
+	// 	}
+	// 	return &Message{Json: msg}, nil
+	// }
+	//return nil, errors.New("invaild message content")
+}
+func (s *ServerGuard) parseXMLMessage(content []byte) (message *Message, err error) {
+	undecrypted, err := gxml.DecodeWithoutRoot(content)
 	if err != nil {
 		return nil, err
 	}
-	if s.IsSafeMode() && message.Contains("Encrypt") {
-		//decrypt
-		msg, err := s.DecryptMessage(message)
-		if err != nil {
-			return nil, err
+	if s.IsSafeMode() {
+		if val, ok := undecrypted["Encrypt"]; ok {
+			decrypted, err := s.decryptMessage(gconv.Bytes(val))
+			if err != nil {
+				return nil, err
+			}
+			//out root
+			m, err := gxml.DecodeWithoutRoot(decrypted)
+			if err != nil {
+				return nil, err
+			}
+			message = &Message{
+				Json: gjson.New(m),
+			}
+			return message, nil
 		}
-		j, err := gjson.DecodeToJson(msg)
-		if err != nil {
-			return nil, err
-		}
-		return j, nil
+		return nil, errors.New("invalid parse message type of xml: get encrypt content error")
 	}
-	return message.GetJson("Encrypt"), nil
+	message = &Message{
+		Json: gjson.New(undecrypted),
+	}
+	return message, nil
+}
+func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err error) {
+	j, err := gjson.LoadContent(content)
+	if err != nil {
+		return nil, err
+	}
+	if s.IsSafeMode() && j.Contains("Encrypt") {
+		decrypted, err := s.decryptMessage(j.GetBytes("Encrypt"))
+		if err != nil {
+			return nil, err
+		}
+		message = &Message{
+			Json: gjson.New(decrypted),
+		}
+		return message, nil
+	}
+	return &Message{
+		Json: j,
+	}, nil
+}
+
+//GetMessage
+func (s *ServerGuard) GetMessage() (message *Message, err error) {
+	message, err = s.parseMessage()
+	if err != nil {
+		return nil, err
+	}
+	return
 }
 func (s *ServerGuard) signature() string {
 	//token := gconv.String(s.Config.Get("token"))
@@ -161,14 +254,14 @@ func (s *ServerGuard) IsSafeMode() bool {
 }
 
 //DecryptMessage decrypt message
-func (s *ServerGuard) DecryptMessage(message *gjson.Json) ([]byte, error) {
+func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	//token := s.config.Token//gconv.String(s.Config.Get("token"))
-	a := []string{s.config.Token, s.Request.GetString("Timestamp"), s.Request.GetString("Nonce"), message.GetString("Encrypt")}
+	a := []string{s.config.Token, s.Request.GetString("Timestamp"), s.Request.GetString("Nonce"), gconv.String(message)}
 
-	if message.GetString("msg_signature") != encryptor.Signature(a) {
+	if s.Request.GetString("msg_signature") != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")
 	}
-	content, err := s.Encryptor.Decrypt(message.GetBytes("Encrypt"))
+	content, err := s.Encryptor.Decrypt(message)
 	if err != nil {
 		return nil, err
 	}

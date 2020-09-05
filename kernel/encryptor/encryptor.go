@@ -15,6 +15,7 @@ import (
 	"github.com/gogf/gf/util/grand"
 )
 
+//Encryptor encrypotr struct
 type Encryptor struct {
 	AppID     string
 	Token     string
@@ -38,34 +39,15 @@ const (
 
 )
 
-// func New(config map[string]interface{}) (*Encryptor, error) {
-// 	if config == nil || len(config) == 0 {
-// 		return nil, errors.New("Encryptor configuration cannot be empty")
-// 	}
-// 	config = gutil.MapCopy(config)
-// 	var c *Encryptor
-// 	if err := gconv.Struct(config, &c); err != nil {
-// 		return nil, err
-// 	}
-// 	if c.AesKey != "" {
-// 		aesKey, err := gbase64.DecodeToString(c.AesKey)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		c.AesKey = aesKey
-// 	} else {
-// 		return nil, errors.New("Encryptor configuration aes_key cannot be empty")
-// 	}
-// 	return c, nil
-// }
+//Config config
 type Config struct {
-	AppID string `json:"app_id"` //appid
-	//AppSecret      string `json:"app_secret"`       //appsecret
-	Token          string `json:"token"` //token
+	AppID          string `json:"app_id"` //appid
+	Token          string `json:"token"`  //token
 	EncodingAESKey string `json:"encoding_aes_key"`
 	BlockSize      int
 }
 
+//New return new point
 func New(config Config) *Encryptor {
 	aesKey := ""
 	if config.EncodingAESKey != "" {
@@ -95,7 +77,6 @@ func (e *Encryptor) Encrypt(rawXML []byte, nonce string, timestamp int) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	// gbase64.Encode()
 	return gbase64.Encode(encrypted), nil
 }
 
@@ -114,9 +95,8 @@ func (e *Encryptor) Decrypt(content []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// len := len(result)
 	contents := result[16:]
-	//网络字节序为大端序
+	//网络字节序
 	msgLen := gbinary.BeDecodeToUint32(contents[:4])
 	if gconv.String(contents[msgLen+4:]) != e.AppID {
 		return nil, NewError(ERROR_INVALID_APP_ID, "Invalid appId.")
