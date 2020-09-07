@@ -8,7 +8,6 @@ import (
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
@@ -23,6 +22,7 @@ type ServerGuard struct {
 	// Response *Response
 	Logger    *glog.Logger
 	Encryptor *encryptor.Encryptor
+	mux       *ServerMux
 }
 
 // type Config interface {
@@ -75,17 +75,39 @@ func (s *ServerGuard) Serve() {
 	s.Validate().resolve()
 }
 func (s *ServerGuard) resolve() {
-	message, _ := s.GetMessage()
-	g.Dump(message)
+	// message, _ := s.GetMessage()
+	// g.Dump(message)
 }
 
 //return response
 func (s *ServerGuard) handleRequst() {
-	originMessage, err := s.GetMessage()
+	originMsg, err := s.GetMessage()
 	if err != nil {
 		//
 	}
+
+	var mtype string
+	if originMsg.Contains("MsgType") {
+		mtype = originMsg.GetString("MsgType")
+	} else if originMsg.Contains("msg_type") {
+		mtype = originMsg.GetString("msg_type")
+	} else {
+		mtype = "text"
+	}
+
 	//处理相关信息类型，生成对应map，返回相关response
+}
+
+func (s *SeverGuard) dispatch(mtype string, message *Message) {
+	handlerGroup := s.mux.GetMuxEntryGroup(mtype)
+	if len(handlerGroup) > 0 {
+		for _, entry := range handlerGroup {
+			if ok := entry.h.ServeMesage(message); !ok {
+
+			}
+		}
+	}
+LOOP:
 }
 
 //ParseMessage parse message from raw input.
@@ -217,6 +239,10 @@ func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err er
 //GetMessage
 func (s *ServerGuard) GetMessage() (message *Message, err error) {
 	message, err = s.parseMessage()
+	//is nil
+	if message.IsNil() {
+		return nik, errors.New("No message received.")
+	}
 	if err != nil {
 		return nil, err
 	}
