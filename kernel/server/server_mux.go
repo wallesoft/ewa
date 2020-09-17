@@ -4,13 +4,13 @@ import (
 	"sync"
 )
 
-//ServerMux server MUX
-type ServerMux struct {
+//ServeMux server MUX
+type ServeMux struct {
 	mu sync.RWMutex
-	m  map[string]MuxEntryGroup
+	m  map[int]MuxEntryGroup
 }
 
-//MuxEcntryGroup is an alice
+//MuxEntryGroup is an alice
 type MuxEntryGroup []muxEntry
 
 //muxEntry
@@ -19,14 +19,15 @@ type muxEntry struct {
 	pattern string
 }
 
-var defaultServerMux ServerMux
+var defaultServeMux ServeMux
 
 //Default is the default Server MUX used by serve.
-var DefaultServerMux = &defaultServerMux
+var DefaultServerMux = &defaultServeMux
 
 func (mux *ServeMux) GetMuxEntryGroup(pattern string) MuxEntryGroup {
-	if group, ok := mux.m[pattern]; ok {
-		return group
-	}
-	return nil
+
+	// if group, ok := mux.m[pattern]; ok {
+	// 	return group
+	// }
+	// return nil
 }

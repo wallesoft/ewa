@@ -6,6 +6,7 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
+	"gitee.com/wallesoft/ewa/kernel/message"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/os/glog"
@@ -23,6 +24,21 @@ type ServerGuard struct {
 	Logger    *glog.Logger
 	Encryptor *encryptor.Encryptor
 	mux       *ServerMux
+}
+
+var messageType = map[string]int{
+	"text":            message.TEXT,
+	"image":           message.IMAGE,
+	"voice":           message.VOICE,
+	"video":           message.VIDEO,
+	"shortvideo":      message.SHORT_VIDEO,
+	"location":        message.LOCATION,
+	"link":            message.LINK,
+	"device_event":    message.DEVICE_EVENT,
+	"device_text":     message.DEVICE_TEXT,
+	"event":           message.EVENT,
+	"file":            message.FILE,
+	"miniprogrampage": message.MINIPROGRAM_PAGE,
 }
 
 // type Config interface {
