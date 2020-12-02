@@ -4,9 +4,6 @@ import (
 	"net/http"
 
 	"gitee.com/wallesoft/ewa/kernel/cache"
-	"gitee.com/wallesoft/ewa/kernel/encryptor"
-	ehttp "gitee.com/wallesoft/ewa/kernel/http"
-	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/glog"
@@ -55,6 +52,10 @@ func New(config Config) *OpenPlatform {
 }
 
 func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter) *server.Server {
+	// s := server.New(op, request, writer)
+	// return s
+
+	// ------------------------------------
 	gs := guard.New(guard.Config{
 		AppID:          op.config.AppID,
 		AppSecret:      op.config.AppSecret,
@@ -66,10 +67,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	server := &server.Server{
 		ServerGuard: gs,
 	}
-	//aesKey, err := gbase64.DecodeToString(op.config.EncodingAESKey + '=')
-	// if err != nil {
-	// 	panic(err)
-	// }
+
 	server.Encryptor = encryptor.New(encryptor.Config{
 		AppID:          op.config.AppID,
 		Token:          op.config.Token,
@@ -77,6 +75,11 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 		BlockSize:      32,
 	})
 	return server
+	// --------------------------------------
+	//aesKey, err := gbase64.DecodeToString(op.config.EncodingAESKey + '=')
+	// if err != nil {
+	// 	panic(err)
+	// }
 	// s := server.New(op.Context)
 	// return s.GetServer(request, writer)
 }

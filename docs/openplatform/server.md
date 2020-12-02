@@ -40,7 +40,7 @@ import (
 
 ```
 #### 框架示例 [(goframe框架)](https://www.goframe.org/)
-```golang
+<!-- ```golang
 package main 
 
 import (
@@ -67,5 +67,5 @@ func main(){
     })
 }
 
-```
+``` -->
 #### 自定义消息处理器

@@ -98,7 +98,7 @@ func (s *ServerGuard) handleRequst() {
 	//处理相关信息类型，生成对应map，返回相关response
 }
 
-func (s *SeverGuard) dispatch(mtype string, message *Message) {
+func (s *ServerGuard) dispatch(mtype string, message *Message) {
 	handlerGroup := s.mux.GetMuxEntryGroup(mtype)
 	if len(handlerGroup) > 0 {
 		for _, entry := range handlerGroup {
@@ -107,7 +107,7 @@ func (s *SeverGuard) dispatch(mtype string, message *Message) {
 			}
 		}
 	}
-LOOP:
+	// LOOP:
 }
 
 //ParseMessage parse message from raw input.

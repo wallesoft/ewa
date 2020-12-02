@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	guard "gitee.com/wallesoft/ewa/kernel/server"
+	// "gitee.com/wallesoft/ewa/kernel/"
 	"github.com/gogf/gf/container/gtype"
 	"github.com/gogf/gf/os/glog"
 )
@@ -76,6 +77,9 @@ func (mux *ServeMux) HandleFunc(patter string, handler func(*Message)) {
 // 	// handler
 // 	// reponse return
 // }
+func (s *Server) Push(handler server.Handler) {
+	
+}
 
 func (mux *ServeMux) ServeMessage(m Message) {
 	mType := m.Type()
