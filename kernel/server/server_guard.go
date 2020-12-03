@@ -121,7 +121,9 @@ func (s *ServerGuard) dispatch(mtype string, message *Message) {
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) parseMessage() (msg *Message, err error) {
 	content := s.Request.GetBody()
+	g.Dump("content is :", content)
 	mtype := checkDataType(content)
+	g.Dump("type is :", mtype)
 	switch mtype {
 	case "xml":
 		msg, err = s.parseXMLMessage(content)

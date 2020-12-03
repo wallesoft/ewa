@@ -65,7 +65,7 @@ func (s *ServerGuard) setGroup(group string) {
 }
 func (s *ServerGuard) InitMux(group string, messageGroup map[string]message.MessageType) {
 	s.setGroup(group)
-	defer serverMux.Unlock()
+	// defer serverMux.Unlock()
 	serverMux.message[group] = messageGroup
 }
 
