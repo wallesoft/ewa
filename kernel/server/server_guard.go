@@ -22,7 +22,8 @@ type ServerGuard struct {
 	// Response *Response
 	Logger    *glog.Logger
 	Encryptor *encryptor.Encryptor
-	mux       *ServeMux
+	// Mux       *ServerMux
+	muxGroup string
 }
 
 // type Config interface {
@@ -99,15 +100,21 @@ func (s *ServerGuard) handleRequst() {
 }
 
 func (s *ServerGuard) dispatch(mtype string, message *Message) {
-	handlerGroup := s.mux.GetMuxEntryGroup(mtype)
-	if len(handlerGroup) > 0 {
-		for _, entry := range handlerGroup {
-			if ok := entry.h.ServeMesage(message); !ok {
+	// 1 mtype => message.MessageType
 
-			}
-		}
-	}
-	// LOOP:
+	// 2 Get Mux by group name
+	// 3 range Mux
+	// 4 diff
+
+	// handlerGroup := s.mux.GetMuxEntryGroup(mtype)
+	// if len(handlerGroup) > 0 {
+	// 	for _, entry := range handlerGroup {
+	// 		if ok := entry.h.ServeMesage(message); !ok {
+
+	// 		}
+	// 	}
+	// }
+	// // LOOP:
 }
 
 //ParseMessage parse message from raw input.

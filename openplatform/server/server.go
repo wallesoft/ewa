@@ -48,17 +48,22 @@ type Server struct {
 	//Request *Request
 	Message Message
 	//Config
-	debug   *gtype.Bool
-	logger  *glog.Logger
-	Handler Handler
+	debug  *gtype.Bool
+	logger *glog.Logger
+	// Handler Handler
+	// MuxGroup string
 }
 
-var defaultHandler = map[string]Handler{
-	//"authorized":
-	//"updateauthorized":
-	//"unauthorized":
-	"component_verify_ticket": &TicketHandler{},
-}
+const (
+	MUX_GROUP = "openplatform" // default config group name
+)
+
+// var defaultHandler = map[string]Handler{
+// 	//"authorized":
+// 	//"updateauthorized":
+// 	//"unauthorized":
+// 	"component_verify_ticket": &TicketHandler{},
+// }
 
 //Handle registers the hanlder for the given pattern
 func (mux *ServeMux) Handle(pattern string, handler Handler) (h Handler, patter string) {
@@ -77,10 +82,15 @@ func (mux *ServeMux) HandleFunc(patter string, handler func(*Message)) {
 // 	// handler
 // 	// reponse return
 // }
-func (s *Server) Push(handler server.Handler) {
-	
-}
+// func (s *Server) Push(handler server.Handler) {
 
+// }
+func (s *Server) SetMux() {
+	// s.MuxGroup = MUX_GROUP
+	//init handler
+	s.InitMux(MUX_GROUP, messageType)
+
+}
 func (mux *ServeMux) ServeMessage(m Message) {
 	mType := m.Type()
 	g := mux.getMuxEntryGroup(mType)

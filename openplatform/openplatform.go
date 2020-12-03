@@ -67,7 +67,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	server := &server.Server{
 		ServerGuard: gs,
 	}
-
+	server.InitMux()
 	server.Encryptor = encryptor.New(encryptor.Config{
 		AppID:          op.config.AppID,
 		Token:          op.config.Token,
