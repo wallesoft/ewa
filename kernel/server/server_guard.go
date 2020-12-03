@@ -8,6 +8,7 @@ import (
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
@@ -95,7 +96,7 @@ func (s *ServerGuard) handleRequst() {
 	} else {
 		mtype = "text"
 	}
-
+	g.Dump(mtype)
 	//处理相关信息类型，生成对应map，返回相关response
 }
 

@@ -1,7 +1,8 @@
 package server
 
 import (
-	"sync",
+	"sync"
+
 	"gitee.com/wallesoft/ewa/kernel/message"
 )
 
@@ -15,22 +16,23 @@ type Mux map[string]MuxEntryGroup
 
 //MuxEntryGroup is an alice
 type MuxEntryGroup []muxEntry
-type MessageGroup  map[string]map[string]message.MessageType
+type MessageGroup map[string]map[string]message.MessageType
+
 //muxEntry
 type muxEntry struct {
 	h       Handler
 	pattern message.MessageType
 }
 
-type serverMux struct {
+var serverMux struct {
 	sync.RWMutex
 	mux     Mux
-	mesage  MessageGroup
+	message MessageGroup
 	// messageType map[string]MessageGroup
 }
 
 func init() {
-	serverMux.m = make(Mux)
+	serverMux.mux = make(Mux)
 	serverMux.message = make(MessageGroup)
 }
 
@@ -50,22 +52,23 @@ func init() {
 // 	serverMux.m[group] = append(serverMux.m[group], entry)
 // }
 
-func (s *ServerGuard) Push(handler Handler, pattern message.MessageType){
-	if _,ok := serverMux.m[s.muxGroup]; ok {
-		var me  muxEntry
+func (s *ServerGuard) Push(handler Handler, pattern message.MessageType) {
+	if _, ok := serverMux.mux[s.muxGroup]; ok {
+		var me muxEntry
 		me.h = handler
 		me.pattern = pattern
-		serverMux.m[s.muxGroup] = append(serverMux.m[s.muxGroup],me)
+		serverMux.mux[s.muxGroup] = append(serverMux.mux[s.muxGroup], me)
 	}
 }
-func (s *ServerGruad) setGroup(group string) {
+func (s *ServerGuard) setGroup(group string) {
 	s.muxGroup = group
 }
-func (s *ServerGuard) InitMux(group string,messageGroup map[string]message.MessageType){
+func (s *ServerGuard) InitMux(group string, messageGroup map[string]message.MessageType) {
 	s.setGroup(group)
 	defer serverMux.Unlock()
 	serverMux.message[group] = messageGroup
 }
+
 // // Push
 // func Push(handler Handler, mtype message.Messagetype){
 

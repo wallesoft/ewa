@@ -91,25 +91,28 @@ func (s *Server) SetMux() {
 	s.InitMux(MUX_GROUP, messageType)
 
 }
-func (mux *ServeMux) ServeMessage(m Message) {
-	mType := m.Type()
-	g := mux.getMuxEntryGroup(mType)
-	if len(g) > 0 {
-		for _, entry := range g {
-			if ok := entry.h.ServeMessage(m); !ok {
-				goto LOOP
-			}
-		}
-	} else {
-		//default handler
-		if entry, ok := defaultHandler[mType]; ok {
-			entry.ServeMessage(m)
-		}
-	}
-LOOP:
-	//resopnose return
 
-}
+// -------------------------------
+// func (mux *ServeMux) ServeMessage(m Message) {
+// 	mType := m.Type()
+// 	g := mux.getMuxEntryGroup(mType)
+// 	if len(g) > 0 {
+// 		for _, entry := range g {
+// 			if ok := entry.h.ServeMessage(m); !ok {
+// 				goto LOOP
+// 			}
+// 		}
+// 	} else {
+// 		//default handler
+// 		if entry, ok := defaultHandler[mType]; ok {
+// 			entry.ServeMessage(m)
+// 		}
+// 	}
+// LOOP:
+// 	//resopnose return
+
+// }
+// ---------------------------
 func (mux *ServeMux) getMuxEntryGroup(pattern string) MuxEntryGroup {
 	if group, ok := mux.m[pattern]; ok {
 		return group
@@ -117,23 +120,24 @@ func (mux *ServeMux) getMuxEntryGroup(pattern string) MuxEntryGroup {
 	return nil
 }
 
-func (s *Server) Serve() Response {
-	// type := s.Message.Type()
-	s.ServerGuard.Serve()
-	if s.Handler == nil {
-		DefaultServeMux.ServeMessage(s.Message)
-	}
-	s.Handler.ServeMessage(s.Message)
-	response := Response{}
-	return response
-}
-
-func Handle(pattern string, handler Handler) {
-	DefaultServeMux.Handle(pattern, handler)
-}
-func HandleFunc(pattern string, handler func(*Message)) {
-	DefaultServeMux.HandleFunc(pattern, handler)
-}
+// -------------------------------------------
+// func (s *Server) Serve() Response {
+// 	// type := s.Message.Type()
+// 	s.ServerGuard.Serve()
+// 	if s.Handler == nil {
+// 		DefaultServeMux.ServeMessage(s.Message)
+// 	}
+// 	s.Handler.ServeMessage(s.Message)
+// 	response := Response{}
+// 	return response
+// }
+// -------------------------------------
+// func Handle(pattern string, handler Handler) {
+// 	DefaultServeMux.Handle(pattern, handler)
+// }
+// func HandleFunc(pattern string, handler func(*Message)) {
+// 	DefaultServeMux.HandleFunc(pattern, handler)
+// }
 
 //Serve
 // func Serve(message Message, handler Handler) Response {

@@ -4,6 +4,9 @@ import (
 	"net/http"
 
 	"gitee.com/wallesoft/ewa/kernel/cache"
+	"gitee.com/wallesoft/ewa/kernel/encryptor"
+	ehttp "gitee.com/wallesoft/ewa/kernel/http"
+	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/os/glog"
@@ -67,7 +70,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	server := &server.Server{
 		ServerGuard: gs,
 	}
-	server.InitMux()
+	server.SetMux()
 	server.Encryptor = encryptor.New(encryptor.Config{
 		AppID:          op.config.AppID,
 		Token:          op.config.Token,

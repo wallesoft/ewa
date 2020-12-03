@@ -1,7 +1,6 @@
 package server
 
 import (
-	"gitee.com/wallesoft/ewa/kernel/message"
 	"github.com/gogf/gf/encoding/gjson"
 )
 
@@ -13,17 +12,17 @@ type Message struct {
 	*gjson.Json
 }
 
-var messageType = map[string]message.MessageType{
-	"text":            message.TEXT,
-	"image":           message.IMAGE,
-	"voice":           message.VOICE,
-	"video":           message.VIDEO,
-	"shortvideo":      message.SHORT_VIDEO,
-	"location":        message.LOCATION,
-	"link":            message.LINK,
-	"device_event":    message.DEVICE_EVENT,
-	"device_text":     message.DEVICE_TEXT,
-	"event":           message.EVENT,
-	"file":            message.FILE,
-	"miniprogrampage": message.MINIPROGRAM_PAGE,
-}
+// var messageType = map[string]message.MessageType{
+// 	"text":            message.TEXT,
+// 	"image":           message.IMAGE,
+// 	"voice":           message.VOICE,
+// 	"video":           message.VIDEO,
+// 	"shortvideo":      message.SHORT_VIDEO,
+// 	"location":        message.LOCATION,
+// 	"link":            message.LINK,
+// 	"device_event":    message.DEVICE_EVENT,
+// 	"device_text":     message.DEVICE_TEXT,
+// 	"event":           message.EVENT,
+// 	"file":            message.FILE,
+// 	"miniprogrampage": message.MINIPROGRAM_PAGE,
+// }
