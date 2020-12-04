@@ -28,6 +28,11 @@ func (r *Request) Get(key string, def ...interface{}) interface{} {
 	}
 	return nil
 }
+
+func (r *Request) GetQuery() map[string]interface{} {
+	r.parseQuery()
+	return r.queryMap
+}
 func (r *Request) GetString(key string, def ...interface{}) string {
 	return gvar.New(r.Get(key, def...)).String()
 }

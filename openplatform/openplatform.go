@@ -5,7 +5,6 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
-	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/encoding/gjson"
@@ -47,6 +46,9 @@ func New(config Config) *OpenPlatform {
 	}
 	if config.Logger == nil {
 		config.Logger = glog.New()
+		// default set close debug / close stdout print
+		config.Logger.SetDebug(false)
+		config.Logger.SetStdoutPrint(false)
 	}
 
 	return &OpenPlatform{
@@ -65,8 +67,12 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 		Token:          op.config.Token,
 		EncodingAESKey: op.config.EncodingAESKey,
 	})
-	gs.Request = &ehttp.Request{Request: request}
+	// gs.Request = &ehttp.Request{Request: request}
+	gs.SetRequest(request)
+	//logger
 	gs.Logger = op.config.Logger
+	//gs.Logger.SetFile("openplatform-server-{Y-m-d}.log")
+
 	server := &server.Server{
 		ServerGuard: gs,
 	}

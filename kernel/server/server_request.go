@@ -1,5 +1,12 @@
 package server
 
+import (
+	"net/http"
+
+	ehttp "gitee.com/wallesoft/ewa/kernel/http"
+	"github.com/gogf/gf/util/gconv"
+)
+
 // import (
 // 	"github.com/gogf/gf/encoding/gjson"
 // 	"github.com/gogf/gf/util/gconv"
@@ -12,16 +19,30 @@ package server
 // // 	GetUrl() string
 // // }
 
-// // //Request abstract request.
-// // type DefaultRequest struct {
-// // 	Signature    string
-// // 	Timestamp    string
-// // 	Nonce        string
-// // 	EncryptType  string
-// // 	MsgSignature string
-// // 	RawBody      []byte
-// // 	URL          string
-// // }
+// Request abstract request.
+type Request struct {
+	Signature    string
+	Timestamp    string
+	Nonce        string
+	EncryptType  string
+	MsgSignature string
+	RawBody      []byte
+	URL          string
+}
+
+// SetRequest
+func (s *ServerGuard) SetRequest(r *http.Request) {
+	eRequest := &ehttp.Request{Request: r}
+	request := &Request{}
+	if err := gconv.Struct(eRequest.GetQuery(), request); err != nil {
+		// return nil,err
+		panic(err)
+	}
+	request.RawBody = eRequest.GetBody()
+	request.URL = eRequest.GetURL()
+	s.Request = request
+	// return r,nil
+}
 
 // // //Get
 // // func (r *DefaultRequest) Get(key string, def ...interface{}) interface{} {

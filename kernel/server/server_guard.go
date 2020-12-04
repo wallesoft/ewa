@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
-	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
@@ -17,7 +16,7 @@ import (
 type ServerGuard struct {
 	config Config
 	//App			*Openplatform
-	Request *ehttp.Request
+	Request *Request
 	// Config         Config
 	AlwaysValidate bool
 	// Response *Response
@@ -70,8 +69,8 @@ func (s *ServerGuard) Serve() {
 	//s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
 	s.Logger.Debug(map[string]interface{}{
 		"Request Received": map[string]string{
-			"uri":     s.Request.GetURL(),
-			"content": gconv.String(s.Request.GetBody()),
+			"uri":     s.Request.URL,
+			"content": gconv.String(s.Request.RawBody),
 		},
 	})
 	s.Validate().resolve()
@@ -120,7 +119,7 @@ func (s *ServerGuard) dispatch(mtype string, message *Message) {
 
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) parseMessage() (msg *Message, err error) {
-	content := s.Request.GetBody()
+	content := s.Request.RawBody
 	g.Dump("content is :", content)
 	mtype := checkDataType(content)
 	g.Dump("type is :", mtype)
@@ -260,7 +259,7 @@ func (s *ServerGuard) GetMessage() (message *Message, err error) {
 }
 func (s *ServerGuard) signature() string {
 	//token := gconv.String(s.Config.Get("token"))
-	a := []string{s.config.Token, s.Request.GetString("timestamp"), s.Request.GetString("nonce")}
+	a := []string{s.config.Token, s.Request.Timestamp, s.Request.Nonce}
 	// sort
 	return encryptor.Signature(a)
 	// sort.Strings(a)
@@ -272,7 +271,10 @@ func (s *ServerGuard) Validate() *ServerGuard {
 	if !s.AlwaysValidate && !s.IsSafeMode() {
 		return s
 	}
-	if s.Request.GetString("signature") != s.signature() {
+	g.Dump("need validate")
+	g.Dump("A:", s.Request.Signature)
+	g.Dump("B:", s.signature())
+	if s.Request.Signature != s.signature() {
 		// response
 	}
 	return s
@@ -286,15 +288,15 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return s.Request.GetString("Signature") != "" && s.Request.GetString("EncryptType") == "aes"
+	return s.Request.Signature != "" && s.Request.EncryptType == "aes"
 }
 
 //DecryptMessage decrypt message
 func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	//token := s.config.Token//gconv.String(s.Config.Get("token"))
-	a := []string{s.config.Token, s.Request.GetString("Timestamp"), s.Request.GetString("Nonce"), gconv.String(message)}
+	a := []string{s.config.Token, s.Request.Timestamp, s.Request.Nonce, gconv.String(message)}
 
-	if s.Request.GetString("msg_signature") != encryptor.Signature(a) {
+	if s.Request.MsgSignature != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")
 	}
 	content, err := s.Encryptor.Decrypt(message)
