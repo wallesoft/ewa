@@ -1,7 +1,29 @@
 ### 服务端
 
 #### 说明
-* 由于各框架对 **`请求输入`** 和 **`请求输出`** 的实现各不相同，对于微信推送消息的处理将不包含相关请求输入及输出模块的实现，取而代之的是将相关处理逻辑排除在此框架外，以 Request* 及 Response* 结构体代替，具体结构及实现方法参考 [`ServerGuard`]() 模块详细介绍
+* 由于各框架对 **`请求输入`** 和 **`请求输出`** 的实现各不相同，但基本都是在包 ['net/http'](https://godoc.org/net/http) 的基础上进行实现的，所以对请求的输入和输出分为 **`http.Request`** 和 **`http.ResponseWriter`**
+具体的方法等参考['net/http'](https://godoc.org/net/http)
+#### 开始
+* 平台初始化配置
+```golang
+    import(
+        "net/http"
+        "gitee.com/wallesoft/ewa/openplatform"
+    )
+    func example(request *http.Request, writer *http.ResponseWriter) {
+        // 具体参数配置信息查看[开放平台] open.weixin.qq.com
+        op := openplatform.New(openplatform.Config{
+            AppID:          "AppID",
+            AppSecret:      "App secret",
+            Token:          "token",
+            EncodingAESKey: "Aes key", 
+        })
+        server := op.Server(request,writer)
+        server.Serve()
+    }
+```
+
+* 注意： 对于`VerifyTicket`事件，程序会默认存储cache中，且自动回复“SUCCESS”,其他事件，可通过自定义相关`Handler`来进行处理并回复，具体查看下方[自定义消息处理器](#handler)
 
 #### 推送事件
 
@@ -13,15 +35,11 @@
     * VerifyTicket componetn_verify_ticket
 
 
+<!--
 #### 用法示例
 
-* 对于事件 **component_verify_ticket**,默认处理会将 **verify_ticket** 缓存，以下是部分代码
-
+* 对于事件 **component_verify_ticket**,默认处理会将 **verify_ticket** 缓存，以下是示例
 ```golang
-import (
-    "gitee.com/wallesoft/ewa/openplatform/server"
-)
-
 
     .....
 
@@ -68,4 +86,4 @@ func main(){
 }
 
 ``` -->
-#### 自定义消息处理器
+#### <span id="handler">自定义消息处理器</span>
