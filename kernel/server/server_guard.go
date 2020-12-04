@@ -271,9 +271,6 @@ func (s *ServerGuard) Validate() *ServerGuard {
 	if !s.AlwaysValidate && !s.IsSafeMode() {
 		return s
 	}
-	g.Dump("need validate")
-	g.Dump("A:", s.Request.Signature)
-	g.Dump("B:", s.signature())
 	if s.Request.Signature != s.signature() {
 		// response
 	}

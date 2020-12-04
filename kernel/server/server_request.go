@@ -36,7 +36,8 @@ func (s *ServerGuard) SetRequest(r *http.Request) {
 	request := &Request{}
 	if err := gconv.Struct(eRequest.GetQuery(), request); err != nil {
 		// return nil,err
-		panic(err)
+		// panic(err)
+		//@todo return response
 	}
 	request.RawBody = eRequest.GetBody()
 	request.URL = eRequest.GetURL()
