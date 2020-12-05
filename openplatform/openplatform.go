@@ -66,9 +66,9 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 		AppSecret:      op.config.AppSecret,
 		Token:          op.config.Token,
 		EncodingAESKey: op.config.EncodingAESKey,
-	})
+	}, request, writer)
 	// gs.Request = &ehttp.Request{Request: request}
-	gs.SetRequest(request)
+	// gs.SetRequest(request)
 	//logger
 	gs.Logger = op.config.Logger
 	//gs.Logger.SetFile("openplatform-server-{Y-m-d}.log")

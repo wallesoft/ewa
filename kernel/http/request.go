@@ -12,7 +12,6 @@ import (
 //Request struct
 type Request struct {
 	*http.Request
-	//Body        []byte
 	bodyContent []byte
 	parsedQuery bool
 	queryMap    map[string]interface{}
@@ -65,7 +64,6 @@ func (r *Request) GetURL() string {
 func (r *Request) GetBody() []byte {
 	if r.bodyContent == nil {
 		r.bodyContent, _ = ioutil.ReadAll(r.Body)
-		//r.Body = utils.NewReadCloser(r.bodyContent, true)
 	}
 	return r.bodyContent
 }

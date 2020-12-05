@@ -3,90 +3,110 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
+	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
+	"github.com/gogf/gf/util/gutil"
 )
 
 type ServerGuard struct {
-	config Config
-	//App			*Openplatform
-	Request *Request
-	// Config         Config
+	config         Config
+	Request        *ehttp.Request
 	AlwaysValidate bool
-	// Response *Response
-	Logger    *glog.Logger
-	Encryptor *encryptor.Encryptor
-	// Mux       *ServerMux
-	muxGroup string
+	Response       *ehttp.Response
+	Logger         *glog.Logger
+	Encryptor      *encryptor.Encryptor
+	muxGroup       string
+	queryParam     *queryParam
+	bodyData       *bodyData
+}
+type queryParam struct {
+	Signature    string
+	Timestamp    string
+	Nonce        string
+	EncryptType  string
+	MsgSignature string
+	// RawBody      []byte
+	// URL string
+}
+type bodyData struct {
+	RawBody []byte
 }
 
-// type Config interface {
-// 	Get(pattern string) interface{}
-// }
-
-// type Config struct {
-// 	Appid  string `c:"app_id"`
-// 	Secret string `c:"secret"`
-// 	Token  string `c:"token"`
-// 	AesKey string `c:"aes_key"`
-// }
-// func New(r Request, c Config, l *glog.Logger) *ServerGuard {
-// 	g.Dump(r)
-// 	encrypt, err := encryptor.New(map[string]interface{}{
-// 		"AppId":     c.Get("app_id"),
-// 		"Token":     c.Get("token"),
-// 		"AesKey":    gconv.String(c.Get("aes_key")) + "=",
-// 		"BlockSize": 32,
-// 	})
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	return &ServerGuard{
-// 		Request:        r,
-// 		Encryptor:      encrypt,
-// 		Config:         c,
-// 		Logger:         l,
-// 		AlwaysValidate: false,
-// 	}
-// }
-func New(config Config) *ServerGuard {
-	return &ServerGuard{
+// New
+func New(config Config, request *http.Request, writer http.ResponseWriter) *ServerGuard {
+	g := &ServerGuard{
 		config: config,
 	}
+	g.setRequest(request)
+	g.setResponse(writer)
+	return g
 }
+
+// SetLogger
 func (s *ServerGuard) SetLogger(logger *glog.Logger) {
 	s.Logger = logger
 }
+
+// Serve
 func (s *ServerGuard) Serve() {
-	//s.Logger.Debug
-	//s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
-	s.Logger.Debug(map[string]interface{}{
-		"Request Received": map[string]string{
-			"uri":     s.Request.URL,
-			"content": gconv.String(s.Request.RawBody),
-		},
+	gutil.TryCatch(func() {
+		s.parseRequest()
+		// log
+		s.Logger.Debug(map[string]interface{}{
+			"Request Received": map[string]string{
+				"uri":     s.Request.GetURL(),
+				"content": gconv.String(s.bodyData.RawBody),
+			},
+		})
+		s.Validate().resolve()
+	}, func(exception interface{}) {
+		switch exception {
+		case ehttp.EXCEPTION_EXIT:
+			return
+		default:
+			//LOG
+			s.Logger.File("server_error_{Y-m-d}.log").Error(exception)
+		}
 	})
-	s.Validate().resolve()
+
+	//输出缓冲区
+	s.Response.Output()
 }
 func (s *ServerGuard) resolve() {
-	// message, _ := s.GetMessage()
-	// g.Dump(message)
+	//handle Request
+	s.handleRequest()
+
+}
+func (s *ServerGuard) parseRequest() {
+	q := &queryParam{}
+
+	if err := gconv.Struct(s.Request.GetQuery(), q); err != nil {
+		//response
+	}
+	s.queryParam = q
+	b := &bodyData{
+		RawBody: s.Request.GetBody(),
+	}
+	s.bodyData = b
 }
 
 //return response
-func (s *ServerGuard) handleRequst() {
+func (s *ServerGuard) handleRequest() {
 	originMsg, err := s.GetMessage()
-	if err != nil {
-		//
-	}
+	g.Dump("err.....", err)
+	g.Dump("msg", originMsg)
 
+	if err != nil {
+		panic(err.Error())
+	}
 	var mtype string
 	if originMsg.Contains("MsgType") {
 		mtype = originMsg.GetString("MsgType")
@@ -119,7 +139,7 @@ func (s *ServerGuard) dispatch(mtype string, message *Message) {
 
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) parseMessage() (msg *Message, err error) {
-	content := s.Request.RawBody
+	content := s.bodyData.RawBody
 	g.Dump("content is :", content)
 	mtype := checkDataType(content)
 	g.Dump("type is :", mtype)
@@ -133,78 +153,18 @@ func (s *ServerGuard) parseMessage() (msg *Message, err error) {
 	default:
 		return nil, errors.New("invalid message content: unsupported message type")
 	}
-	// var err error
-	// var msg *gjson.Json
-	// content := s.Request.GetBody()
-	// mtype := checkDataType(content)
-	// switch mtype {
-	// case "xml":
-	// 	m, xerr := gxml.DecodeWithoutRoot(content)
-	// 	if xerr != nil {
-	// 		err = xerr
-	// 	}
-	// 	msg = gjson.New(m)
-	// case "json":
-	// 	msg = gjson.New(content)
-	// default:
-	// 	//msg = nil
-	// 	err = errors.New("invalid message content: unsupported message type")
-	// }
-	// // if mtype == "xml" {
-	// // 	//with out root 'xml'
-	// // 	m, err := gxml.DecodeWithoutRoot(content)
-	// // 	if err != nil {
-	// // 		return nil, err
-	// // 	}
-	// // 	msg := gjson.New(m)
-	// // }
-	// // if mtype == "json" {
-	// // 	msg := gjson.New(content)
-	// // }
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if msg != nil {
-	// 	if s.IsSafeMode() && msg.Contains("Encrypt") {
-	// 		//decrypt
-	// 		//msg, err := s.DecryptMessage(msg)
-	// 		decrypted, decrypterr := s.decryptMessage(msg)
-	// 		if decrypterr != nil {
-	// 			return nil, decrypterr
-	// 		}
-
-	// 		if j, err := gjson.DecodeToJson(decrypted); err == nil {
-	// 			return &Message{
-	// 				Json: j,
-	// 			}, nil
-	// 		} else {
-	// 			return nil, err
-	// 		}
-
-	// 		// }
-
-	// 		// if err != nil {
-	// 		// 	return nil, err
-	// 		// }
-	// 		// j, err := gjson.DecodeToJson(msg)
-	// 		// if err != nil {
-	// 		// 	return nil, err
-	// 		// }
-	// 		// return j, nil
-	// 	}
-	// 	return &Message{Json: msg}, nil
-	// }
-	//return nil, errors.New("invaild message content")
 }
 func (s *ServerGuard) parseXMLMessage(content []byte) (message *Message, err error) {
 	undecrypted, err := gxml.DecodeWithoutRoot(content)
+	g.Dump(undecrypted)
 	if err != nil {
 		return nil, err
 	}
 	if s.IsSafeMode() {
 		if val, ok := undecrypted["Encrypt"]; ok {
+			g.Dump("val", val)
 			decrypted, err := s.decryptMessage(gconv.Bytes(val))
+			g.Dump(decrypted)
 			if err != nil {
 				return nil, err
 			}
@@ -248,9 +208,11 @@ func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err er
 //GetMessage
 func (s *ServerGuard) GetMessage() (message *Message, err error) {
 	message, err = s.parseMessage()
+	g.Dump("get", message, err)
 	//is nil
 	if message.IsNil() {
-		return nil, errors.New("No message received.")
+		s.Response.WriteStatusExit(http.StatusNoContent, "No message received")
+		// panic(EXCEPTION_EXIT)
 	}
 	if err != nil {
 		return nil, err
@@ -258,12 +220,8 @@ func (s *ServerGuard) GetMessage() (message *Message, err error) {
 	return
 }
 func (s *ServerGuard) signature() string {
-	//token := gconv.String(s.Config.Get("token"))
-	a := []string{s.config.Token, s.Request.Timestamp, s.Request.Nonce}
-	// sort
+	a := []string{s.config.Token, s.queryParam.Timestamp, s.queryParam.Nonce}
 	return encryptor.Signature(a)
-	// sort.Strings(a)
-	// return gsha1.Encrypt(strings.Join(a, ""))
 }
 
 //Validate validate request source
@@ -271,8 +229,9 @@ func (s *ServerGuard) Validate() *ServerGuard {
 	if !s.AlwaysValidate && !s.IsSafeMode() {
 		return s
 	}
-	if s.Request.Signature != s.signature() {
-		// response
+	if s.queryParam.Signature != s.signature() {
+		s.Response.WriteStatusExit(400, "Invalid request signature")
+		// panic(EXCEPTION_EXIT)
 	}
 	return s
 }
@@ -285,18 +244,19 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return s.Request.Signature != "" && s.Request.EncryptType == "aes"
+	return s.queryParam.Signature != "" && s.queryParam.EncryptType == "aes"
 }
 
 //DecryptMessage decrypt message
 func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	//token := s.config.Token//gconv.String(s.Config.Get("token"))
-	a := []string{s.config.Token, s.Request.Timestamp, s.Request.Nonce, gconv.String(message)}
+	a := []string{s.config.Token, s.queryParam.Timestamp, s.queryParam.Nonce, gconv.String(message)}
 
-	if s.Request.MsgSignature != encryptor.Signature(a) {
+	if s.queryParam.MsgSignature != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")
 	}
 	content, err := s.Encryptor.Decrypt(message)
+	g.Dump("de", content, err)
 	if err != nil {
 		return nil, err
 	}
