@@ -17,6 +17,7 @@ import (
 )
 
 type ServerGuard struct {
+	Guard          Guard
 	config         Config
 	Request        *ehttp.Request
 	AlwaysValidate bool
@@ -82,7 +83,11 @@ func (s *ServerGuard) Serve() {
 }
 func (s *ServerGuard) resolve() {
 	//handle Request
-	s.handleRequest()
+	if s.Guard != nil {
+		s.Guard.Resolve()
+	} else {
+		s.handleRequest()
+	}
 
 }
 func (s *ServerGuard) parseRequest() {
@@ -101,25 +106,29 @@ func (s *ServerGuard) parseRequest() {
 //return response
 func (s *ServerGuard) handleRequest() {
 	originMsg, err := s.GetMessage()
-	g.Dump("err.....", err)
-	g.Dump("msg", originMsg)
-
+	g.Dump("----------------origin----------", originMsg)
+	g.Dump(s.Guard)
 	if err != nil {
 		panic(err.Error())
 	}
 	var mtype string
-	if originMsg.Contains("MsgType") {
-		mtype = originMsg.GetString("MsgType")
-	} else if originMsg.Contains("msg_type") {
-		mtype = originMsg.GetString("msg_type")
+	if s.Gruad != nil {
+
 	} else {
-		mtype = "text"
+		if originMsg.Contains("MsgType") {
+			mtype = originMsg.GetString("MsgType")
+		} else if originMsg.Contains("msg_type") {
+			mtype = originMsg.GetString("msg_type")
+		} else {
+			mtype = "text"
+		}
 	}
+
 	g.Dump(mtype)
 	//处理相关信息类型，生成对应map，返回相关response
 }
 
-func (s *ServerGuard) dispatch(mtype string, message *Message) {
+func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 	// 1 mtype => message.MessageType
 
 	// 2 Get Mux by group name
@@ -140,9 +149,9 @@ func (s *ServerGuard) dispatch(mtype string, message *Message) {
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) parseMessage() (msg *Message, err error) {
 	content := s.bodyData.RawBody
-	g.Dump("content is :", content)
+
 	mtype := checkDataType(content)
-	g.Dump("type is :", mtype)
+
 	switch mtype {
 	case "xml":
 		msg, err = s.parseXMLMessage(content)
@@ -156,15 +165,13 @@ func (s *ServerGuard) parseMessage() (msg *Message, err error) {
 }
 func (s *ServerGuard) parseXMLMessage(content []byte) (message *Message, err error) {
 	undecrypted, err := gxml.DecodeWithoutRoot(content)
-	g.Dump(undecrypted)
+
 	if err != nil {
 		return nil, err
 	}
 	if s.IsSafeMode() {
 		if val, ok := undecrypted["Encrypt"]; ok {
-			g.Dump("val", val)
 			decrypted, err := s.decryptMessage(gconv.Bytes(val))
-			g.Dump(decrypted)
 			if err != nil {
 				return nil, err
 			}
@@ -208,7 +215,7 @@ func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err er
 //GetMessage
 func (s *ServerGuard) GetMessage() (message *Message, err error) {
 	message, err = s.parseMessage()
-	g.Dump("get", message, err)
+
 	//is nil
 	if message.IsNil() {
 		s.Response.WriteStatusExit(http.StatusNoContent, "No message received")
@@ -256,7 +263,6 @@ func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")
 	}
 	content, err := s.Encryptor.Decrypt(message)
-	g.Dump("de", content, err)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func main() {
+func maina() {
 	a := "aaaa"
 	// b := "bbbb"
 	var c string

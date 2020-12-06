@@ -10,7 +10,6 @@ import (
 	"github.com/gogf/gf/crypto/gsha1"
 	"github.com/gogf/gf/encoding/gbase64"
 	"github.com/gogf/gf/encoding/gbinary"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/text/gstr"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/grand"
@@ -84,12 +83,10 @@ func (e *Encryptor) Encrypt(rawXML []byte, nonce string, timestamp int) ([]byte,
 //Decrypt decrypt message
 func (e *Encryptor) Decrypt(content []byte) ([]byte, error) {
 	decoding, err := gbase64.Decode(content)
-	g.Dump("decoding", decoding)
 	if err != nil {
 		return nil, NewError(ERROR_BASE64_DECODE, err.Error())
 	}
 	decrypted, err := gaes.Decrypt(decoding, gconv.Bytes(e.AesKey), gconv.Bytes(gstr.SubStr(e.AesKey, 0, 16)))
-	g.Dump("enaaa", decrypted)
 	if err != nil {
 		return nil, NewError(ERROR_DECRYPT_AES, err.Error())
 	}
