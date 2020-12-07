@@ -14,5 +14,6 @@ func main() {
 	g.Dump(gconv.Int(a))
 	g.Dump(gconv.Int(a) & gconv.Int(b))
 	g.Dump(2 | 4)
+	g.Dump((2 | 4) & 2)
 	g.Dump(gbinary.DecodeToString(gbinary.EncodeInt(abit & bbit)))
 }

@@ -78,13 +78,14 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	}
 
 	server.SetMux()
+
 	server.Encryptor = encryptor.New(encryptor.Config{
 		AppID:          op.config.AppID,
 		Token:          op.config.Token,
 		EncodingAESKey: op.config.EncodingAESKey,
 		BlockSize:      32,
 	})
-	// g.Dump("00000000")
+	server.Guard = server
 	return server
 	// --------------------------------------
 	//aesKey, err := gbase64.DecodeToString(op.config.EncodingAESKey + '=')

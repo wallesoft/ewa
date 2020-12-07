@@ -1,7 +1,7 @@
 package server
 
 import (
-	"sync"
+	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/message"
 )
@@ -20,12 +20,12 @@ type MessageGroup map[string]map[string]message.MessageType
 
 //muxEntry
 type muxEntry struct {
-	h       Handler
-	pattern message.MessageType
+	Handler   Handler
+	Condition message.MessageType
 }
 
 var serverMux struct {
-	sync.RWMutex
+	// sync.RWMutex
 	mux     Mux
 	message MessageGroup
 	// messageType map[string]MessageGroup
@@ -53,15 +53,37 @@ func init() {
 // }
 
 func (s *ServerGuard) Push(handler Handler, pattern message.MessageType) {
-	if _, ok := serverMux.mux[s.muxGroup]; ok {
-		var me muxEntry
-		me.h = handler
-		me.pattern = pattern
-		serverMux.mux[s.muxGroup] = append(serverMux.mux[s.muxGroup], me)
-	}
+	// if _, ok := serverMux.mux[s.muxGroup]; ok {
+	var me muxEntry
+	me.Handler = handler
+	me.Condition = pattern
+	serverMux.mux[s.muxGroup] = append([]muxEntry{me}, serverMux.mux[s.muxGroup]...)
+	// } else {
+	// serveMux.mux[s.muxGroup] =
+	// }
 }
+
 func (s *ServerGuard) setGroup(group string) {
 	s.muxGroup = group
+}
+
+//GetHandlers
+func (s *ServerGuard) GetHandlers() MuxEntryGroup {
+	if group, ok := serverMux.mux[s.muxGroup]; ok {
+		return group
+	} else {
+		panic("No mux group")
+	}
+}
+
+//TypeToEvent
+func (s *ServerGuard) TypeToEvent(t string) message.MessageType {
+	if mgroup, ok := serverMux.message[s.muxGroup]; ok {
+		if event, ok := mgroup[t]; ok {
+			return event
+		}
+	}
+	panic(fmt.Sprintf("Invalid message type: %s", t))
 }
 func (s *ServerGuard) InitMux(group string, messageGroup map[string]message.MessageType) {
 	s.setGroup(group)

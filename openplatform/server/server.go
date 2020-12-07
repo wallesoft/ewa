@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/http"
 	"sync"
 
 	guard "gitee.com/wallesoft/ewa/kernel/server"
@@ -89,7 +90,22 @@ func (s *Server) SetMux() {
 	// s.MuxGroup = MUX_GROUP
 	//init handler
 	s.InitMux(MUX_GROUP, messageType)
+	s.initHandler()
+}
 
+//Resolve
+func (s *Server) Resolve() {
+	if msg, err := s.GetMessage(); err == nil {
+		var t string
+		if msg.Contains("InfoType") {
+			t = msg.GetString("InfoType")
+		} else {
+			s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid message info type")
+		}
+		s.Dispatch(t, msg)
+	} else {
+		panic(err.Error())
+	}
 }
 
 // -------------------------------

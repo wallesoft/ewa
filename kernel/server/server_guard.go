@@ -9,7 +9,6 @@ import (
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
@@ -106,30 +105,38 @@ func (s *ServerGuard) parseRequest() {
 //return response
 func (s *ServerGuard) handleRequest() {
 	originMsg, err := s.GetMessage()
-	g.Dump("----------------origin----------", originMsg)
-	g.Dump(s.Guard)
 	if err != nil {
 		panic(err.Error())
 	}
 	var mtype string
-	if s.Gruad != nil {
 
+	if originMsg.Contains("MsgType") {
+		mtype = originMsg.GetString("MsgType")
+	} else if originMsg.Contains("msg_type") {
+		mtype = originMsg.GetString("msg_type")
 	} else {
-		if originMsg.Contains("MsgType") {
-			mtype = originMsg.GetString("MsgType")
-		} else if originMsg.Contains("msg_type") {
-			mtype = originMsg.GetString("msg_type")
-		} else {
-			mtype = "text"
-		}
+		mtype = "text"
 	}
+	s.Dispatch(mtype, originMsg)
 
-	g.Dump(mtype)
-	//处理相关信息类型，生成对应map，返回相关response
 }
 
 func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 	// 1 mtype => message.MessageType
+	// g.Dump("mux group: %s", s.muxGroup)
+
+	handlers := s.GetHandlers()
+	event := s.TypeToEvent(mtype)
+
+	for _, mux := range handlers {
+		if (mux.Condition & event) == event {
+			mux.Handler.Handle()
+			// g.Dump("handler happy go")
+			// if ok := handler.Handle(message); ok {
+			// 	g.Dump(";;;;;;")
+			// }
+		}
+	}
 
 	// 2 Get Mux by group name
 	// 3 range Mux
@@ -237,7 +244,7 @@ func (s *ServerGuard) Validate() *ServerGuard {
 		return s
 	}
 	if s.queryParam.Signature != s.signature() {
-		s.Response.WriteStatusExit(400, "Invalid request signature")
+		s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid request signature")
 		// panic(EXCEPTION_EXIT)
 	}
 	return s
