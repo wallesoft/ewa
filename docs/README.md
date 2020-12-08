@@ -1,6 +1,6 @@
 ### Ewa
 Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模块
-
+* 文档地址：[ http://wallesoft.gitee.io/ewa]( http://wallesoft.gitee.io/ewa)
 #### 开始之前
 
 在使用此模块前，请确保做好以下工作:
@@ -28,3 +28,7 @@ Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模
 * [跳转猫®](https://tiaozhuanmao.com) - 给予的赞助与支持
 * [EasyWechat](https://easywechat.com) -  是一个基于 MIT 协议开源的非官方微信 SDK (PHP版本) 给予的启发
 * [Gitee](https://gitee.com) - 码云
+
+#### 另外
+初学Golang,删删改改，难免有很多不足之处，还请指教:pray:
+
