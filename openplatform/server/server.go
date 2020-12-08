@@ -65,7 +65,7 @@ const (
 // 	"component_verify_ticket": &TicketHandler{},
 // }
 
-// //Handle registers the hanlder for the given pattern
+//Handle registers the hanlder for the given pattern
 // func (mux *ServeMux) Handle(pattern string, handler Handler) (h Handler, patter string) {
 // 	////
 // 	return nil, ""
@@ -93,7 +93,7 @@ func (s *Server) SetMux() {
 }
 
 //Resolve
-func (s *Server) Resolve() {
+func (s *Server) Resolve() bool {
 	if msg, err := s.GetMessage(); err == nil {
 		var t string
 		if msg.Contains("InfoType") {
@@ -102,9 +102,16 @@ func (s *Server) Resolve() {
 			s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid message info type")
 		}
 		s.Dispatch(t, msg)
+		s.Response.Write(guard.SUCCESS_EMPTY_RESPONSE)
 	} else {
 		panic(err.Error())
 	}
+	return true
+}
+
+//Should return raw response
+func (s *Server) ShouldReturnRawResponse() bool {
+	return true
 }
 
 // -------------------------------

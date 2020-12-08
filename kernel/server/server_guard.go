@@ -9,6 +9,7 @@ import (
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
@@ -82,8 +83,14 @@ func (s *ServerGuard) Serve() {
 }
 func (s *ServerGuard) resolve() {
 	//handle Request
-	if s.Guard != nil {
-		s.Guard.Resolve()
+	if !s.Guard.Resolve() {
+		// s.Guard.Resolve()
+		// content :=
+		// if s.Guard.ShouldReturnRawResponse() {
+		// 	s.Response.Write(content)
+		// } else {
+
+		// }
 	} else {
 		s.handleRequest()
 	}
@@ -130,13 +137,21 @@ func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 
 	for _, mux := range handlers {
 		if (mux.Condition & event) == event {
-			mux.Handler.Handle()
+			result := mux.Handler.Handle(message)
+			switch result.(type) {
+			case bool:
+				goto LOOP
+			case interface{}:
+				g.Dump(result)
+			}
 			// g.Dump("handler happy go")
 			// if ok := handler.Handle(message); ok {
 			// 	g.Dump(";;;;;;")
 			// }
 		}
 	}
+LOOP:
+	g.Dump("out")
 
 	// 2 Get Mux by group name
 	// 3 range Mux
