@@ -23,67 +23,41 @@
     }
 ```
 
-* 注意： 对于`VerifyTicket`事件，程序会默认存储cache中，且自动回复“SUCCESS”,其他事件，可通过自定义相关`Handler`来进行处理并回复，具体查看下方[自定义消息处理器](#handler)
+* 注意： 对于`VerifyTicket`事件，程序会默认存储cache中，且自动回复“SUCCESS”,其他事件，可通过自定义相关`Handler`来进行相关的逻辑处理，具体查看下方[自定义消息处理器](#handler)
 
 #### 推送事件
 
-* 开放平台在给第三方平台推送的有4个基本事件
+* 开放平台在给第三方平台推送的有基本事件如下
 
-    * 授权成功      authorized
-    * 更新授权      updateauthorized
-    * 取消授权      unauthorized
-    * VerifyTicket componetn_verify_ticket
+>   * 授权成功   -    authorized
+>   * 更新授权   -    updateauthorized
+>   * 取消授权   -    unauthorized
+>   * VerifyTicket - componetn_verify_ticket
+>   * 快速注册小程序 - notify_third_fasteregister
 
 
-<!--
-#### 用法示例
-
-* 对于事件 **component_verify_ticket**,默认处理会将 **verify_ticket** 缓存，以下是示例
-```golang
-
-    .....
-
-    request := server.NewRequest()
-    // 将微信post过来的相关参数映射给request
-    // reqeust.Timestamp
-    // reqeust.Noce
-    // reqeust.EncryptType
-    // reqeust.MsgSignature
-    // reqeust.RawBody
-    // request.Uri // 非必须参数
-    //message := server.GetMessageFromRequest(request)
-    response := server.Serve(message)
-    
-    ....
-
-```
-#### 框架示例 [(goframe框架)](https://www.goframe.org/)
-<!-- ```golang
-package main 
-
-import (
-    "github.com/gogf/gf/frame/g"
-    "github.com/gogf/gf/net/ghttp"
-    "gitee.com/wallesoft/ewa/openplatform/server"
-)
-func main(){
-    s := g.Server()
-    s.BindHandler("/notify",func(r *ghttp.Request) {
-        
-        // 此处可以绑定相关信息处理函数
-        // 详细看下一小节 自定义消息处理器
-        
-        request := server.CreateRequest()
-        if err := r.Parse(&request); err != nil {
-            // 错误处理
-        }
-        request.BodyRaw = r.GetBody()
-        message := server.GetMessageFromRequest(request)
-        response:= server.Serve(message)
-
-        r.Reponse.WriteExit(response.GetContent())
-    })
-}
-
-``` -->
 #### <span id="handler">自定义消息处理器</span>
+
+自定义消息处理器示例：
+
+```golang
+    import(
+        oserver "gitee.com/wallesoft/ewa/openplatform/server"
+        gserver "gitee.com/wallesoft/ewa/kernel/server"
+    )
+  ...
+  server.Push(handler,oserver.EVENT_COMPONENT_VERIFY_TICKET)
+  // handler实现 Handler 接口的
+  ...
+  或者
+  server.PushFunc(func(m *gserver.Message)interface{}{
+      //m.GetString("ComponentVerifyTicket")
+      //m.GetInt("CreateTime")  
+      return true
+  },oserver.EVENT_COMPONENT_VERIFY_TICKET)
+```
+> :warning: 注意：
+    0. **handler的调用顺序为倒序，即 **`先添加的后调用`****
+    1. 最后一个非空返回值将作为最终应答给用户的消息内容，如果中间某一个 handler 返回值 **false**, 则将终止整个调用链，不会调用后续的 handlers。
+    2. 传入的自定义 Handler 需要实现接口 `gitee.com/wallesoft/ewa/kernel/server - Handler`。
+    3. 第三方平台的事件需要回复“success”，所以自定义事件处理时，返回值统一返回 **return true**即可，除非你知道自己在做什么（具体参考第1条）。
