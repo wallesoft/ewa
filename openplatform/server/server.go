@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-	"sync"
 
 	guard "gitee.com/wallesoft/ewa/kernel/server"
 	// "gitee.com/wallesoft/ewa/kernel/"
@@ -10,44 +9,44 @@ import (
 	"github.com/gogf/gf/os/glog"
 )
 
-type Handler interface {
-	ServeMessage(Message) bool
-}
+// type Handler interface {
+// 	ServeMessage(Message) bool
+// }
 
-type HandlerFunc func(Message) bool
+// type HandlerFunc func(Message) bool
 
-func (f HandlerFunc) ServeMessage(m Message) bool {
-	return f(m)
-}
+// func (f HandlerFunc) ServeMessage(m Message) bool {
+// 	return f(m)
+// }
 
-//ServeMux
-type ServeMux struct {
-	mu sync.RWMutex
-	m  map[string]MuxEntryGroup
-}
+// //ServeMux
+// type ServeMux struct {
+// 	mu sync.RWMutex
+// 	m  map[string]MuxEntryGroup
+// }
 
-//MuxEntryGroup is an alice
-type MuxEntryGroup []muxEntry
+// //MuxEntryGroup is an alice
+// type MuxEntryGroup []muxEntry
 
-//NewServeMux returns a new ServeMux
-func NewServeMux() *ServeMux { return new(ServeMux) }
+// //NewServeMux returns a new ServeMux
+// func NewServeMux() *ServeMux { return new(ServeMux) }
 
-//DefaultServeMux is the default ServerMux used by Serve.
-var DefaultServeMux = &defaultServeMux
-var defaultServeMux ServeMux
+// //DefaultServeMux is the default ServerMux used by Serve.
+// var DefaultServeMux = &defaultServeMux
+// var defaultServeMux ServeMux
 
-//muxEntry
-type muxEntry struct {
-	h       Handler
-	pattern string
-}
+// //muxEntry
+// type muxEntry struct {
+// 	h       Handler
+// 	pattern string
+// }
 
 //Server
 type Server struct {
 	//App   *OpenPlatform
 	*guard.ServerGuard
 	//Request *Request
-	Message Message
+	// Message Message
 	//Config
 	debug  *gtype.Bool
 	logger *glog.Logger
@@ -66,15 +65,15 @@ const (
 // 	"component_verify_ticket": &TicketHandler{},
 // }
 
-//Handle registers the hanlder for the given pattern
-func (mux *ServeMux) Handle(pattern string, handler Handler) (h Handler, patter string) {
-	////
-	return nil, ""
-}
+// //Handle registers the hanlder for the given pattern
+// func (mux *ServeMux) Handle(pattern string, handler Handler) (h Handler, patter string) {
+// 	////
+// 	return nil, ""
+// }
 
-func (mux *ServeMux) HandleFunc(patter string, handler func(*Message)) {
-	/////
-}
+// func (mux *ServeMux) HandleFunc(patter string, handler func(*Message)) {
+// 	/////
+// }
 
 // func (mux *ServeMux) Serve(message *Message, handler Handler) error {
 // 	// config
@@ -128,13 +127,13 @@ func (s *Server) Resolve() {
 // 	//resopnose return
 
 // }
-// ---------------------------
-func (mux *ServeMux) getMuxEntryGroup(pattern string) MuxEntryGroup {
-	if group, ok := mux.m[pattern]; ok {
-		return group
-	}
-	return nil
-}
+// // ---------------------------
+// func (mux *ServeMux) getMuxEntryGroup(pattern string) MuxEntryGroup {
+// 	if group, ok := mux.m[pattern]; ok {
+// 		return group
+// 	}
+// 	return nil
+// }
 
 // -------------------------------------------
 // func (s *Server) Serve() Response {
