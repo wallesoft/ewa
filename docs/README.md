@@ -20,7 +20,7 @@ Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模
 #### 加入
 
 另外，你可以通过以下方式参与进来，为广大开发者提供优质的开源服务：
-* (https://gitee.com/wallesoft/ewa)贡献代码 [wallesoft/ewa](https://gitee.com/wallesoft/ewa) - Gitee仓库地址
+* (https://gitee.com/wallesoft/ewa) 贡献代码 [wallesoft/ewa](https://gitee.com/wallesoft/ewa) - Gitee仓库地址
 
 [![Walle/ewa](https://gitee.com/wallesoft/ewa/widgets/widget_card.svg?colors=393222,ebdfc1,fffae5,d8ca9f,393222,a28b40)](https://gitee.com/wallesoft/ewa)
 

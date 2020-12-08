@@ -2,5 +2,5 @@ package server
 
 //Handler is interface to handle message
 type Handler interface {
-	Handle()
+	Handle(message *Message) interface{}
 }

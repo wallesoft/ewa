@@ -51,7 +51,20 @@ func init() {
 // 	defer serverMux.Unlock()
 // 	serverMux.m[group] = append(serverMux.m[group], entry)
 // }
+//HandlerFunc
+type HandlerFunc func(*Message) interface{}
 
+//Handle by func
+func (h HandlerFunc) Handle(m *Message) interface{} {
+	return h(m)
+}
+
+//PushFunc
+func (s *ServerGuard) PushFunc(handler HandlerFunc, pattern message.MessageType) {
+	s.Push(handler, pattern)
+}
+
+//Push
 func (s *ServerGuard) Push(handler Handler, pattern message.MessageType) {
 	// if _, ok := serverMux.mux[s.muxGroup]; ok {
 	var me muxEntry
