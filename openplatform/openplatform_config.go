@@ -1,7 +1,7 @@
 package openplatform
 
 import (
-	"gitee.com/wallesoft/ewa/kernel/cache"
+	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/glog"
 )
 
@@ -10,7 +10,7 @@ type Config struct {
 	AppSecret      string `json:"app_secret"`       //app_secret
 	Token          string `json:"token"`            //token
 	EncodingAESKey string `json:"encoding_aes_key"` //encoding aes key
-	Cache          cache.Cache
+	Cache          *gcache.Cache
 	Logger         *glog.Logger
 }
 

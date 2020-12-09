@@ -10,6 +10,7 @@ import (
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
@@ -18,7 +19,7 @@ import (
 
 type ServerGuard struct {
 	Guard          Guard
-	config         Config
+	Config         Config
 	Request        *ehttp.Request
 	AlwaysValidate bool
 	Response       *ehttp.Response
@@ -27,6 +28,7 @@ type ServerGuard struct {
 	muxGroup       string
 	queryParam     *queryParam
 	bodyData       *bodyData
+	Cache          *gcache.Cache
 }
 type queryParam struct {
 	Signature    string
@@ -43,8 +45,14 @@ type bodyData struct {
 
 // New
 func New(config Config, request *http.Request, writer http.ResponseWriter) *ServerGuard {
+
+	// adapter := adapter.New(gfile.TempDir() + "/")
+	// cache := gcache.New()
+	// cache.SetAdapter(adapter)
+
 	g := &ServerGuard{
-		config: config,
+		Config: config,
+		// cache:  cache,
 	}
 	g.setRequest(request)
 	g.setResponse(writer)
@@ -54,6 +62,11 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 // SetLogger
 func (s *ServerGuard) SetLogger(logger *glog.Logger) {
 	s.Logger = logger
+}
+
+// SetCache
+func (s *ServerGuard) SetCache(c *gcache.Cache) {
+	s.Cache = c
 }
 
 // Serve
@@ -68,13 +81,13 @@ func (s *ServerGuard) Serve() {
 			},
 		})
 		s.Validate().resolve()
-	}, func(exception interface{}) {
-		switch exception {
+	}, func(err error) {
+		switch err.Error() {
 		case ehttp.EXCEPTION_EXIT:
 			return
 		default:
 			//LOG
-			s.Logger.File("server_error_{Y-m-d}.log").Error(exception)
+			s.Logger.File("server_error_{Y-m-d}.log").Error(err.Error())
 		}
 	})
 
@@ -83,7 +96,7 @@ func (s *ServerGuard) Serve() {
 }
 func (s *ServerGuard) resolve() {
 	//handle Request
-	if !s.Guard.Resolve() {
+	if s.Guard.Resolve() {
 		// s.Guard.Resolve()
 		// content :=
 		// if s.Guard.ShouldReturnRawResponse() {
@@ -249,7 +262,7 @@ func (s *ServerGuard) GetMessage() (message *Message, err error) {
 	return
 }
 func (s *ServerGuard) signature() string {
-	a := []string{s.config.Token, s.queryParam.Timestamp, s.queryParam.Nonce}
+	a := []string{s.Config.Token, s.queryParam.Timestamp, s.queryParam.Nonce}
 	return encryptor.Signature(a)
 }
 
@@ -279,7 +292,7 @@ func (s *ServerGuard) IsSafeMode() bool {
 //DecryptMessage decrypt message
 func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	//token := s.config.Token//gconv.String(s.Config.Get("token"))
-	a := []string{s.config.Token, s.queryParam.Timestamp, s.queryParam.Nonce, gconv.String(message)}
+	a := []string{s.Config.Token, s.queryParam.Timestamp, s.queryParam.Nonce, gconv.String(message)}
 
 	if s.queryParam.MsgSignature != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")

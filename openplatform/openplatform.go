@@ -42,7 +42,7 @@ func (c *Config) Get(pattern string) interface{} {
 //@see glog https://goframe.org/os/glog/index
 func New(config Config) *OpenPlatform {
 	if config.Cache == nil {
-		config.Cache = cache.NewMemCache()
+		config.Cache = cache.New("ewawechat")
 	}
 	if config.Logger == nil {
 		config.Logger = glog.New()
@@ -71,7 +71,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	// gs.SetRequest(request)
 	//logger
 	gs.Logger = op.config.Logger
-	//gs.Logger.SetFile("openplatform-server-{Y-m-d}.log")
+	gs.SetCache(op.config.Cache)
 
 	server := &server.Server{
 		ServerGuard: gs,

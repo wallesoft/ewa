@@ -19,11 +19,16 @@
             EncodingAESKey: "Aes key", 
         })
         server := op.Server(request,writer)
-        server.Serve()
     }
 ```
 
-* 注意： 对于`VerifyTicket`事件，程序会默认存储cache中，且自动回复“SUCCESS”,其他事件，可通过自定义相关`Handler`来进行相关的逻辑处理，具体查看下方[自定义消息处理器](#handler)
+* 注意： 对于`VerifyTicket`事件，程序会默认处理并缓存(缓存在文件中，如需要其他缓存方式如redis，内存等，可查看[gcache](https://www.goframe.org/os/gcache/index))，如果不处理其他事件可直接这样使用：
+
+```golang
+    server.Serve()
+```
+
+* 对于其他事件，可通过自定义相关`Handler`来进行相关的逻辑处理，具体查看下方[自定义消息处理器](#handler)
 
 #### 推送事件
 
@@ -47,7 +52,7 @@
     )
   ...
   server.Push(handler,oserver.EVENT_COMPONENT_VERIFY_TICKET)
-  // handler实现 Handler 接口的
+  // handler为实现 Handler 接口的
   ...
   或者
   server.PushFunc(func(m *gserver.Message)interface{}{

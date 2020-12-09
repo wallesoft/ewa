@@ -36,6 +36,15 @@ func New(path string, ext ...string) gcache.Adapter {
 	}
 }
 
+//SetPath sets where the cache file create
+// func (c *FileCache) SetPath(path string) {
+// 	c.path = path
+// }
+// func (c *FileCache) SetExt(ext string) {
+// 	c.ext = ext
+// }
+// @User gcache.Cache.SetAdapter(New("/path/to",".ext"))
+
 // Set sets cache with <key>-<value> pair, which is expired after <duration>.
 //
 // It does not expire if <duration> == 0.
