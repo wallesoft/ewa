@@ -14,6 +14,7 @@ type VerifyTicket struct {
 	cache  *gcache.Cache
 }
 
+// var verifyticket = s.VerifyTicket
 func (s *Server) initHandler() {
 	s.Push(s.VerifyTicket(), EVENT_COMPONENT_VERIFY_TICKET)
 

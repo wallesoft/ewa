@@ -14,6 +14,12 @@ type Config struct {
 	Logger         *glog.Logger
 }
 
-// func GetConfigWithMap(m map[string]interface{}) error {
+// SetLogger
+func (s *Openplatform) SetLogger(logger *glog.Logger) {
+	s.config.Logger = logger
+}
 
-// }
+// SetCache
+func (s *Openplatform) SetCache(c *gcache.Cache) {
+	s.config.Cache = c
+}

@@ -59,16 +59,6 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 	return g
 }
 
-// SetLogger
-func (s *ServerGuard) SetLogger(logger *glog.Logger) {
-	s.Logger = logger
-}
-
-// SetCache
-func (s *ServerGuard) SetCache(c *gcache.Cache) {
-	s.Cache = c
-}
-
 // Serve
 func (s *ServerGuard) Serve() {
 	gutil.TryCatch(func() {
