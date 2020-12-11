@@ -6,13 +6,16 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	guard "gitee.com/wallesoft/ewa/kernel/server"
+	"gitee.com/wallesoft/ewa/openplatform/auth"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 	"github.com/gogf/gf/os/glog"
 )
 
 //OpenPlatform
 type OpenPlatform struct {
-	config Config
+	config       Config
+	accessToken  *auth.AccessToken
+	verifyTicket auth.VerifyTicket
 }
 
 //Get get value from config
@@ -35,7 +38,8 @@ func New(config Config) *OpenPlatform {
 	}
 
 	return &OpenPlatform{
-		config: config,
+		config:       config,
+		verifyTicket: auth.GetVerifyTicket(config.AppID, config.Cache),
 	}
 }
 
@@ -51,7 +55,8 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	gs.SetCache(op.config.Cache)
 
 	server := &server.Server{
-		ServerGuard: gs,
+		ServerGuard:  gs,
+		VerifyTicket: op.verifyTicket,
 	}
 
 	server.SetMux()
