@@ -15,11 +15,11 @@ type Config struct {
 }
 
 // SetLogger
-func (s *Openplatform) SetLogger(logger *glog.Logger) {
+func (s *OpenPlatform) SetLogger(logger *glog.Logger) {
 	s.config.Logger = logger
 }
 
 // SetCache
-func (s *Openplatform) SetCache(c *gcache.Cache) {
+func (s *OpenPlatform) SetCache(c *gcache.Cache) {
 	s.config.Cache = c
 }

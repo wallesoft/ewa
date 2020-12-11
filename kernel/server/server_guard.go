@@ -10,7 +10,6 @@ import (
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
@@ -28,7 +27,7 @@ type ServerGuard struct {
 	muxGroup       string
 	queryParam     *queryParam
 	bodyData       *bodyData
-	Cache          *gcache.Cache
+	// Cache          *gcache.Cache
 }
 type queryParam struct {
 	Signature    string

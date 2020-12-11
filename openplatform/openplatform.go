@@ -13,8 +13,8 @@ import (
 
 //OpenPlatform
 type OpenPlatform struct {
-	config       Config
-	accessToken  *auth.AccessToken
+	config Config
+	// accessToken  *auth.AccessToken
 	verifyTicket auth.VerifyTicket
 }
 
@@ -52,11 +52,11 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	}, request, writer)
 
 	gs.Logger = op.config.Logger
-	gs.SetCache(op.config.Cache)
+	// gs.SetCache(op.config.Cache)
 
 	server := &server.Server{
-		ServerGuard:  gs,
-		VerifyTicket: op.verifyTicket,
+		ServerGuard: gs,
+		// VerifyTicket: op.verifyTicket,
 	}
 
 	server.SetMux()

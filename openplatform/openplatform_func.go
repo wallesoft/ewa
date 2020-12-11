@@ -9,3 +9,8 @@ import (
 func (op *OpenPlatform) SetVerifyTicket(ticket auth.VerifyTicket) {
 	op.verifyTicket = ticket
 }
+
+//GetVerigyTicket
+func (op *OpenPlatform) GetVerifyTicket() string {
+	return op.verifyTicket.GetTicket()
+}

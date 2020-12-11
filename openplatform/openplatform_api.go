@@ -9,7 +9,7 @@ import (
 //GetPreAuthorizationUrl 获取授权页网址
 func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[string]interface{}) string {
 	// get_pre_auth_code
-	-----------------------------------
+	// -----------------------------------
 	// build query
 	val := &url.Values{}
 	if len(optional) > 0 {

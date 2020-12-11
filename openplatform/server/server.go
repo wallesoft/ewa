@@ -5,6 +5,7 @@ import (
 
 	guard "gitee.com/wallesoft/ewa/kernel/server"
 	// "gitee.com/wallesoft/ewa/kernel/"
+
 	"github.com/gogf/gf/container/gtype"
 	"github.com/gogf/gf/os/glog"
 )
@@ -52,6 +53,7 @@ type Server struct {
 	logger *glog.Logger
 	// Handler Handler
 	// MuxGroup string
+	// VerifyTicket auth.VerifyTicket
 }
 
 const (
