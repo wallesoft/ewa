@@ -3,6 +3,7 @@ package openplatform
 import (
 	"net/http"
 
+	"gitee.com/wallesoft/ewa/kernel/base"
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	guard "gitee.com/wallesoft/ewa/kernel/server"
@@ -13,16 +14,10 @@ import (
 
 //OpenPlatform
 type OpenPlatform struct {
-	config Config
-	// accessToken  *auth.AccessToken
+	config       Config
+	accessToken  base.AccessToken
 	verifyTicket auth.VerifyTicket
 }
-
-//Get get value from config
-// func (c *Config) Get(pattern string) interface{} {
-// 	j := gjson.New(c)
-// 	return j.Get(pattern)
-// }
 
 //New new OpenPlatform
 //@see glog https://goframe.org/os/glog/index
@@ -43,6 +38,7 @@ func New(config Config) *OpenPlatform {
 	}
 }
 
+//Server
 func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter) *server.Server {
 	gs := guard.New(guard.Config{
 		AppID:          op.config.AppID,

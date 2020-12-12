@@ -27,3 +27,13 @@ func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[
 
 	return "https://mp.weixin.qq.com/cgi-bin/componentloginpage?" + val.Encode()
 }
+
+//GetVerifyTicket
+func (op *OpenPlatform) GetVerifyTicket() string {
+	return op.verifyTicket.GetTicket()
+}
+
+//GetAccessToken
+func (op *OpenPlatform) GetAccessToken() string {
+	return op.accessToken.GetToken()
+}

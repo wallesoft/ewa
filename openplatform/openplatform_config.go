@@ -1,6 +1,8 @@
 package openplatform
 
 import (
+	"gitee.com/wallesoft/ewa/kernel/base"
+	"gitee.com/wallesoft/ewa/openplatform/auth"
 	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/glog"
 )
@@ -22,4 +24,16 @@ func (s *OpenPlatform) SetLogger(logger *glog.Logger) {
 // SetCache
 func (s *OpenPlatform) SetCache(c *gcache.Cache) {
 	s.config.Cache = c
+}
+
+//SetVrifyTicket
+//需要自定义解决ticket的存储及获取问题时需要设置满足相关接口的对象
+func (op *OpenPlatform) SetVerifyTicket(ticket auth.VerifyTicket) {
+	op.verifyTicket = ticket
+}
+
+//SetAccessToken
+//设置的需要满足接口
+func (op *OpenPlatform) SetAccessToken(token base.AccessToken) {
+	op.accessToken = token
 }
