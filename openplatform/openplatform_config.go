@@ -1,7 +1,7 @@
 package openplatform
 
 import (
-	"gitee.com/wallesoft/ewa/kernel/base"
+	baseauth "gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/openplatform/auth"
 	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/glog"
@@ -34,6 +34,13 @@ func (op *OpenPlatform) SetVerifyTicket(ticket auth.VerifyTicket) {
 
 //SetAccessToken
 //设置的需要满足接口
-func (op *OpenPlatform) SetAccessToken(token base.AccessToken) {
+func (op *OpenPlatform) SetAccessToken(token baseauth.AccessToken) {
 	op.accessToken = token
 }
+
+//getBaseUri return openplatform baseuri
+func (op *OpenPlatform) getBaseUri() string {
+	return "https://api.weixin.qq.com/"
+}
+
+// func (op *OpenPlatform)

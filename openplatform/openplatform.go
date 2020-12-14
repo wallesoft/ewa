@@ -3,7 +3,7 @@ package openplatform
 import (
 	"net/http"
 
-	"gitee.com/wallesoft/ewa/kernel/base"
+	baseauth "gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	guard "gitee.com/wallesoft/ewa/kernel/server"
@@ -15,7 +15,7 @@ import (
 //OpenPlatform
 type OpenPlatform struct {
 	config       Config
-	accessToken  base.AccessToken
+	accessToken  baseauth.AccessToken
 	verifyTicket auth.VerifyTicket
 }
 
@@ -32,10 +32,12 @@ func New(config Config) *OpenPlatform {
 		config.Logger.SetStdoutPrint(false)
 	}
 
-	return &OpenPlatform{
+	var op = &OpenPlatform{
 		config:       config,
 		verifyTicket: auth.GetVerifyTicket(config.AppID, config.Cache),
 	}
+	op.accessToken = op.getDefaultAccessToken()
+	return op
 }
 
 //Server
