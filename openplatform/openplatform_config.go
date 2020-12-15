@@ -24,6 +24,9 @@ type Config struct {
 func (s *OpenPlatform) SetLogger(logger *glog.Logger) {
 	s.config.Logger = logger
 }
+func (s *OpenPlatform) SetDebug(mapstring) {
+	s.Config.Loggger.SetDebug(debug)
+}
 
 // SetCache
 func (s *OpenPlatform) SetCache(c *gcache.Cache) {
