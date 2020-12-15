@@ -5,7 +5,6 @@ import (
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/gcache"
 )
 
@@ -40,7 +39,6 @@ func (at *AccessToken) GetToken() string {
 		}
 	}
 	//request
-	g.Dump("herhrehr")
 	return at.requestToken()
 }
 
@@ -62,30 +60,22 @@ func (at *AccessToken) SetToken(token string, lifetime time.Duration) *AccessTok
 }
 
 func (at *AccessToken) requestToken() string {
-	client := at.Client.ContentJson()
-	g.Dump(client)
-	var result string
+	var v *gjson.Json
 	if at.RequestPostMethod {
-		result = client.PostContent(at.Client.BaseUri+at.EndPoint, at.Credentials)
+		v = gjson.New(at.Client.PostJson(at.EndPoint, at.Credentials))
 	} else {
-		result = client.GetContent(at.Client.BaseUri+at.EndPoint, at.Credentials)
+		v = gjson.New(at.Client.GetJson(at.EndPoint, at.Credentials))
 	}
-	g.Dump(at.Credentials)
-	v := gjson.New(result)
-	// g.clinet request - content type json
-	g.Dump("request token :", v.MustToJsonString())
+	// v := gjson.New(result)
 	if have := v.Contains("errcode"); have {
 		// err
 		panic(v.MustToJsonString())
 	}
-	if have := v.Contains("component_access_token"); have {
-		at.SetToken(v.GetString("component_access_token"), v.GetDuration("expires_in", 7200*time.Second))
-		return v.GetString("component_access_token")
+	if have := v.Contains(at.TokenKey); have {
+		at.SetToken(v.GetString(at.TokenKey), v.GetDuration("expires_in", 7200*time.Second))
+		return v.GetString(at.TokenKey)
 	} else {
 		panic("Request access_token fail:" + v.MustToJsonString())
 	}
-	// parse to gjson
 
-	// gjson contains()
-	// err ???
 }

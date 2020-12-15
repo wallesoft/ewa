@@ -24,6 +24,8 @@
     }
 ```
 
+
+
 #### 获取用户授权页 URL
 
 ```golang
@@ -36,3 +38,27 @@ url := op.GetPreAuthorizationUrl("https://test.com/callback")
 GetPreAuthorizationUrl(callback string,optional ...map[string]interface{}) string{}
 ```
 还有可选参数, 具体查看[官方文档](https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Authorization_Process_Technical_Description.html)说明
+
+---
+
+#### :man:另外
+
+> 如果想获取 access_token 等数据，用以下方法
+
+##### 获取verify_ticket
+
+```golang
+ticket := op.GetVerifyTicket()
+```
+##### 获取component_access_token
+
+```golang
+token := op.GetAccessToken()
+```
+##### 获取pre_auth_code
+
+```golang
+
+code := op.GetPreAuthCode()
+
+```

@@ -1,8 +1,12 @@
 package openplatform
 
 import (
+	"net/url"
+
 	baseauth "gitee.com/wallesoft/ewa/kernel/auth"
+	"gitee.com/wallesoft/ewa/kernel/base"
 	"gitee.com/wallesoft/ewa/openplatform/auth"
+	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/glog"
 )
@@ -43,4 +47,21 @@ func (op *OpenPlatform) getBaseUri() string {
 	return "https://api.weixin.qq.com/"
 }
 
-// func (op *OpenPlatform)
+func (op *OpenPlatform) getClient() *base.Client {
+	return &base.Client{
+		Client:  ghttp.NewClient(),
+		BaseUri: op.getBaseUri(),
+		Logger:  op.config.Logger,
+	}
+}
+
+func (op *OpenPlatform) getClientWithToken() *base.Client {
+	url := &url.Values{}
+	url.Add("componet_access_token", op.accessToken.GetToken())
+	return &base.Client{
+		Client:     ghttp.NewClient(),
+		BaseUri:    op.getBaseUri(),
+		QueryParam: url,
+		Logger:     op.config.Logger,
+	}
+}

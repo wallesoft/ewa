@@ -37,3 +37,12 @@ func (op *OpenPlatform) GetVerifyTicket() string {
 func (op *OpenPlatform) GetAccessToken() string {
 	return op.accessToken.GetToken()
 }
+
+func (op *OpenPlatform) GetPreAuthCode() string {
+	// client = op.getClient()
+	// result := client.PostJson("gi-bin/component/api_create_preauthcode")
+	//client request
+	//json
+	// ...
+	return ""
+}
