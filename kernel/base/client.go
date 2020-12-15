@@ -29,12 +29,18 @@ func (c *Client) PostJson(endpoint string, data ...interface{}) string {
 	}
 	c.debug(response)
 	defer response.Close()
+
 	return response.ReadAllString()
+
 }
 
 // //GetJson request by get method and return gjson.Json
 func (c *Client) GetJson(endpoint string, data ...interface{}) string {
-	response, err := c.Get(c.getUri(endpoint), data)
+	var val interface{}
+	if len(data) > 0 {
+		val = data[0]
+	}
+	response, err := c.Get(c.getUri(endpoint), val)
 	if err != nil {
 		panic(err.Error())
 	}

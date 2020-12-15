@@ -69,10 +69,10 @@ func (at *AccessToken) requestToken() string {
 
 	if have := v.Contains("errcode"); have {
 		// err
-		//errcode == 40001 access_token 过期 需要刷新
-		if v.GetInt("errcode") == 40001 {
-			return at.Refresh().GetToken()
-		}
+		// //errcode == 40001 access_token 过期 需要刷新
+		// if v.GetInt("errcode") == 40001 {
+		// 	return at.Refresh().GetToken()
+		// }
 		panic(v.MustToJsonString())
 	}
 	if have := v.Contains(at.TokenKey); have {
