@@ -24,8 +24,14 @@ type Config struct {
 func (s *OpenPlatform) SetLogger(logger *glog.Logger) {
 	s.config.Logger = logger
 }
-func (s *OpenPlatform) SetDebug(mapstring) {
-	s.Config.Loggger.SetDebug(debug)
+
+//logger -------------
+func (s *OpenPlatform) ConfigLoggerWithMap(m map[string]interface{}) {
+	s.config.Logger.SetConfigWithMap(m)
+}
+
+func (s *OpenPlatform) ConfigLogger(config glog.Config) {
+	s.config.Logger.SetConfig(config)
 }
 
 // SetCache
@@ -60,11 +66,12 @@ func (op *OpenPlatform) getClient() *base.Client {
 
 func (op *OpenPlatform) getClientWithToken() *base.Client {
 	url := &url.Values{}
-	url.Add("componet_access_token", op.accessToken.GetToken())
+	url.Add("component_access_token", op.accessToken.GetToken())
 	return &base.Client{
 		Client:     ghttp.NewClient(),
 		BaseUri:    op.getBaseUri(),
 		QueryParam: url,
 		Logger:     op.config.Logger,
+		Token:      op.getDefaultAccessToken(),
 	}
 }

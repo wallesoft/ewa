@@ -4,14 +4,15 @@ import (
 	"net/url"
 
 	"github.com/gogf/gf/container/gvar"
+	"github.com/gogf/gf/encoding/gjson"
 )
 
 //GetPreAuthorizationUrl 获取授权页网址
 func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[string]interface{}) string {
-	// get_pre_auth_code
-	// -----------------------------------
-	// build query
+
 	val := &url.Values{}
+	authCode := op.GetPreAuthCode()
+	val.Add("pre_auth_code", authCode)
 	if len(optional) > 0 {
 		options := optional[0]
 		if v, ok := options["auth_type"]; ok {
@@ -39,10 +40,17 @@ func (op *OpenPlatform) GetAccessToken() string {
 }
 
 func (op *OpenPlatform) GetPreAuthCode() string {
-	// client = op.getClient()
-	// result := client.PostJson("gi-bin/component/api_create_preauthcode")
-	//client request
-	//json
-	// ...
-	return ""
+	client := op.getClientWithToken()
+	result := client.PostJson("cgi-bin/component/api_create_preauthcode", map[string]string{
+		"component_appid": op.config.AppID,
+	})
+	v := gjson.New(result)
+	if have := v.Contains("errcode"); have {
+		panic(v.MustToJsonString())
+	}
+	if have := v.Contains("pre_auth_code"); have {
+		return v.GetString("pre_auth_code")
+	}
+	panic("Request pre_auth_code fail:" + v.MustToJsonString())
+
 }

@@ -214,8 +214,13 @@ func (c *FileCache) GetOrSetFuncLock(key interface{}, f func() (interface{}, err
 
 // Contains returns true if <key> exists in the cache, or else returns false.
 func (c *FileCache) Contains(key interface{}) (bool, error) {
-	f := c.path + gvar.New(key).String() + c.ext
-	return gfile.IsFile(f), nil
+	// f := c.path + gvar.New(key).String() + c.ext
+	// return gfile.IsFile(f), nil
+	val, err := c.Get(key)
+	if val == nil || err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // GetExpire retrieves and returns the expiration of <key> in the cache.

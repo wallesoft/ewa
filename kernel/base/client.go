@@ -3,6 +3,7 @@ package base
 import (
 	"net/url"
 
+	"gitee.com/wallesoft/ewa/kernel/auth"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/glog"
@@ -13,12 +14,16 @@ type Client struct {
 	BaseUri    string
 	QueryParam *url.Values
 	Logger     *glog.Logger
-	// RequestPost bool
+	Token      auth.AccessToken
 }
 
 //PostJson request by post method and return gjson.Json
 func (c *Client) PostJson(endpoint string, data ...interface{}) string {
-	response, err := c.ContentJson().Post(c.getUri(endpoint), data)
+	var val interface{}
+	if len(data) > 0 {
+		val = data[0]
+	}
+	response, err := c.ContentJson().Post(c.getUri(endpoint), val)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -43,18 +48,20 @@ func (c *Client) debug(response *ghttp.ClientResponse) {
 		"Client Request:": g.Map{
 			"Request:":  response.RawRequest(),
 			"Response:": response.RawResponse(),
-			"Content:":  response.Raw(),
+			// "Content:":  response.Raw(),
 		},
 	})
 }
 
 //getUri
 func (c *Client) getUri(endpoint string) string {
-	if c.BaseUri != "" {
+	param := &url.Values{}
+	if c.BaseUri != "" && c.Token != nil {
+		param.Add(c.Token.GetTokenKey(), c.Token.GetToken())
+		return c.BaseUri + endpoint + "?" + param.Encode()
+	} else if c.BaseUri != "" {
 		return c.BaseUri + endpoint
 	}
-	if c.QueryParam != nil {
-		return c.BaseUri + endpoint + "?" + c.QueryParam.Encode()
-	}
+
 	return endpoint
 }
