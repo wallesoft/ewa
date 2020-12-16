@@ -40,7 +40,12 @@ GetPreAuthorizationUrl(callback string,optional ...map[string]interface{}) strin
 还有可选参数, 具体查看[官方文档](https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Authorization_Process_Technical_Description.html)说明
 
 ---
+#### 获取用户授权页 URL (mobile) 
+```golang
 
+url := op.GetMobilePreAuthorizationUrl("https://test.com/callback")
+
+```
 #### :man:另外
 
 > 如果想获取 access_token 等数据，用以下方法
