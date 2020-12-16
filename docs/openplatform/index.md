@@ -79,7 +79,7 @@ info := op.GetAuthorizerOption(appid string,name string);
 > 该API用于获取授权方的公众号或小程序的选项设置信息，如：地理位置上报，语音识别开关，多客服开关。注意，获取各项选项设置信息，需要有授权方的授权，详见权限集说明。
 
 
-## 获取已授权的授权方列表
+#### 获取已授权的授权方列表
 
 ```golang
 list := op.GetAuthorizers(offset int, count int)
