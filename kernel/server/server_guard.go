@@ -7,10 +7,10 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
+	"gitee.com/wallesoft/ewa/kernel/log"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gutil"
@@ -22,7 +22,7 @@ type ServerGuard struct {
 	Request        *ehttp.Request
 	AlwaysValidate bool
 	Response       *ehttp.Response
-	Logger         *glog.Logger
+	Logger         *log.Logger
 	Encryptor      *encryptor.Encryptor
 	muxGroup       string
 	queryParam     *queryParam
@@ -63,12 +63,13 @@ func (s *ServerGuard) Serve() {
 	gutil.TryCatch(func() {
 		s.parseRequest()
 		// log
-		s.Logger.Debug(map[string]interface{}{
-			"Request Received": map[string]string{
-				"uri":     s.Request.GetURL(),
-				"content": gconv.String(s.bodyData.RawBody),
-			},
-		})
+		// s.Logger.Debug(map[string]interface{}{
+		// 	"Request Received": map[string]string{
+		// 		"uri":     s.Request.GetURL(),
+		// 		"content": gconv.String(s.bodyData.RawBody),
+		// 	},
+		// })
+		s.Logger.Debugf("\nRequest Received:\n Uri:%s \nContent:%s", s.Request.GetURL(), gconv.String(s.bodyData.RawBody))
 		s.Validate().resolve()
 	}, func(err error) {
 		switch err.Error() {
@@ -76,7 +77,7 @@ func (s *ServerGuard) Serve() {
 			return
 		default:
 			//LOG
-			s.Logger.File("server_error_{Y-m-d}.log").Error(err.Error())
+			s.Logger.File(s.Logger.ErrorLogPattern).Error(err.Error())
 		}
 	})
 

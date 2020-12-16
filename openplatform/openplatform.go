@@ -1,15 +1,16 @@
 package openplatform
 
 import (
+	"fmt"
 	"net/http"
 
 	baseauth "gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
+	"gitee.com/wallesoft/ewa/kernel/log"
 	guard "gitee.com/wallesoft/ewa/kernel/server"
 	"gitee.com/wallesoft/ewa/openplatform/auth"
 	"gitee.com/wallesoft/ewa/openplatform/server"
-	"github.com/gogf/gf/os/glog"
 )
 
 //OpenPlatform
@@ -23,13 +24,18 @@ type OpenPlatform struct {
 //@see glog https://goframe.org/os/glog/index
 func New(config Config) *OpenPlatform {
 	if config.Cache == nil {
-		config.Cache = cache.New("ewawechat")
+		config.Cache = cache.New("ewa.wechat.openplatform")
 	}
 	if config.Logger == nil {
-		config.Logger = glog.New()
+		config.Logger = log.New()
+		if config.Logger.LogPath != "" {
+			if err := config.Logger.SetPath(config.Logger.LogPath); err != nil {
+				panic(fmt.Sprintf("[openplatform] set log path '%s' error: %v", config.Logger.LogPath, err))
+			}
+		}
 		// default set close debug / close stdout print
-		config.Logger.SetDebug(false)
-		config.Logger.SetStdoutPrint(false)
+		// config.Logger.SetDebug(false)
+		// config.Logger.SetStdoutPrint(false)
 	}
 
 	var op = &OpenPlatform{
@@ -49,7 +55,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 		EncodingAESKey: op.config.EncodingAESKey,
 	}, request, writer)
 
-	gs.Logger = op.config.Logger
+	gs.Logger = log.New()
 	// gs.SetCache(op.config.Cache)
 
 	server := &server.Server{

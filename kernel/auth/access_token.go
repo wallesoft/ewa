@@ -2,6 +2,6 @@ package auth
 
 //AccessToken interface
 type AccessToken interface {
-	GetToken() string
+	GetToken(refresh ...bool) string
 	GetTokenKey() string
 }

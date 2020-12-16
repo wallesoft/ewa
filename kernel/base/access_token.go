@@ -25,7 +25,10 @@ type Token struct {
 }
 
 //GetToken
-func (at *AccessToken) GetToken() string {
+func (at *AccessToken) GetToken(refresh ...bool) string {
+	if len(refresh) > 0 && refresh[0] {
+		at = at.Refresh()
+	}
 	//cache refresh
 	if token, err := at.Cache.Get(at.CacheKey); err != nil {
 		panic(err.Error())
@@ -61,25 +64,17 @@ func (at *AccessToken) SetToken(token string, lifetime time.Duration) *AccessTok
 func (at *AccessToken) requestToken() string {
 	var v *gjson.Json
 	if at.RequestPostMethod {
-		v = gjson.New(at.Client.PostJson(at.EndPoint, at.Credentials.Get()))
+		v = at.Client.PostJson(at.EndPoint, at.Credentials.Get())
 
 	} else {
-		v = gjson.New(at.Client.GetJson(at.EndPoint, at.Credentials.Get()))
+		v = at.Client.GetJson(at.EndPoint, at.Credentials.Get())
 	}
 
-	if have := v.Contains("errcode"); have {
-		// err
-		// //errcode == 40001 access_token 过期 需要刷新
-		// if v.GetInt("errcode") == 40001 {
-		// 	return at.Refresh().GetToken()
-		// }
-		panic(v.MustToJsonString())
-	}
 	if have := v.Contains(at.TokenKey); have {
 		at.SetToken(v.GetString(at.TokenKey), v.GetDuration("expires_in", 7200)*time.Second)
 		return v.GetString(at.TokenKey)
 	} else {
-		panic("Request access_token fail:" + v.MustToJsonString())
+		return ""
 	}
 
 }

@@ -1,14 +1,12 @@
 package openplatform
 
 import (
-	"net/url"
-
 	baseauth "gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/base"
+	"gitee.com/wallesoft/ewa/kernel/log"
 	"gitee.com/wallesoft/ewa/openplatform/auth"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gcache"
-	"github.com/gogf/gf/os/glog"
 )
 
 type Config struct {
@@ -17,26 +15,27 @@ type Config struct {
 	Token          string `json:"token"`            //token
 	EncodingAESKey string `json:"encoding_aes_key"` //encoding aes key
 	Cache          *gcache.Cache
-	Logger         *glog.Logger
+	Logger         *log.Logger
 }
 
-// SetLogger
-func (s *OpenPlatform) SetLogger(logger *glog.Logger) {
-	s.config.Logger = logger
-}
+//  --------------------Del----------------------
+// // SetLogger
+// func (s *OpenPlatform) SetLogger(logger *glog.Logger) {
+// 	op.config.Logger.Logger = logger
+// }
 
 //logger -------------
-func (s *OpenPlatform) ConfigLoggerWithMap(m map[string]interface{}) {
-	s.config.Logger.SetConfigWithMap(m)
+func (op *OpenPlatform) ConfigLoggerWithMap(m map[string]interface{}) {
+	op.config.Logger.SetConfigWithMap(m)
 }
 
-func (s *OpenPlatform) ConfigLogger(config glog.Config) {
-	s.config.Logger.SetConfig(config)
-}
+// func (op *OpenPlatform) ConfigLogger(config glog.Config) {
+// 	op.config.Logger.SetConfig(config)
+// }
 
 // SetCache
-func (s *OpenPlatform) SetCache(c *gcache.Cache) {
-	s.config.Cache = c
+func (op *OpenPlatform) SetCache(c *gcache.Cache) {
+	op.config.Cache = c
 }
 
 //SetVrifyTicket
@@ -65,13 +64,45 @@ func (op *OpenPlatform) getClient() *base.Client {
 }
 
 func (op *OpenPlatform) getClientWithToken() *base.Client {
-	url := &url.Values{}
-	url.Add("component_access_token", op.accessToken.GetToken())
 	return &base.Client{
-		Client:     ghttp.NewClient(),
-		BaseUri:    op.getBaseUri(),
-		QueryParam: url,
-		Logger:     op.config.Logger,
-		Token:      op.getDefaultAccessToken(),
+		Client:  ghttp.NewClient(),
+		BaseUri: op.getBaseUri(),
+		Logger:  op.config.Logger,
+		Token:   op.getDefaultAccessToken(),
 	}
+}
+
+// SetLogStdout sets whether output the logging content to stdout.
+func (op *OpenPlatform) SetLogStdout(enabled bool) {
+	op.config.Logger.LogStdout = enabled
+}
+
+// SetAccessLogEnabled enables/disables the access log.
+func (op *OpenPlatform) SetAccessLogEnabled(enabled bool) {
+	op.config.Logger.AccessLogEnabled = enabled
+}
+
+// SetErrorLogEnabled enables/disables the error log.
+func (op *OpenPlatform) SetErrorLogEnabled(enabled bool) {
+	op.config.Logger.ErrorLogEnabled = enabled
+}
+
+// SetErrorStack enables/disables the error stack feature.
+func (op *OpenPlatform) SetErrorStack(enabled bool) {
+	op.config.Logger.ErrorStack = enabled
+}
+
+// GetLogPath returns the log path.
+func (op *OpenPlatform) GetLogPath() string {
+	return op.config.Logger.LogPath
+}
+
+// IsAccessLogEnabled checks whether the access log enabled.
+func (op *OpenPlatform) IsAccessLogEnabled() bool {
+	return op.config.Logger.AccessLogEnabled
+}
+
+// IsErrorLogEnabled checks whether the error log enabled.
+func (op *OpenPlatform) IsErrorLogEnabled() bool {
+	return op.config.Logger.ErrorLogEnabled
 }
