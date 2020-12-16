@@ -28,30 +28,41 @@ func (c *Client) PostJson(endpoint string, data ...interface{}) *gjson.Json {
 		val = data[0]
 	}
 	response, err := c.ContentJson().Post(c.getUri(endpoint), val)
+	var debugRaw string = response.Raw()
 	if err != nil {
-		c.handleErrorLog(err, response)
+		c.handleErrorLog(err, debugRaw)
 	}
 	// c.handleAccessLog(response)
 	defer response.Close()
 
 	result := gjson.New(response.ReadAllString())
+
 	if have := result.Contains("errcode"); have {
 		//40001 refresh token
 		if result.GetInt("errcode") == 40001 {
-			// c.Token.Refresh()
-			// // resContent := gjson.New(c.ContentJson().PostContent(c.getUri(endpoint),val))
-			// response,err := c.ContentJson().Post(c.getUri(endpoint),val)
 
-			// if resContent.Contains("errcode") {
-			// 	c.handleErrorLog(errors.New("Refresh Token Result:",),response)
-			// }
+			c.Token.GetToken(true)
+
+			resp, err := c.ContentJson().Post(c.getUri(endpoint), val)
+			var respRaw string = resp.Raw()
+			if err != nil {
+				c.handleErrorLog(err, respRaw)
+			}
+			res := gjson.New(resp.ReadAllString())
+			defer resp.Close()
+			if res.Contains("errcode") {
+				c.handleErrorLog(errors.New("Refresh Token Result:"), respRaw)
+			} else {
+				c.handleAccessLog(respRaw)
+				return res
+			}
 
 		}
 
-		c.handleErrorLog(errors.New("get json with err code."), response)
+		c.handleErrorLog(errors.New("get json with err code."), debugRaw)
 		return result
 	}
-	c.handleAccessLog(response)
+	c.handleAccessLog(debugRaw)
 	return result
 }
 
@@ -62,24 +73,25 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 		val = data[0]
 	}
 	response, err := c.Get(c.getUri(endpoint), val)
+	var responseRaw string = response.Raw()
 	if err != nil {
-		c.handleErrorLog(err, response)
+		c.handleErrorLog(err, responseRaw)
 	}
-	c.handleAccessLog(response)
+	c.handleAccessLog(responseRaw)
 	defer response.Close()
 	return gjson.New(response.ReadAllString())
 }
 
-func (c *Client) handleAccessLog(response *ghttp.ClientResponse) {
+func (c *Client) handleAccessLog(raw string) {
 	if !c.Logger.AccessLogEnabled {
 		return
 	}
 	c.Logger.File(c.Logger.AccessLogPattern).
 		Stdout(c.Logger.LogStdout).
-		Printf("\n=============Response Raw============\n\n %s \n\n", response.Raw())
+		Printf("\n=============Response Raw============\n\n %s \n ", raw)
 }
 
-func (c *Client) handleErrorLog(err error, response *ghttp.ClientResponse) {
+func (c *Client) handleErrorLog(err error, raw string) {
 	if !c.Logger.ErrorLogEnabled {
 		return
 	}
@@ -93,7 +105,7 @@ func (c *Client) handleErrorLog(err error, response *ghttp.ClientResponse) {
 	} else {
 		content += err.Error()
 	}
-	content += "\n =============Reponse Raw ==============\n" + response.Raw()
+	content += "\n =============Reponse Raw [err] ==============\n" + raw
 	c.Logger.
 		File(c.Logger.ErrorLogPattern).
 		Stdout(c.Logger.LogStdout).

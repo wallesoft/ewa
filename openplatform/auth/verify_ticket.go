@@ -5,7 +5,6 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/server"
 	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/gcache"
 )
 
@@ -46,7 +45,6 @@ func (v *DefaultVerifyTicket) Handle(m *server.Message) interface{} {
 //GetTicket
 func (v *DefaultVerifyTicket) GetTicket() string {
 	ticket, err := v.cache.Get(v.getKey())
-	g.Dump(ticket)
 	if err != nil {
 		panic(err.Error())
 	}
