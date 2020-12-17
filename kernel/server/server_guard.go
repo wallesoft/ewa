@@ -45,10 +45,6 @@ type bodyData struct {
 // New
 func New(config Config, request *http.Request, writer http.ResponseWriter) *ServerGuard {
 
-	// adapter := adapter.New(gfile.TempDir() + "/")
-	// cache := gcache.New()
-	// cache.SetAdapter(adapter)
-
 	g := &ServerGuard{
 		Config: config,
 		// cache:  cache,
@@ -62,14 +58,7 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 func (s *ServerGuard) Serve() {
 	gutil.TryCatch(func() {
 		s.parseRequest()
-		// log
-		// s.Logger.Debug(map[string]interface{}{
-		// 	"Request Received": map[string]string{
-		// 		"uri":     s.Request.GetURL(),
-		// 		"content": gconv.String(s.bodyData.RawBody),
-		// 	},
-		// })
-		s.Logger.Debugf("\nRequest Received:\n Uri:%s \nContent:%s", s.Request.GetURL(), gconv.String(s.bodyData.RawBody))
+		s.Logger.Debugf("Request Received:\n URL: %s%s \n Content: %s \n\n", s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody))
 		s.Validate().resolve()
 	}, func(err error) {
 		switch err.Error() {
@@ -143,14 +132,15 @@ func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 			result := mux.Handler.Handle(message)
 			switch result.(type) {
 			case bool:
-				goto LOOP
-			case interface{}:
-				g.Dump(result)
+				if ok, _ := result.(bool); ok {
+					goto LOOP
+				}
+			default:
+				g.Dump("handler happy go")
+				// if ok := handler.Handle(message); ok {
+				// 	g.Dump(";;;;;;")
+				// }
 			}
-			// g.Dump("handler happy go")
-			// if ok := handler.Handle(message); ok {
-			// 	g.Dump(";;;;;;")
-			// }
 		}
 	}
 LOOP:

@@ -52,6 +52,6 @@ func (v *DefaultVerifyTicket) GetTicket() string {
 }
 
 func (v *DefaultVerifyTicket) getKey() string {
-	return "easywechat.open_platform.verify_ticket." + v.appid
+	return "ewawechat.open_platform.verify_ticket." + v.appid
 
 }
