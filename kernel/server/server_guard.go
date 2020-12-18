@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
@@ -66,7 +67,7 @@ func (s *ServerGuard) Serve() {
 			return
 		default:
 			//LOG
-			s.Logger.File(s.Logger.ErrorLogPattern).Error(err.Error())
+			s.Logger.File(s.Logger.ErrorLogPattern).Error(err.Error(), fmt.Sprintf("\n ================== Request Received =============\n [URL]: %s%s \n [Content]: %s \n ================================================\n", s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody)))
 		}
 	})
 
@@ -126,7 +127,6 @@ func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 
 	handlers := s.GetHandlers()
 	event := s.TypeToEvent(mtype)
-
 	for _, mux := range handlers {
 		if (mux.Condition & event) == event {
 			result := mux.Handler.Handle(message)
@@ -144,7 +144,7 @@ func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 		}
 	}
 LOOP:
-	g.Dump("out")
+	g.Dump("out loop and success!!!")
 
 	// 2 Get Mux by group name
 	// 3 range Mux
@@ -164,7 +164,6 @@ LOOP:
 //ParseMessage parse message from raw input.
 func (s *ServerGuard) parseMessage() (msg *Message, err error) {
 	content := s.bodyData.RawBody
-
 	mtype := checkDataType(content)
 
 	switch mtype {
@@ -180,7 +179,6 @@ func (s *ServerGuard) parseMessage() (msg *Message, err error) {
 }
 func (s *ServerGuard) parseXMLMessage(content []byte) (message *Message, err error) {
 	undecrypted, err := gxml.DecodeWithoutRoot(content)
-
 	if err != nil {
 		return nil, err
 	}
@@ -230,15 +228,15 @@ func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err er
 //GetMessage
 func (s *ServerGuard) GetMessage() (message *Message, err error) {
 	message, err = s.parseMessage()
-
 	//is nil
+	if err != nil {
+		return nil, err
+	}
 	if message.IsNil() {
 		s.Response.WriteStatusExit(http.StatusNoContent, "No message received")
 		// panic(EXCEPTION_EXIT)
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	return
 }
 func (s *ServerGuard) signature() string {
@@ -271,8 +269,10 @@ func (s *ServerGuard) IsSafeMode() bool {
 
 //DecryptMessage decrypt message
 func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
-	//token := s.config.Token//gconv.String(s.Config.Get("token"))
 	a := []string{s.Config.Token, s.queryParam.Timestamp, s.queryParam.Nonce, gconv.String(message)}
+
+	g.Dump("query:", s.queryParam.MsgSignature)
+	g.Dump("encryt:", encryptor.Signature(a))
 
 	if s.queryParam.MsgSignature != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")

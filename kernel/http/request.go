@@ -7,6 +7,7 @@ import (
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/text/gstr"
+	"github.com/gogf/gf/util/gconv"
 )
 
 //Request struct
@@ -44,7 +45,7 @@ func (r *Request) parseQuery() {
 	r.parsedQuery = true
 	if r.URL.RawQuery != "" {
 		var err error
-		r.queryMap, err = gstr.Parse(r.URL.RawQuery)
+		r.queryMap, err = gstr.Parse(gstr.Trim(r.URL.RawQuery))
 		if err != nil {
 			panic(err)
 		}
@@ -65,5 +66,7 @@ func (r *Request) GetBody() []byte {
 	if r.bodyContent == nil {
 		r.bodyContent, _ = ioutil.ReadAll(r.Body)
 	}
-	return r.bodyContent
+	//trim
+
+	return gconv.Bytes(gstr.Trim(gconv.String(r.bodyContent)))
 }

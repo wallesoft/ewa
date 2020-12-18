@@ -53,12 +53,12 @@ func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional .
 }
 
 //HandleAuthorize
-func (op *OpenPlatform) HandleAuthorize(authcode string) *gjson.Json {
+func (op *OpenPlatform) HandleAuthorize(code string) *gjson.Json {
 
 	client := op.getClientWithToken()
 	return client.PostJson("cgi-bin/component/api_query_auth", map[string]string{
 		"component_appid":    op.config.AppID,
-		"authorization_code": authcode,
+		"authorization_code": code,
 	})
 
 }
