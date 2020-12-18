@@ -271,9 +271,6 @@ func (s *ServerGuard) IsSafeMode() bool {
 func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	a := []string{s.Config.Token, s.queryParam.Timestamp, s.queryParam.Nonce, gconv.String(message)}
 
-	g.Dump("query:", s.queryParam.MsgSignature)
-	g.Dump("encryt:", encryptor.Signature(a))
-
 	if s.queryParam.MsgSignature != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")
 	}
