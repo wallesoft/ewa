@@ -67,7 +67,7 @@ func (s *ServerGuard) Serve() {
 			return
 		default:
 			//LOG
-			s.Logger.File(s.Logger.ErrorLogPattern).Error(err.Error(), fmt.Sprintf("\n ================== Request Received =============\n [URL]: %s%s \n [Content]: %s \n ================================================\n", s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody)))
+			s.Logger.File(s.Logger.ErrorLogPattern).Print(fmt.Sprintf("[Erro] %s\n ================== Request Received =============\n [URL]: %s%s \n [Content]: %s \n ================================================\n", err.Error(), s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody)))
 		}
 	})
 
