@@ -56,11 +56,9 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	}, request, writer)
 
 	gs.Logger = log.New()
-	// gs.SetCache(op.config.Cache)
 
 	server := &server.Server{
 		ServerGuard: gs,
-		// VerifyTicket: op.verifyTicket,
 	}
 
 	server.SetMux()
