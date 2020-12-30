@@ -1,8 +1,9 @@
 package payment
 
 import (
-	"gitee.com/wallesoft/ewa/kernel/log"
 	"gitee.com/wallesoft/ewa/kernel/cache"
+	"gitee.com/wallesoft/ewa/kernel/log"
+	"github.com/gogf/gf/0.20201214150022-3517295e9694/text/gstr"
 )
 
 type Payment struct {
@@ -30,14 +31,24 @@ func (p *Payment) Order() *Order {
 func (p *Payment) Sanbox() *Sanbox {
 
 }
-func (p *Payment) getKey(endpoint string) string {
+func (p *Payment) getKey(endpoint string) key string {
 	if endpoint == "sandboxnew/pay/getsignkey" {
 		return p.config.Key
 	}
-	var key string
+	// var key string
 	if p.isSanbox {
 		key = p.Sanbox().GetKey()
+	} else {
+		key = p.config.Key
 	}
+	if key == "" {
+		p.Logger.Errorf("config key should not be emtpy")
+	}
+	if gstr.LenRune(key) != 32 {
+		p.Logger.Errorf("%s should be 32 chars length.",key)
+	}
+
+	return
 }
 
 func (p *Payment) isSandbox() bool {
