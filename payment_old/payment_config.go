@@ -1,7 +1,5 @@
 package payment
 
-import "crypto/x509"
-
 //Config
 type Config struct {
 	AppID     string `json:"app_id"`
@@ -15,15 +13,4 @@ type Config struct {
 	//服务商参数
 	SubMchID string `json:"sub_mch_id"`
 	SubAppID string `json:"sub_appid"`
-
-	//v3接口
-	SerialNo    string            //商户证书编号
-	PublicCer   *x509.Certificate //商户证书公钥
-	PrivateCer  interface{}       //商户证书私钥
-	PFSerialNo  string            //平台证书编号
-	PFPublicCer *x509.Certificate //平台证书公钥
-}
-
-func (p *Payment) GetClient(endpoint string, method string) *Client {
-	return &Client{}
 }
