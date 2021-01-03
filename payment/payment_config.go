@@ -2,6 +2,10 @@ package payment
 
 import "crypto/x509"
 
+const (
+	BASE_API_URI = "https://api.mch.weixin.qq.com"
+)
+
 //Config
 type Config struct {
 	AppID     string `json:"app_id"`
@@ -25,5 +29,11 @@ type Config struct {
 }
 
 func (p *Payment) GetClient(endpoint string, method string) *Client {
-	return &Client{}
+	return &Client{
+		BaseUri: p.getBaseUri(),
+	}
+}
+
+func (p *Payment) getBaseUri() string {
+	return "https://api.mch.weixin.qq.com"
 }
