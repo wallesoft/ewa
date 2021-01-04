@@ -1,6 +1,8 @@
 package payment
 
 import (
+	"net/url"
+
 	"github.com/gogf/gf/encoding/gjson"
 )
 
@@ -73,9 +75,8 @@ func (o *Order) Set(pattern string, value interface{}) {
 }
 
 //Jsapi 下单
-func (o *Order) Jsapi() string {
-	o.payment.getClient().RequestJson("POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
-	return o.config.MustToJsonString()
+func (o *Order) Jsapi() *gjson.Json {
+	return o.payment.getClient().RequestJson("POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
 }
 
 //H5下单
@@ -84,6 +85,17 @@ func (o *Order) H5() {
 }
 
 //Query 订单查询
-func (o *Order) Query() {
-
+func (o *Order) Query() *gjson.Json {
+	client := o.payment.getClient()
+	client.UrlValues = url.Values{}
+	client.UrlValues.Add("mchid", o.payment.config.MchID)
+	if o.config.Contains("transaction_id") {
+		//根据微信支付订单号查询
+		return client.RequestJson("GET", "/v3/pay/transactions/id/"+o.config.GetString("transaction_id"))
+	}
+	if o.config.Contains("out_trade_no") {
+		//根据商户订单号查询
+		return client.RequestJson("GET", "/v3/pay/transactions/out-trade-no/"+o.config.GetString("out_trade_no"))
+	}
+	return nil
 }

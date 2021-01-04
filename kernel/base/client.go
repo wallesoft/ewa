@@ -16,7 +16,7 @@ import (
 type Client struct {
 	*ghttp.Client
 	BaseUri   string
-	UrlValues *url.Values
+	UrlValues url.Values
 	Logger    *log.Logger
 	Token     auth.AccessToken
 }
@@ -115,7 +115,7 @@ func (c *Client) handleErrorLog(err error, raw string) {
 //getUri
 func (c *Client) getUri(endpoint string) string {
 
-	var param = &url.Values{}
+	var param = url.Values{}
 	var url string
 	//uri params
 	if c.UrlValues != nil {

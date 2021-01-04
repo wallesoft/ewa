@@ -5,7 +5,6 @@ import (
 	"encoding/pem"
 
 	"gitee.com/wallesoft/ewa/kernel/log"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gfile"
 )
@@ -58,7 +57,6 @@ func (p *Payment) setConfig(config Config, compatible ...bool) Config {
 		} else {
 
 			config.PrivateCer, err = x509.ParsePKCS8PrivateKey(block.Bytes)
-			g.Dump("jiema", config)
 			if err != nil {
 				panic(err.Error())
 			}
@@ -82,6 +80,7 @@ func (p *Payment) getClient() *Client {
 	return &Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: p.getBaseUri(),
+		payment: p,
 	}
 }
 

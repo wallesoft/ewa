@@ -10,7 +10,7 @@ import (
 //GetPreAuthorizationUrl 获取授权页网址
 func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[string]interface{}) string {
 
-	val := &url.Values{}
+	val := url.Values{}
 	authCode := op.GetPreAuthCode()
 	val.Add("pre_auth_code", authCode)
 	if len(optional) > 0 {
@@ -31,7 +31,7 @@ func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[
 
 //GetMobilePreAuthorizationUrl
 func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional ...map[string]interface{}) string {
-	val := &url.Values{}
+	val := url.Values{}
 	authCode := op.GetPreAuthCode()
 	val.Add("pre_auth_code", authCode)
 	if len(optional) > 0 {

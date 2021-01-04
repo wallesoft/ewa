@@ -7,10 +7,13 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/gogf/gf/container/gvar"
+	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/errors/gerror"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
@@ -21,7 +24,8 @@ import (
 
 type Client struct {
 	*ghttp.Client
-	payment *Payment
+	payment   *Payment
+	UrlValues url.Values
 	// Logger  *log.Logger
 	BaseUri string
 }
@@ -34,7 +38,7 @@ const (
 // func (c *Client) Request(endpoint string, method string, data []byte) {
 
 // }
-func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) {
+func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *gjson.Json {
 	body := ""
 	if len(data) > 0 {
 		switch data[0].(type) {
@@ -48,19 +52,38 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 			}
 		}
 	}
-	authorization := c.getAuthorization(method, endpoint, body)
+	queryString, url := c.getUri(endpoint)
+	authorization := c.getAuthorization(method, queryString, body)
 	response, err := c.Header(map[string]string{
 		"Authorization": authorization,
-	}).ContentJson().DoRequest(method, c.getUri(endpoint), data...)
+		"User-Agent":    "ewa-client/1.0",
+		"Accept":        "application/json",
+	}).ContentJson().DoRequest(method, url, data...)
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
-	g.Dump("Error.............", err)
-	g.Dump(response)
+	if response.StatusCode != 200 {
+		c.handleErrorLog(errors.New("payment.v3.请求错误"), response.Raw())
+	}
+	c.handleAccessLog(response.Raw())
+	return gjson.New(response.ReadAll())
 }
 
-func (c *Client) getUri(endpoint string) string {
-	return c.BaseUri + endpoint
+func (c *Client) getUri(endpoint string) (query, urlString string) {
+	param := url.Values{}
+	// var url string
+	if c.UrlValues != nil {
+		param = c.UrlValues
+	}
+	query = endpoint
+	// url =  c.BaseUri + endpoint
+
+	if len(param) > 0 {
+		query = query + "?" + param.Encode()
+	}
+
+	urlString = c.BaseUri + query
+	return
 }
 
 func (c *Client) getAuthorization(method string, endpoint string, body string) string {
@@ -83,13 +106,9 @@ func (c *Client) getSignature(method string, endpoint string, nonce string, time
 }
 
 func (c *Client) rsaEncrypt(originData []byte) (string, error) {
-	g.Dump("aaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 	h := crypto.Hash.New(crypto.SHA256)
-	g.Dump("cccccccccccccccccccccccc")
 	h.Write(originData)
-	g.Dump("bbabababababa")
 	hashed := h.Sum(nil)
-	g.Dump("890-00000000", c.payment.config.PrivateCer)
 	signedData, err := rsa.SignPKCS1v15(rand.Reader, c.payment.config.PrivateCer.(*rsa.PrivateKey), crypto.SHA256, hashed)
 	// signedData, err := rsa.SignPKCS1v15(rand.Reader, this.Priv.(*rsa.PrivateKey), crypto.SHA256, hashed)
 	if err != nil {
