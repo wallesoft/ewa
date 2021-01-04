@@ -12,6 +12,7 @@ import (
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/errors/gerror"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gtime"
 	"github.com/gogf/gf/util/gconv"
@@ -34,12 +35,6 @@ const (
 
 // }
 func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) {
-	//get Authorization
-	// var body string
-	// if len(data) > 0 {
-	// } else {
-	// 	body = ""
-	// }
 	body := ""
 	if len(data) > 0 {
 		switch data[0].(type) {
@@ -60,20 +55,26 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
+	g.Dump("Error.............", err)
+	g.Dump(response)
 }
+
 func (c *Client) getUri(endpoint string) string {
 	return c.BaseUri + endpoint
 }
+
 func (c *Client) getAuthorization(method string, endpoint string, body string) string {
 	timestamp := gtime.TimestampStr()
 	nonce := grand.S(32)
 	signature := c.getSignature(strings.ToUpper(method), endpoint, nonce, timestamp, body)
 	return fmt.Sprintf("%s mchid=\"%s\",nonce_str=\"%s\",timestamp=\"%s\",serial_no=\"%s\",signature=\"%s\"", AUTH_TYPE, c.payment.config.MchID, nonce, timestamp, c.payment.config.SerialNo, signature)
 }
+
 func (c *Client) getSignature(method string, endpoint string, nonce string, timestamp string, body string) string {
 	// timestamp := gtime.TimestampStr()
 	// nonce := grand.S(32)
 	message := fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n", method, endpoint, timestamp, nonce, body)
+	g.Dump(message)
 	signature, err := c.rsaEncrypt(gvar.New(message).Bytes())
 	if err != nil {
 		c.payment.Logger.Errorf("client signature error: method %s,endpoint %s", method, endpoint)
@@ -82,15 +83,21 @@ func (c *Client) getSignature(method string, endpoint string, nonce string, time
 }
 
 func (c *Client) rsaEncrypt(originData []byte) (string, error) {
+	g.Dump("aaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 	h := crypto.Hash.New(crypto.SHA256)
+	g.Dump("cccccccccccccccccccccccc")
 	h.Write(originData)
+	g.Dump("bbabababababa")
 	hashed := h.Sum(nil)
+	g.Dump("890-00000000", c.payment.config.PrivateCer)
 	signedData, err := rsa.SignPKCS1v15(rand.Reader, c.payment.config.PrivateCer.(*rsa.PrivateKey), crypto.SHA256, hashed)
+	// signedData, err := rsa.SignPKCS1v15(rand.Reader, this.Priv.(*rsa.PrivateKey), crypto.SHA256, hashed)
 	if err != nil {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(signedData), nil
 }
+
 func (c *Client) RsaDecrypt(ciphertext string) (string, error) {
 	cipherdata, _ := base64.StdEncoding.DecodeString(ciphertext)
 	rng := rand.Reader

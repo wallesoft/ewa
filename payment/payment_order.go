@@ -5,7 +5,8 @@ import (
 )
 
 type Order struct {
-	config *gjson.Json
+	config  *gjson.Json
+	payment *Payment
 }
 
 //订单
@@ -73,6 +74,7 @@ func (o *Order) Set(pattern string, value interface{}) {
 
 //Jsapi 下单
 func (o *Order) Jsapi() string {
+	o.payment.getClient().RequestJson("POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
 	return o.config.MustToJsonString()
 }
 
