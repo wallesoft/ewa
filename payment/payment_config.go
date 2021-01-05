@@ -29,10 +29,11 @@ type Config struct {
 	PublicCer   *x509.Certificate //商户证书公钥
 	PrivateCer  interface{}       //商户证书私钥
 
-	PFSerialNo  string            //平台证书编号
-	PFPublicCer *x509.Certificate //平台证书公钥
-	
-	ApiV3Key    string            //apiv3 秘钥
+	PFSerialNo     string            //平台证书编号
+	PFPublicCer    *x509.Certificate //平台证书公钥
+	PFCertSavePath string            //平台证书存储路径
+
+	ApiV3Key string //apiv3 秘钥
 	//公用
 	NotifyUrl string `json:"notify_url"` //默认回调地址
 
@@ -76,6 +77,9 @@ func (p *Payment) setConfig(config Config, compatible ...bool) Config {
 				panic(err.Error())
 			}
 		}
+	}
+	if config.PFCertSavePath == "" {
+		config.PFCertSavePath = "/tmp/cert/"
 	}
 	return config
 }

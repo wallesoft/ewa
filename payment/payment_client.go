@@ -27,6 +27,9 @@ type Client struct {
 	// Logger  *log.Logger
 	BaseUri string
 }
+type ClientResponse struct {
+	*ghttp.ClientResponse
+}
 
 const (
 	AUTH_TYPE = "WECHATPAY2-SHA256-RSA2048"
@@ -51,21 +54,27 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 	authorization := c.getAuthorization(method, queryString, body)
 	response, err := c.Header(map[string]string{
 		"Authorization": authorization,
-		"User-Agent":    "ewa-client/1.0",
+		"User-Agent":    "ewa-payment-client/1.0",
 		"Accept":        "application/json",
 	}).ContentJson().DoRequest(method, url, data...)
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
-	if response.StatusCode != 200 || response.StatusCode != 204 {
-		c.handleErrorLog(errors.New("payment.v3.请求错误"), response.Raw())
-	} else {
-		//response.StatusCode == 200
-		//验签
-		ok := c.payment.VerifySignature(response)
-		c.handleAccessLog(response.Raw())
+	// g.Dump(response.StatusCode)
+	if response.StatusCode == 200 || response.StatusCode == 204 {
+		//response.StatusCode == 200 验签
+		err := c.payment.VerifySignature(&ClientResponse{ClientResponse: response})
+		if err == nil {
+			c.handleAccessLog(response.Raw())
+
+		} else {
+			c.handleErrorLog(err, response.Raw())
+
+		}
+		return response
 	}
 
+	c.handleErrorLog(errors.New("payment.v3.请求错误:"+response.Status), response.Raw())
 	return response
 }
 
