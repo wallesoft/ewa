@@ -4,6 +4,7 @@ import (
 	"net/url"
 
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/net/ghttp"
 )
 
 type Order struct {
@@ -69,14 +70,24 @@ type OrderConfig struct {
 // 	Address  string `json:"address"`
 // }
 
+//QueryOrder @see https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_2.shtml 返回参数
+type QueryOrder struct {
+	Code int
+	*gjson.Json
+}
+
 //Set
 func (o *Order) Set(pattern string, value interface{}) {
 	o.config.Set(pattern, value)
 }
 
 //Jsapi 下单
-func (o *Order) Jsapi() *gjson.Json {
-	return o.payment.getClient().RequestJson("POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
+func (o *Order) Jsapi() string {
+	response := o.payment.getClient().RequestJson("POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
+	if response.StatusCode == 200 {
+		return gjson.New(response.ReadAll()).GetString("prepay_id")
+	}
+	return ""
 }
 
 //H5下单
@@ -85,17 +96,35 @@ func (o *Order) H5() {
 }
 
 //Query 订单查询
-func (o *Order) Query() *gjson.Json {
+func (o *Order) Query() *QueryOrder {
 	client := o.payment.getClient()
 	client.UrlValues = url.Values{}
 	client.UrlValues.Add("mchid", o.payment.config.MchID)
+	var response *ghttp.ClientResponse
 	if o.config.Contains("transaction_id") {
 		//根据微信支付订单号查询
-		return client.RequestJson("GET", "/v3/pay/transactions/id/"+o.config.GetString("transaction_id"))
+		response = client.RequestJson("GET", "/v3/pay/transactions/id/"+o.config.GetString("transaction_id"))
+		if response.StatusCode == 200 {
+			return &QueryOrder{
+				Code: response.StatusCode,
+				Json: gjson.New(response.ReadAll()),
+			}
+		}
+
 	}
 	if o.config.Contains("out_trade_no") {
 		//根据商户订单号查询
-		return client.RequestJson("GET", "/v3/pay/transactions/out-trade-no/"+o.config.GetString("out_trade_no"))
+		response = client.RequestJson("GET", "/v3/pay/transactions/out-trade-no/"+o.config.GetString("out_trade_no"))
+		if response.StatusCode == 200 {
+			return &QueryOrder{
+				Code: 200,
+				Json: gjson.New(response.ReadAll()),
+			}
+		}
+
 	}
-	return nil
+	return &QueryOrder{
+		Code: response.StatusCode,
+		Json: gjson.New(response.ReadAll()),
+	}
 }

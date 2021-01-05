@@ -13,9 +13,7 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/errors/gerror"
-	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gtime"
 	"github.com/gogf/gf/util/gconv"
@@ -34,11 +32,8 @@ const (
 	AUTH_TYPE = "WECHATPAY2-SHA256-RSA2048"
 )
 
-//Request
-// func (c *Client) Request(endpoint string, method string, data []byte) {
-
-// }
-func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *gjson.Json {
+//RequestJson
+func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *ghttp.ClientResponse {
 	body := ""
 	if len(data) > 0 {
 		switch data[0].(type) {
@@ -62,11 +57,16 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
-	if response.StatusCode != 200 {
+	if response.StatusCode != 200 || response.StatusCode != 204 {
 		c.handleErrorLog(errors.New("payment.v3.请求错误"), response.Raw())
+	} else {
+		//response.StatusCode == 200
+		//验签
+		ok := c.payment.VerifySignature(response)
+		c.handleAccessLog(response.Raw())
 	}
-	c.handleAccessLog(response.Raw())
-	return gjson.New(response.ReadAll())
+
+	return response
 }
 
 func (c *Client) getUri(endpoint string) (query, urlString string) {
@@ -94,10 +94,8 @@ func (c *Client) getAuthorization(method string, endpoint string, body string) s
 }
 
 func (c *Client) getSignature(method string, endpoint string, nonce string, timestamp string, body string) string {
-	// timestamp := gtime.TimestampStr()
-	// nonce := grand.S(32)
+
 	message := fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n", method, endpoint, timestamp, nonce, body)
-	g.Dump(message)
 	signature, err := c.rsaEncrypt(gvar.New(message).Bytes())
 	if err != nil {
 		c.payment.Logger.Errorf("client signature error: method %s,endpoint %s", method, endpoint)
@@ -110,7 +108,6 @@ func (c *Client) rsaEncrypt(originData []byte) (string, error) {
 	h.Write(originData)
 	hashed := h.Sum(nil)
 	signedData, err := rsa.SignPKCS1v15(rand.Reader, c.payment.config.PrivateCer.(*rsa.PrivateKey), crypto.SHA256, hashed)
-	// signedData, err := rsa.SignPKCS1v15(rand.Reader, this.Priv.(*rsa.PrivateKey), crypto.SHA256, hashed)
 	if err != nil {
 		return "", err
 	}
