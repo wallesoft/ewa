@@ -29,10 +29,11 @@ type Config struct {
 	PublicCer   *x509.Certificate //商户证书公钥
 	PrivateCer  interface{}       //商户证书私钥
 
-	PFSerialNo  string            //平台证书编号
-	PFPublicCer *x509.Certificate //平台证书公钥
-	
-	ApiV3Key    string            //apiv3 秘钥
+	PFSerialNo     string            //平台证书编号
+	PFPublicCer    *x509.Certificate //平台证书公钥
+	PFCertSavePath string            //平台证书保存路径 绝对路径！！！
+	PFCertPrefix   string            //平台证书保存前缀
+	ApiV3Key       string            //apiv3 秘钥
 	//公用
 	NotifyUrl string `json:"notify_url"` //默认回调地址
 
@@ -76,6 +77,12 @@ func (p *Payment) setConfig(config Config, compatible ...bool) Config {
 				panic(err.Error())
 			}
 		}
+	}
+	if config.PFCertPrefix == "" {
+		config.PFCertPrefix = "wechatpay_pf_"
+	}
+	if config.PFCertSavePath == "" {
+		config.PFCertSavePath = "/etc/wechatpay/"
 	}
 	return config
 }

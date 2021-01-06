@@ -7,6 +7,7 @@
   - [配置](/official-account/configuration)
 - [微信支付](/payment)
   - [入门](/payment/index)
+  - [订单](/payment/order)
 - [小程序](/miniprogram/)
   - [入门](/miniprogram/index)
   - [小程序码](/miniprogram/app_code)

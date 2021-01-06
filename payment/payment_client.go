@@ -1,11 +1,6 @@
 package payment
 
 import (
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha1"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,7 +28,7 @@ const (
 )
 
 //RequestJson
-func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *ghttp.ClientResponse {
+func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *Response {
 	body := ""
 	if len(data) > 0 {
 		switch data[0].(type) {
@@ -57,16 +52,28 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
-	if response.StatusCode != 200 || response.StatusCode != 204 {
-		c.handleErrorLog(errors.New("payment.v3.请求错误"), response.Raw())
-	} else {
-		//response.StatusCode == 200
-		//验签
-		ok := c.payment.VerifySignature(response)
-		c.handleAccessLog(response.Raw())
+	debugRaw := response.Raw()
+	res := &Response{
+		Status:     response.Status,
+		StatusCode: response.StatusCode,
+		Header:     response.Header,
+		Body:       response.ReadAll(),
 	}
 
-	return response
+	if res.StatusCode == 200 || res.StatusCode == 204 {
+		//response.StatusCode == 200
+		//验签
+		err := c.payment.VerifySignature(res)
+		if err != nil {
+			c.handleErrorLog(err, debugRaw)
+		} else {
+			c.handleAccessLog(debugRaw)
+		}
+	} else {
+		c.handleErrorLog(errors.New("payment.v3.请求错误"), debugRaw)
+	}
+
+	return res
 }
 
 func (c *Client) getUri(endpoint string) (query, urlString string) {
@@ -96,34 +103,35 @@ func (c *Client) getAuthorization(method string, endpoint string, body string) s
 func (c *Client) getSignature(method string, endpoint string, nonce string, timestamp string, body string) string {
 
 	message := fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n", method, endpoint, timestamp, nonce, body)
-	signature, err := c.rsaEncrypt(gvar.New(message).Bytes())
+	signature, err := c.payment.rsaEncrypt(gvar.New(message).Bytes())
 	if err != nil {
-		c.payment.Logger.Errorf("client signature error: method %s,endpoint %s", method, endpoint)
+		panic(fmt.Sprintf("[Erro] client signature error: method %s,endpoint %s", method, endpoint))
+		// c.payment.Logger.Errorf("client signature error: method %s,endpoint %s", method, endpoint)
 	}
 	return signature
 }
 
-func (c *Client) rsaEncrypt(originData []byte) (string, error) {
-	h := crypto.Hash.New(crypto.SHA256)
-	h.Write(originData)
-	hashed := h.Sum(nil)
-	signedData, err := rsa.SignPKCS1v15(rand.Reader, c.payment.config.PrivateCer.(*rsa.PrivateKey), crypto.SHA256, hashed)
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(signedData), nil
-}
+// func (c *Client) rsaEncrypt(originData []byte) (string, error) {
+// 	h := crypto.Hash.New(crypto.SHA256)
+// 	h.Write(originData)
+// 	hashed := h.Sum(nil)
+// 	signedData, err := rsa.SignPKCS1v15(rand.Reader, c.payment.config.PrivateCer.(*rsa.PrivateKey), crypto.SHA256, hashed)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return base64.StdEncoding.EncodeToString(signedData), nil
+// }
 
-func (c *Client) RsaDecrypt(ciphertext string) (string, error) {
-	cipherdata, _ := base64.StdEncoding.DecodeString(ciphertext)
-	rng := rand.Reader
-	plaintext, err := rsa.DecryptOAEP(sha1.New(), rng, c.payment.config.PrivateCer.(*rsa.PrivateKey), cipherdata, nil)
-	if err != nil {
-		c.payment.Logger.Errorf("Error from decryption: %s\n", err)
-		return "", err
-	}
-	return string(plaintext), nil
-}
+// func (c *Client) RsaDecrypt(ciphertext string) (string, error) {
+// 	cipherdata, _ := base64.StdEncoding.DecodeString(ciphertext)
+// 	rng := rand.Reader
+// 	plaintext, err := rsa.DecryptOAEP(sha1.New(), rng, c.payment.config.PrivateCer.(*rsa.PrivateKey), cipherdata, nil)
+// 	if err != nil {
+// 		c.payment.Logger.Errorf("Error from decryption: %s\n", err)
+// 		return "", err
+// 	}
+// 	return string(plaintext), nil
+// }
 
 func (c *Client) handleAccessLog(raw string) {
 	if !c.payment.Logger.AccessLogEnabled {
@@ -154,27 +162,3 @@ func (c *Client) handleErrorLog(err error, raw string) {
 		Stdout(c.payment.Logger.LogStdout).
 		Print(content)
 }
-
-// func (this *Client) rsaEncrypt(origData []byte) (string, error) {
-// 	h := crypto.Hash.New(crypto.SHA256)
-// 	h.Write(origData)
-// 	hashed := h.Sum(nil)
-// 	// 进行rsa加密签名
-// 	signedData, err := rsa.SignPKCS1v15(rand.Reader, this.Priv.(*rsa.PrivateKey), crypto.SHA256, hashed)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return base64.StdEncoding.EncodeToString(signedData), nil
-// }
-
-// func (this *Client) RsaDecrypt(ciphertext string) (string, error) {
-// 	cipherdata, _ := base64.StdEncoding.DecodeString(ciphertext)
-// 	rng := rand.Reader
-
-// 	plaintext, err := rsa.DecryptOAEP(sha1.New(), rng, this.Priv.(*rsa.PrivateKey), cipherdata, nil)
-// 	if err != nil {
-// 		fmt.Fprintf(os.Stderr, "Error from decryption: %s\n", err)
-// 		return "", err
-// 	}
-// 	return string(plaintext), nil
-// }

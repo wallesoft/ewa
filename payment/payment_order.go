@@ -1,10 +1,12 @@
 package payment
 
 import (
+	"errors"
+	"fmt"
 	"net/url"
 
+	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/net/ghttp"
 )
 
 type Order struct {
@@ -82,12 +84,12 @@ func (o *Order) Set(pattern string, value interface{}) {
 }
 
 //Jsapi 下单
-func (o *Order) Jsapi() string {
+func (o *Order) Jsapi() (string, error) {
 	response := o.payment.getClient().RequestJson("POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
 	if response.StatusCode == 200 {
-		return gjson.New(response.ReadAll()).GetString("prepay_id")
+		return gjson.New(response.Body).GetString("prepay_id"), nil
 	}
-	return ""
+	return gvar.New(response.Body).String(), errors.New(fmt.Sprintf("[Error] %s", response.Status))
 }
 
 //H5下单
@@ -100,14 +102,14 @@ func (o *Order) Query() *QueryOrder {
 	client := o.payment.getClient()
 	client.UrlValues = url.Values{}
 	client.UrlValues.Add("mchid", o.payment.config.MchID)
-	var response *ghttp.ClientResponse
+	var response *Response
 	if o.config.Contains("transaction_id") {
 		//根据微信支付订单号查询
 		response = client.RequestJson("GET", "/v3/pay/transactions/id/"+o.config.GetString("transaction_id"))
 		if response.StatusCode == 200 {
 			return &QueryOrder{
 				Code: response.StatusCode,
-				Json: gjson.New(response.ReadAll()),
+				Json: gjson.New(response.Body),
 			}
 		}
 
@@ -118,13 +120,13 @@ func (o *Order) Query() *QueryOrder {
 		if response.StatusCode == 200 {
 			return &QueryOrder{
 				Code: 200,
-				Json: gjson.New(response.ReadAll()),
+				Json: gjson.New(response.Body),
 			}
 		}
 
 	}
 	return &QueryOrder{
 		Code: response.StatusCode,
-		Json: gjson.New(response.ReadAll()),
+		Json: gjson.New(response.Body),
 	}
 }
