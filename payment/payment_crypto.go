@@ -46,7 +46,7 @@ func (p *Payment) GCMDencryter(associateData, cipherText, nonce string) ([]byte,
 }
 
 //应答及回调验签
-func (p *Payment) VerifySignature(response *ClientResponse) error {
+func (p *Payment) VerifySignature(response *Response) error {
 
 	serialNo := response.Header.Get("Wechatpay-Serial")
 	p.setPFPublicCert(serialNo)
@@ -83,6 +83,7 @@ func (p *Payment) setPFPublicCert(serialNo string) {
 			}
 		}
 	}
+}
 
 func (p *Payment) rsaEncrypt(originData []byte) (string, error) {
 	h := crypto.Hash.New(crypto.SHA256)
