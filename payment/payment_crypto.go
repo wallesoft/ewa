@@ -4,8 +4,11 @@ import (
 	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 
@@ -48,7 +51,7 @@ func (p *Payment) VerifySignature(response *ClientResponse) error {
 	serialNo := response.Header.Get("Wechatpay-Serial")
 	p.setPFPublicCert(serialNo)
 
-	signatureStr := p.getSignatureStr(response.Header.Get("Wechatpay-Timestamp"), response.Header.Get("Wechatpay-Nonce"), response.ReadAllString())
+	signatureStr := p.getSignatureStr(response.Header.Get("Wechatpay-Timestamp"), response.Header.Get("Wechatpay-Nonce"), gvar.New(response.Body).String())
 	signature := gbase64.MustDecodeString(response.Header.Get("Wechatpay-Signature"))
 	h := crypto.Hash.New(crypto.SHA256)
 	h.Write(signatureStr)
@@ -64,10 +67,11 @@ func (p *Payment) VerifySignature(response *ClientResponse) error {
 func (p *Payment) getSignatureStr(timestamp, nonce, body string) []byte {
 	return gvar.New(fmt.Sprintf("%s\n%s\n%s\n", timestamp, nonce, body)).Bytes()
 }
+
 func (p *Payment) setPFPublicCert(serialNo string) {
 	var err error
 	p.config.PFSerialNo = serialNo
-	if certData := gfile.GetBytes(p.config.PFCertSavePath + "pf_wechatpay_" + serialNo + ".pem"); certData == nil {
+	if certData := gfile.GetBytes(p.config.PFCertSavePath + p.config.PFCertPrefix + serialNo + ".pem"); certData != nil {
 		panic("平台公钥读取失败")
 	} else {
 		if block, _ := pem.Decode(certData); block == nil || block.Type != "CERTIFICATE" {
@@ -79,4 +83,25 @@ func (p *Payment) setPFPublicCert(serialNo string) {
 			}
 		}
 	}
+
+func (p *Payment) rsaEncrypt(originData []byte) (string, error) {
+	h := crypto.Hash.New(crypto.SHA256)
+	h.Write(originData)
+	hashed := h.Sum(nil)
+	signedData, err := rsa.SignPKCS1v15(rand.Reader, p.config.PrivateCer.(*rsa.PrivateKey), crypto.SHA256, hashed)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(signedData), nil
+}
+
+func (p *Payment) rsaDecrypt(ciphertext string) (string, error) {
+	cipherdata, _ := base64.StdEncoding.DecodeString(ciphertext)
+	rng := rand.Reader
+	plaintext, err := rsa.DecryptOAEP(sha1.New(), rng, p.config.PrivateCer.(*rsa.PrivateKey), cipherdata, nil)
+	if err != nil {
+		// c.payment.Logger.Errorf("Error from decryption: %s\n", err)
+		return "", err
+	}
+	return string(plaintext), nil
 }
