@@ -56,7 +56,7 @@ func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional .
 func (op *OpenPlatform) HandleAuthorize(code string) *gjson.Json {
 
 	client := op.getClientWithToken()
-	return client.PostJson("cgi-bin/component/api_query_auth", map[string]string{
+	return client.RequestJson("POST", "cgi-bin/component/api_query_auth", map[string]string{
 		"component_appid":    op.config.AppID,
 		"authorization_code": code,
 	})
@@ -66,7 +66,7 @@ func (op *OpenPlatform) HandleAuthorize(code string) *gjson.Json {
 //GetAuthorizer get authorizer info type as gjson.Json
 func (op *OpenPlatform) GetAuthorizer(appid string) *gjson.Json {
 	client := op.getClientWithToken()
-	return client.PostJson("cgi-bin/component/api_get_authorizer_info", map[string]string{
+	return client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_info", map[string]string{
 		"component_appid":  op.config.AppID,
 		"authorizer_appid": appid,
 	})
@@ -78,7 +78,7 @@ func (op *OpenPlatform) GetAuthorizers(offset int, count int) *gjson.Json {
 		count = 500
 	}
 	client := op.getClientWithToken()
-	return client.PostJson("cgi-bin/component/api_get_authorizer_list", map[string]interface{}{
+	return client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_list", map[string]interface{}{
 		"component_appid": op.config.AppID,
 		"offset":          offset,
 		"count":           count,
@@ -88,7 +88,7 @@ func (op *OpenPlatform) GetAuthorizers(offset int, count int) *gjson.Json {
 //GetAuthorizerOption get authorizer option info
 func (op *OpenPlatform) GetAuthorizerOption(appid string, name string) *gjson.Json {
 	client := op.getClientWithToken()
-	return client.PostJson("cgi-bin/component/api_get_authorizer_option", map[string]string{
+	return client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_option", map[string]string{
 		"component_appid":  op.config.AppID,
 		"authorizer_appid": appid,
 		"option_name":      name,
@@ -98,7 +98,7 @@ func (op *OpenPlatform) GetAuthorizerOption(appid string, name string) *gjson.Js
 //SetAuthorizerOption set authorizer option
 func (op *OpenPlatform) SetAuthorizerOption(appid string, name string, value string) *gjson.Json {
 	client := op.getClientWithToken()
-	return client.PostJson("cgi-bin/component/api_set_authorizer_option", map[string]string{
+	return client.RequestJson("POST", "cgi-bin/component/api_set_authorizer_option", map[string]string{
 		"component_appid":  op.config.AppID,
 		"authorizer_appid": appid,
 		"option_name":      name,
@@ -118,7 +118,7 @@ func (op *OpenPlatform) GetAccessToken() string {
 
 func (op *OpenPlatform) GetPreAuthCode() string {
 	client := op.getClientWithToken()
-	v := client.PostJson("cgi-bin/component/api_create_preauthcode", map[string]string{
+	v := client.RequestJson("POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
 		"component_appid": op.config.AppID,
 	})
 

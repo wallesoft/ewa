@@ -64,10 +64,10 @@ func (at *AccessToken) SetToken(token string, lifetime time.Duration) *AccessTok
 func (at *AccessToken) requestToken() string {
 	var v *gjson.Json
 	if at.RequestPostMethod {
-		v = at.Client.PostJson(at.EndPoint, at.Credentials.Get())
+		v = at.Client.RequestJson("POST", at.EndPoint, at.Credentials.Get())
 
 	} else {
-		v = at.Client.GetJson(at.EndPoint, at.Credentials.Get())
+		v = at.Client.RequestJson("GET", at.EndPoint, at.Credentials.Get())
 	}
 
 	if have := v.Contains(at.TokenKey); have {

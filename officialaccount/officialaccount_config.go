@@ -41,3 +41,12 @@ func (oa *OfficialAccount) getClient() *base.Client {
 		Logger:  oa.config.Logger,
 	}
 }
+
+func (oa *OfficialAccount) getClientWithToken() *base.Client {
+	return &base.Client{
+		Client:  ghttp.NewClient(),
+		BaseUri: oa.getBaseUri(),
+		Logger:  oa.config.Logger,
+		Token:   oa.getDefaultAccessToken(),
+	}
+}
