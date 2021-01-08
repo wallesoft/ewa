@@ -1,0 +1,1 @@
+//see openplatform/auth/verify_ticket.go
