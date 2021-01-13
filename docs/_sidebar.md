@@ -5,6 +5,7 @@
 - [公众号](/official-account/)
   - [快速开始](/officail-account/tutorial)
   - [配置](/official-account/configuration)
+  - [网页授权](/official-account/oauth)
 - [微信支付](/payment)
   - [入门](/payment/index)
   - [订单](/payment/order)
