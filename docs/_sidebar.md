@@ -3,7 +3,7 @@
   - [准备](/ready.md)
   - [FAQ](/faq.md)
 - [公众号](/official-account/)
-  - [快速开始](/officail-account/index)
+  - [快速开始](/official-account/index)
   - [网页授权](/official-account/oauth)
 - [微信支付](/payment)
   - [入门](/payment/index)
