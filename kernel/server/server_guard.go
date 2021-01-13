@@ -4,116 +4,244 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
+	ehttp "gitee.com/wallesoft/ewa/kernel/http"
+	"gitee.com/wallesoft/ewa/kernel/log"
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/os/glog"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
+	"github.com/gogf/gf/util/gutil"
 )
 
 type ServerGuard struct {
-	//App			*Openplatform
-	Request        Request
+	Guard          Guard
 	Config         Config
+	Request        *ehttp.Request
 	AlwaysValidate bool
-	// Response *Response
-	Logger    *glog.Logger
-	Encryptor *encryptor.Encryptor
+	Response       *ehttp.Response
+	Logger         *log.Logger
+	Encryptor      *encryptor.Encryptor
+	muxGroup       string
+	queryParam     *queryParam
+	bodyData       *bodyData
+	// Cache          *gcache.Cache
 }
-type Config interface {
-	Get(pattern string) interface{}
+type queryParam struct {
+	Signature    string
+	Timestamp    string
+	Nonce        string
+	EncryptType  string
+	MsgSignature string
+	// RawBody      []byte
+	// URL string
+}
+type bodyData struct {
+	RawBody []byte
 }
 
-// type Config struct {
-// 	Appid  string `c:"app_id"`
-// 	Secret string `c:"secret"`
-// 	Token  string `c:"token"`
-// 	AesKey string `c:"aes_key"`
-// }
-func New(r Request, c Config, l *glog.Logger) *ServerGuard {
-	g.Dump(r)
-	encrypt, err := encryptor.New(map[string]interface{}{
-		"AppId":     c.Get("app_id"),
-		"Token":     c.Get("token"),
-		"AesKey":    gconv.String(c.Get("aes_key")) + "=",
-		"BlockSize": 32,
-	})
-	if err != nil {
-		panic(err)
+// New
+func New(config Config, request *http.Request, writer http.ResponseWriter) *ServerGuard {
+
+	g := &ServerGuard{
+		Config: config,
+		// cache:  cache,
 	}
-
-	return &ServerGuard{
-		Request:        r,
-		Encryptor:      encrypt,
-		Config:         c,
-		Logger:         l,
-		AlwaysValidate: false,
-	}
+	g.setRequest(request)
+	g.setResponse(writer)
+	return g
 }
 
-func (s *ServerGuard) SetLogger(logger *glog.Logger) {
-	s.Logger = logger
-}
+// Serve
 func (s *ServerGuard) Serve() {
-	//s.Logger.Debug
-	//s.Logger.Debug(map[string]interface{}{"Request received": s.Request})
-	s.Logger.Debug(map[string]interface{}{
-		"Request Received": map[string]string{
-			"uri":     s.Request.GetUrl(),
-			"content": gconv.String(s.Request.GetRaw()),
-		},
+	gutil.TryCatch(func() {
+		s.parseRequest()
+		s.Logger.Debugf("Request Received:\n URL: %s%s \n Content: %s \n\n", s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody))
+		s.Validate().resolve()
+	}, func(err error) {
+		switch err.Error() {
+		case ehttp.EXCEPTION_EXIT:
+			return
+		default:
+			//LOG
+			s.Logger.File(s.Logger.ErrorLogPattern).Print(fmt.Sprintf("[Erro] %s\n ================== Request Received =============\n [URL]: %s%s \n [Content]: %s \n ================================================\n", err.Error(), s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody)))
+		}
 	})
-	s.Validate().resolve()
+
+	//输出缓冲区
+	s.Response.Output()
 }
 func (s *ServerGuard) resolve() {
-	message, _ := s.GetMessage()
-	g.Dump(message)
+	//handle Request
+	if s.Guard.Resolve() {
+		// s.Guard.Resolve()
+		// content :=
+		// if s.Guard.ShouldReturnRawResponse() {
+		// 	s.Response.Write(content)
+		// } else {
+
+		// }
+	} else {
+		s.handleRequest()
+	}
+
+}
+func (s *ServerGuard) parseRequest() {
+	q := &queryParam{}
+
+	if err := gconv.Struct(s.Request.GetQuery(), q); err != nil {
+		//response
+	}
+	s.queryParam = q
+	b := &bodyData{
+		RawBody: s.Request.GetBody(),
+	}
+	s.bodyData = b
+}
+
+//return response
+func (s *ServerGuard) handleRequest() {
+	originMsg, err := s.GetMessage()
+	if err != nil {
+		panic(err.Error())
+	}
+	var mtype string
+
+	if originMsg.Contains("MsgType") {
+		mtype = originMsg.GetString("MsgType")
+	} else if originMsg.Contains("msg_type") {
+		mtype = originMsg.GetString("msg_type")
+	} else {
+		mtype = "text"
+	}
+	s.Dispatch(mtype, originMsg)
+
+}
+
+func (s *ServerGuard) Dispatch(mtype string, message *Message) {
+	// 1 mtype => message.MessageType
+	// g.Dump("mux group: %s", s.muxGroup)
+
+	handlers := s.GetHandlers()
+	event := s.TypeToEvent(mtype)
+	for _, mux := range handlers {
+		if (mux.Condition & event) == event {
+			result := mux.Handler.Handle(message)
+			switch result.(type) {
+			case bool:
+				if ok, _ := result.(bool); ok {
+					goto LOOP
+				}
+			default:
+				g.Dump("handler happy go")
+				// if ok := handler.Handle(message); ok {
+				// 	g.Dump(";;;;;;")
+				// }
+			}
+		}
+	}
+LOOP:
+	g.Dump("out loop and success!!!")
+
+	// 2 Get Mux by group name
+	// 3 range Mux
+	// 4 diff
+
+	// handlerGroup := s.mux.GetMuxEntryGroup(mtype)
+	// if len(handlerGroup) > 0 {
+	// 	for _, entry := range handlerGroup {
+	// 		if ok := entry.h.ServeMesage(message); !ok {
+
+	// 		}
+	// 	}
+	// }
+	// // LOOP:
 }
 
 //ParseMessage parse message from raw input.
-func (s *ServerGuard) ParseMessage() (*gjson.Json, error) {
-	g.Dump("aaaaaaaaaaaaaaaaaaaaaaaaa")
-	//j, err := gjson.DecodeToJson(s.Request.GetRaw())
-	content := s.Request.GetRaw()
-	g.Dump(checkDataType(content))
-	j, err := gjson.LoadContent(content)
-	//g.Dump(err)
-	g.Dump(j.Get("appid"))
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Invalid message content: %s", err.Error()))
-	}
-	return j, nil
-}
+func (s *ServerGuard) parseMessage() (msg *Message, err error) {
+	content := s.bodyData.RawBody
+	mtype := checkDataType(content)
 
-//GetMessage
-func (s *ServerGuard) GetMessage() (*gjson.Json, error) {
-	message, err := s.ParseMessage()
+	switch mtype {
+	case "xml":
+		msg, err = s.parseXMLMessage(content)
+		return
+	case "json":
+		msg, err = s.parseJSONMessage(content)
+		return
+	default:
+		return nil, errors.New("invalid message content: unsupported message type")
+	}
+}
+func (s *ServerGuard) parseXMLMessage(content []byte) (message *Message, err error) {
+	undecrypted, err := gxml.DecodeWithoutRoot(content)
 	if err != nil {
 		return nil, err
 	}
-	if s.IsSafeMode() && message.Contains("Encrypt") {
-		//decrypt
-		msg, err := s.DecryptMessage(message)
-		if err != nil {
-			return nil, err
+	if s.IsSafeMode() {
+		if val, ok := undecrypted["Encrypt"]; ok {
+			decrypted, err := s.decryptMessage(gconv.Bytes(val))
+			if err != nil {
+				return nil, err
+			}
+			//out root
+			m, err := gxml.DecodeWithoutRoot(decrypted)
+			if err != nil {
+				return nil, err
+			}
+			message = &Message{
+				Json: gjson.New(m),
+			}
+			return message, nil
 		}
-		j, err := gjson.DecodeToJson(msg)
-		if err != nil {
-			return nil, err
-		}
-		return j, nil
+		return nil, errors.New("invalid parse message type of xml: get encrypt content error")
 	}
-	return message.GetJson("Encrypt"), nil
+	message = &Message{
+		Json: gjson.New(undecrypted),
+	}
+	return message, nil
+}
+func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err error) {
+	j, err := gjson.LoadContent(content)
+	if err != nil {
+		return nil, err
+	}
+	if s.IsSafeMode() && j.Contains("Encrypt") {
+		decrypted, err := s.decryptMessage(j.GetBytes("Encrypt"))
+		if err != nil {
+			return nil, err
+		}
+		message = &Message{
+			Json: gjson.New(decrypted),
+		}
+		return message, nil
+	}
+	return &Message{
+		Json: j,
+	}, nil
+}
+
+//GetMessage
+func (s *ServerGuard) GetMessage() (message *Message, err error) {
+	message, err = s.parseMessage()
+	//is nil
+	if err != nil {
+		return nil, err
+	}
+	if message.IsNil() {
+		s.Response.WriteStatusExit(http.StatusNoContent, "No message received")
+		// panic(EXCEPTION_EXIT)
+	}
+
+	return
 }
 func (s *ServerGuard) signature() string {
-	token := gconv.String(s.Config.Get("token"))
-	a := []string{token, gconv.String(s.Request.Get("timestamp")), gconv.String(s.Request.Get("nonce"))}
-	// sort
+	a := []string{s.Config.Token, s.queryParam.Timestamp, s.queryParam.Nonce}
 	return encryptor.Signature(a)
-	// sort.Strings(a)
-	// return gsha1.Encrypt(strings.Join(a, ""))
 }
 
 //Validate validate request source
@@ -121,8 +249,9 @@ func (s *ServerGuard) Validate() *ServerGuard {
 	if !s.AlwaysValidate && !s.IsSafeMode() {
 		return s
 	}
-	if gconv.String(s.Request.Get("signature")) != s.signature() {
-		// response
+	if s.queryParam.Signature != s.signature() {
+		s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid request signature")
+		// panic(EXCEPTION_EXIT)
 	}
 	return s
 }
@@ -135,18 +264,17 @@ func (s *ServerGuard) ForceValidate() *ServerGuard {
 
 //IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
-	return gconv.String(s.Request.Get("Signature")) != "" && gconv.String(s.Request.Get("EncryptType")) == "aes"
+	return s.queryParam.Signature != "" && s.queryParam.EncryptType == "aes"
 }
 
 //DecryptMessage decrypt message
-func (s *ServerGuard) DecryptMessage(message *gjson.Json) ([]byte, error) {
-	token := gconv.String(s.Config.Get("token"))
-	a := []string{token, gconv.String(s.Request.Get("Timestamp")), gconv.String(s.Request.Get("Nonce")), message.GetString("Encrypt")}
+func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
+	a := []string{s.Config.Token, s.queryParam.Timestamp, s.queryParam.Nonce, gconv.String(message)}
 
-	if message.GetString("msg_signature") != encryptor.Signature(a) {
+	if s.queryParam.MsgSignature != encryptor.Signature(a) {
 		return nil, encryptor.NewError(encryptor.ERROR_INVALID_SIGNATURE, "Invalid Signature.")
 	}
-	content, err := s.Encryptor.Decrypt(message.GetBytes("Encrypt"))
+	content, err := s.Encryptor.Decrypt(message)
 	if err != nil {
 		return nil, err
 	}
@@ -157,13 +285,6 @@ func checkDataType(content []byte) string {
 		return "json"
 	} else if gregex.IsMatch(`^<.+>[\S\s]+<.+>$`, content) {
 		return "xml"
-	} else if gregex.IsMatch(`^[\s\t]*[\w\-]+\s*:\s*.+`, content) || gregex.IsMatch(`\n[\s\t]*[\w\-]+\s*:\s*.+`, content) {
-		return "yml"
-	} else if (gregex.IsMatch(`^[\s\t\[*\]].?*[\w\-]+\s*=\s*.+`, content) || gregex.IsMatch(`\n[\s\t\[*\]]*[\w\-]+\s*=\s*.+`, content)) && gregex.IsMatch(`\n[\s\t]*[\w\-]+\s*=*\"*.+\"`, content) == false && gregex.IsMatch(`^[\s\t]*[\w\-]+\s*=*\"*.+\"`, content) == false {
-		return "ini"
-	} else if gregex.IsMatch(`^[\s\t]*[\w\-\."]+\s*=\s*.+`, content) || gregex.IsMatch(`\n[\s\t]*[\w\-\."]+\s*=\s*.+`, content) {
-		return "toml"
-	} else {
-		return ""
 	}
+	return ""
 }

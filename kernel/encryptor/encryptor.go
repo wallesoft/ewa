@@ -9,14 +9,15 @@ import (
 	"github.com/gogf/gf/crypto/gaes"
 	"github.com/gogf/gf/crypto/gsha1"
 	"github.com/gogf/gf/encoding/gbase64"
+	"github.com/gogf/gf/encoding/gbinary"
 	"github.com/gogf/gf/text/gstr"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/grand"
-	"github.com/gogf/gf/util/gutil"
 )
 
+//Encryptor encrypotr struct
 type Encryptor struct {
-	AppId     string
+	AppID     string
 	Token     string
 	AesKey    string
 	BlockSize int
@@ -27,7 +28,7 @@ const (
 	ERROR_PARSE_XML         = -40002 // Parse XML failed
 	ERROR_CALC_SIGNATURE    = -40003 // Calculating the signature failed
 	ERROR_INVALID_AES_KEY   = -40004 // Invalid AESKey
-	ERROR_INVALID_APP_ID    = -40005 // Check AppId failed
+	ERROR_INVALID_APP_ID    = -40005 // Check AppID failed
 	ERROR_ENCRYPT_AES       = -40006 // AES EncryptionInterface failed
 	ERROR_DECRYPT_AES       = -40007 // AES Decryption failed
 	ERROR_INVALID_XML       = -40008 // Invaild XML
@@ -38,36 +39,44 @@ const (
 
 )
 
-func New(config map[string]interface{}) (*Encryptor, error) {
-	if config == nil || len(config) == 0 {
-		return nil, errors.New("Encryptor configuration cannot be empty")
-	}
-	config = gutil.MapCopy(config)
-	var c *Encryptor
-	if err := gconv.Struct(config, &c); err != nil {
-		return nil, err
-	}
-	if c.AesKey != "" {
-		aesKey, err := gbase64.DecodeToString(c.AesKey)
+//Config config
+type Config struct {
+	AppID          string `json:"app_id"` //appid
+	Token          string `json:"token"`  //token
+	EncodingAESKey string `json:"encoding_aes_key"`
+	BlockSize      int
+}
+
+//New return new point
+func New(config Config) *Encryptor {
+	aesKey := ""
+	if config.EncodingAESKey != "" {
+		key, err := gbase64.DecodeToString(config.EncodingAESKey + "=")
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
-		c.AesKey = aesKey
-	} else {
-		return nil, errors.New("Encryptor configuration aes_key cannot be empty")
+		aesKey = key
 	}
-	return c, nil
+	if config.BlockSize == 0 {
+		config.BlockSize = 32
+	}
+	return &Encryptor{
+		AppID:     config.AppID,
+		Token:     config.Token,
+		AesKey:    aesKey,
+		BlockSize: config.BlockSize,
+	}
+
 }
 
 //Encrypt encrypt message.
 func (e *Encryptor) Encrypt(rawXML []byte, nonce string, timestamp int) ([]byte, error) {
-	text := bytes.Join([][]byte{grand.B(16), gconv.Bytes(gconv.Uint32(len(rawXML))), rawXML, gconv.Bytes(e.AppId)}, []byte(""))
+	text := bytes.Join([][]byte{grand.B(16), gbinary.BeEncodeUint32(gconv.Uint32(len(rawXML))), rawXML, gconv.Bytes(e.AppID)}, []byte(""))
 	xml := PKCS7Pad(text, e.BlockSize)
 	encrypted, err := gaes.Encrypt(xml, gconv.Bytes(e.AesKey), gconv.Bytes(gstr.SubStr(e.AesKey, 0, 16)))
 	if err != nil {
 		return nil, err
 	}
-	// gbase64.Encode()
 	return gbase64.Encode(encrypted), nil
 }
 
@@ -86,15 +95,13 @@ func (e *Encryptor) Decrypt(content []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// len := len(result)
 	contents := result[16:]
-	contentsLen := gconv.Int(contents[:4])
-
-	if gconv.String(contents[contentsLen+4:]) != e.AppId {
+	//网络字节序
+	msgLen := gbinary.BeDecodeToUint32(contents[:4])
+	if gconv.String(contents[msgLen+4:]) != e.AppID {
 		return nil, NewError(ERROR_INVALID_APP_ID, "Invalid appId.")
 	}
-	return contents[4:contentsLen], nil
+	return contents[4 : msgLen+4], nil
 }
 
 //GetToken is this necessary?
