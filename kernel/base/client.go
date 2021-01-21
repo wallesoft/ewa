@@ -112,11 +112,14 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 }
 
 func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *gjson.Json {
-
+	var response *ghttp.ClientResponse
+	var err error
 	if method == "POST" {
-		c.ContentJson()
+		response, err = c.ContentJson().DoRequest(method, c.getUri(endpoint), data...)
+	} else {
+		response, err = c.DoRequest(method, c.getUri(endpoint), data...)
 	}
-	response, err := c.DoRequest(method, c.getUri(endpoint), data...)
+
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}

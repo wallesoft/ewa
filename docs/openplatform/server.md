@@ -53,6 +53,7 @@
   ...
   server.Push(handler,oserver.EVENT_COMPONENT_VERIFY_TICKET)
   // handler为实现 Handler 接口的
+  // Handler接口具体查看 "https://godoc.org/gitee.com/wallesofte/ewa/kernel/server"
   ...
   或者
   server.PushFunc(func(m *gserver.Message)interface{}{

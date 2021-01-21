@@ -144,7 +144,7 @@ func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 		}
 	}
 LOOP:
-	g.Dump("out loop and success!!!")
+	// g.Dump("out loop and success!!!")
 
 	// 2 Get Mux by group name
 	// 3 range Mux

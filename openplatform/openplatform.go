@@ -56,7 +56,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	}, request, writer)
 
 	gs.Logger = log.New()
-
+	gs.Logger.SetStdoutPrint(false)
 	server := &server.Server{
 		ServerGuard: gs,
 	}
