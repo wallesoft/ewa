@@ -127,6 +127,7 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 	debugRaw := response.Raw()
 
 	result := gjson.New(response.ReadAllString())
+
 	if have := result.Contains("errcode"); have {
 		//40001 refresh token try once
 		if result.GetInt("errcode") == 40001 {
@@ -148,9 +149,11 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 			}
 
 		}
+		if result.GetInt("errcode") != 0 {
+			c.handleErrorLog(errors.New("get json with err code."), debugRaw)
+			return result
+		}
 
-		c.handleErrorLog(errors.New("get json with err code."), debugRaw)
-		return result
 	}
 	c.handleAccessLog(debugRaw)
 	return result
@@ -160,9 +163,7 @@ func (c *Client) handleAccessLog(raw string) {
 	if !c.Logger.AccessLogEnabled {
 		return
 	}
-	c.Logger.File(c.Logger.AccessLogPattern).
-		Stdout(c.Logger.LogStdout).
-		Printf("\n=============Response Raw============\n\n %s \n ", raw)
+	c.Logger.File(c.Logger.AccessLogPattern).Stdout(c.Logger.LogStdout).Printf("\n=============Response Raw============\n\n %s \n ", raw)
 }
 
 func (c *Client) handleErrorLog(err error, raw string) {
@@ -180,10 +181,7 @@ func (c *Client) handleErrorLog(err error, raw string) {
 		content += err.Error()
 	}
 	content += "\n =============Reponse Raw [err] ==============\n" + raw
-	c.Logger.
-		File(c.Logger.ErrorLogPattern).
-		Stdout(c.Logger.LogStdout).
-		Print(content)
+	c.Logger.File(c.Logger.ErrorLogPattern).Stdout(c.Logger.LogStdout).Print(content)
 }
 
 //getUri

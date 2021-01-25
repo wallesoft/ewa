@@ -14,7 +14,7 @@ func (c *Credentials) Get() map[string]string {
 	return map[string]string{
 		"appid":      c.oa.config.AppID,
 		"secret":     c.oa.config.Secret,
-		"grant_type": "client_creditial",
+		"grant_type": "client_credential",
 	}
 }
 

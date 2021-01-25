@@ -14,7 +14,7 @@ import (
 type Jssdk struct {
 	Debug     bool     `json:"debug"`
 	AppID     string   `json:"appId"`
-	Timestamp string   `json:"Timestamp"`
+	Timestamp string   `json:"timestamp"`
 	NonceStr  string   `json:"nonceStr"`
 	Signature string   `json:"signature"`
 	JsApiList []string `json:"jsApiList"`
@@ -53,7 +53,7 @@ func (j *Jssdk) setSignature(url, ticket string) {
 	if gstr.Contains(url, "#") {
 		url = gstr.Split(url, "#")[0]
 	}
-	str := []string{"nonceStr=" + j.NonceStr, "jsapi_ticket" + ticket, "timestamp" + j.Timestamp, "url" + url}
+	str := []string{"noncestr=" + j.NonceStr, "jsapi_ticket=" + ticket, "timestamp=" + j.Timestamp, "url=" + url}
 	//sort
 	sort.Strings(str)
 	j.Signature = gsha1.Encrypt(strings.Join(str, "&"))
