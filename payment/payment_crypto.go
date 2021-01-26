@@ -23,7 +23,7 @@ const (
 )
 
 //aes-256-gcm
-func (p *Payment) GCMDencryter(associateData, cipherText, nonce string) ([]byte, error) {
+func (p *Payment) GCMDecryter(associateData, cipherText, nonce string) ([]byte, error) {
 	key := []byte(p.config.ApiV3Key)
 	if len(key) != KEY_LENGTH_BYTE {
 		panic("无效的ApiV3Key，长度应该为32字节")

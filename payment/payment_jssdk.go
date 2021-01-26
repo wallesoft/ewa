@@ -9,12 +9,12 @@ import (
 )
 
 type Jssdk struct {
-	AppID     string
-	Timestamp string
-	NonceStr  string
-	Package   string
-	SignType  string
-	PaySign   string
+	AppID     string `json:"appId"`
+	Timestamp string `json:"timeStamp"`
+	NonceStr  string `json:"nonceStr"`
+	Package   string `json:"package"`
+	SignType  string `json:"signType"`
+	PaySign   string `json:"paySign"`
 }
 
 //Jssdk
