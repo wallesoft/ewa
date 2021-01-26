@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"net/http"
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gbase64"
@@ -23,7 +24,7 @@ const (
 )
 
 //aes-256-gcm
-func (p *Payment) GCMDecryter(associateData, cipherText, nonce string) ([]byte, error) {
+func (p *Payment) GCMDecryte(associateData, cipherText, nonce string) ([]byte, error) {
 	key := []byte(p.config.ApiV3Key)
 	if len(key) != KEY_LENGTH_BYTE {
 		panic("无效的ApiV3Key，长度应该为32字节")
@@ -46,13 +47,13 @@ func (p *Payment) GCMDecryter(associateData, cipherText, nonce string) ([]byte, 
 }
 
 //应答及回调验签
-func (p *Payment) VerifySignature(response *Response) error {
+func (p *Payment) VerifySignature(header http.Header, body []byte) error {
 
-	serialNo := response.Header.Get("Wechatpay-Serial")
+	serialNo := header.Get("Wechatpay-Serial")
 	p.setPFPublicCert(serialNo)
 
-	signatureStr := p.getSignatureStr(response.Header.Get("Wechatpay-Timestamp"), response.Header.Get("Wechatpay-Nonce"), gvar.New(response.Body).String())
-	signature := gbase64.MustDecodeString(response.Header.Get("Wechatpay-Signature"))
+	signatureStr := p.getSignatureStr(header.Get("Wechatpay-Timestamp"), header.Get("Wechatpay-Nonce"), gvar.New(body).String())
+	signature := gbase64.MustDecodeString(header.Get("Wechatpay-Signature"))
 	h := crypto.Hash.New(crypto.SHA256)
 	h.Write(signatureStr)
 	hashed := h.Sum(nil)
