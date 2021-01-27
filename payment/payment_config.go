@@ -3,6 +3,7 @@ package payment
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/log"
 	"github.com/gogf/gf/net/ghttp"
@@ -55,7 +56,7 @@ func (p *Payment) setConfig(config Config, compatible ...bool) Config {
 		panic("证书编号无效 SerialNo: nil")
 	}
 	if priCertData := gfile.GetBytes(config.PriCertPath); priCertData == nil {
-		panic("私钥证书读取失败")
+		panic(fmt.Sprintf("私钥证书读取失败,config PriCertPath: %s", config.PriCertPath))
 	} else {
 		if block, _ := pem.Decode(priCertData); block == nil || block.Type != "PRIVATE KEY" {
 			panic("私钥PEM解码失败")
@@ -68,7 +69,7 @@ func (p *Payment) setConfig(config Config, compatible ...bool) Config {
 		}
 	}
 	if pubCertData := gfile.GetBytes(config.PubCertPath); pubCertData == nil {
-		panic("公钥证书读取失败")
+		panic(fmt.Sprintf("公钥证书读取失败,config PubCertPath: %s", config.PubCertPath))
 	} else {
 		if block, _ := pem.Decode(pubCertData); block == nil || block.Type != "CERTIFICATE" {
 			panic("公钥PEM解码失败")
