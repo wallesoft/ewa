@@ -15,4 +15,9 @@ func (op *OpenPlatform) FastRegisterWeapp(config map[string]interface{}) *gjson.
 	return client.RequestJson("POST", "cgi-bin/component/fastregisterweapp", config)
 }
 
-//@todo试用小程序创建
+//体验小程序创建
+func (op *OpenPlatform) FastRegisterBetaWeapp(config map[string]interface{}) *gjson.Json {
+
+	client := op.getClientWithToken()
+	return client.RequestJson("POST", "wxa/component/fastregisterbetaweapp", config)
+}
