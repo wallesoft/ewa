@@ -75,18 +75,22 @@ func (s *ServerGuard) Serve() {
 	s.Response.Output()
 }
 func (s *ServerGuard) resolve() {
-	//handle Request
-	if s.Guard.Resolve() {
-		// s.Guard.Resolve()
-		// content :=
-		// if s.Guard.ShouldReturnRawResponse() {
-		// 	s.Response.Write(content)
-		// } else {
-
-		// }
-	} else {
+	if !s.Guard.Resolve() {
 		s.handleRequest()
 	}
+
+	// //handle Request
+	// if s.Guard.Resolve() {
+	// 	// s.Guard.Resolve()
+	// 	// content :=
+	// 	// if s.Guard.ShouldReturnRawResponse() {
+	// 	// 	s.Response.Write(content)
+	// 	// } else {
+
+	// 	// }
+	// } else {
+	// 	s.handleRequest()
+	// }
 
 }
 func (s *ServerGuard) parseRequest() {
