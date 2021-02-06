@@ -81,7 +81,7 @@ func (p *Payment) setConfig(config Config, compatible ...bool) Config {
 		}
 	}
 	if config.PFCertPrefix == "" {
-		config.PFCertPrefix = "wechatpay_pf_"
+		config.PFCertPrefix = "wechatpay_"
 	}
 	if config.PFCertSavePath == "" {
 		config.PFCertSavePath = "/etc/wechatpay/"

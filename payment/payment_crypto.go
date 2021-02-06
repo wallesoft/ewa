@@ -72,8 +72,8 @@ func (p *Payment) getSignatureStr(timestamp, nonce, body string) []byte {
 func (p *Payment) setPFPublicCert(serialNo string) {
 	var err error
 	p.config.PFSerialNo = serialNo
-	if certData := gfile.GetBytes(p.config.PFCertSavePath + p.config.PFCertPrefix + serialNo + ".pem"); certData != nil {
-		panic("平台公钥读取失败")
+	if certData := gfile.GetBytes(p.config.PFCertSavePath + p.config.PFCertPrefix + serialNo + ".pem"); certData == nil {
+		panic(fmt.Sprintf("平台公钥读取失败,path: %s", p.config.PFCertSavePath+p.config.PFCertPrefix+serialNo+".pem"))
 	} else {
 		if block, _ := pem.Decode(certData); block == nil || block.Type != "CERTIFICATE" {
 			panic("平台公钥PEM解码失败")
