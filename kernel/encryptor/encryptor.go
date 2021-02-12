@@ -2,6 +2,8 @@ package encryptor
 
 import (
 	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"errors"
 	"sort"
 	"strings"
@@ -86,16 +88,25 @@ func (e *Encryptor) Decrypt(content []byte) ([]byte, error) {
 	if err != nil {
 		return nil, NewError(ERROR_BASE64_DECODE, err.Error())
 	}
-	decrypted, err := gaes.Decrypt(decoding, gconv.Bytes(e.AesKey), gconv.Bytes(gstr.SubStr(e.AesKey, 0, 16)))
+	iv := gconv.Bytes(gstr.SubStr(e.AesKey, 0, 16))
+
+	if len(decoding)%e.BlockSize != 0 {
+		return nil, NewError(ERROR_DECRYPT_AES, "content is not a multiple of the block size")
+	}
+	block, err := aes.NewCipher(gconv.Bytes(e.AesKey))
 	if err != nil {
 		return nil, NewError(ERROR_DECRYPT_AES, err.Error())
 	}
-	//unpad
-	result, err := PKCS7Unpad(decrypted, e.BlockSize)
+	blockModel := cipher.NewCBCDecrypter(block, iv)
+	plainText := make([]byte, len(decoding))
+	blockModel.CryptBlocks(plainText, decoding)
+	plainText, err = PKCS7Unpad(plainText, e.BlockSize)
+
 	if err != nil {
 		return nil, err
 	}
-	contents := result[16:]
+	contents := plainText[16:]
+
 	//网络字节序
 	msgLen := gbinary.BeDecodeToUint32(contents[:4])
 	if gconv.String(contents[msgLen+4:]) != e.AppID {
@@ -127,6 +138,7 @@ func PKCS7Unpad(src []byte, blockSize int) ([]byte, error) {
 	length := len(src)
 
 	unpadding := int(src[length-1])
+
 	if unpadding < 1 || unpadding > blockSize {
 		unpadding = 0
 	}

@@ -28,8 +28,9 @@ func (s *Server) SetMux() {
 }
 
 //Resolve
-func (s *Server) Resolve() bool {
-	if msg, err := s.GetMessage(); err == nil {
+func (s *Server) Resolve(msg *guard.Message) bool {
+
+	if msg != nil {
 		var t string
 		if msg.Contains("InfoType") {
 			t = msg.GetString("InfoType")
@@ -38,8 +39,6 @@ func (s *Server) Resolve() bool {
 		}
 		s.Dispatch(t, msg)
 		s.Response.Write(guard.SUCCESS_EMPTY_RESPONSE)
-	} else {
-		panic(err.Error())
 	}
 	return true
 }

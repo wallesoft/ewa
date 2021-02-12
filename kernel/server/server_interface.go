@@ -1,6 +1,6 @@
 package server
 
 type Guard interface {
-	Resolve() bool
+	Resolve(message *Message) bool
 	ShouldReturnRawResponse() bool
 }

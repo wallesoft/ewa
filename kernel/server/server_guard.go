@@ -12,6 +12,7 @@ import (
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/os/gtime"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gutil"
@@ -59,7 +60,7 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 func (s *ServerGuard) Serve() {
 	gutil.TryCatch(func() {
 		s.parseRequest()
-		s.Logger.Debugf("Request Received:\n URL: %s%s \n Content: %s \n\n", s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody))
+		// s.Logger.Debugf("Request Received:\n URL: %s%s \n Content: %s \n\n", s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody))
 		s.Validate().resolve()
 	}, func(err error) {
 		switch err.Error() {
@@ -75,9 +76,19 @@ func (s *ServerGuard) Serve() {
 	s.Response.Output()
 }
 func (s *ServerGuard) resolve() {
-	if !s.Guard.Resolve() {
-		s.handleRequest()
+	message, err := s.GetMessage()
+	if err != nil {
+		panic(err.Error())
 	}
+	//logger
+	s.handleAccessLog(message.MustToXmlString())
+
+	if !s.Guard.Resolve(message) {
+		s.handleRequest(message)
+	}
+	// if !s.Guard.Resolve() {
+	// 	s.handleRequest()
+	// }
 
 	// //handle Request
 	// if s.Guard.Resolve() {
@@ -93,6 +104,14 @@ func (s *ServerGuard) resolve() {
 	// }
 
 }
+
+//logger
+func (s *ServerGuard) handleAccessLog(raw string) {
+	if !s.Logger.AccessLogEnabled {
+		return
+	}
+	s.Logger.File(s.Logger.AccessLogPattern).Stdout(s.Logger.LogStdout).Printf("[Access]:Request Received-%s:\n Params:%s \n Raw:%s \n Parsed: %s \n", gtime.Datetime(), s.Request.URL.String(), gconv.String(s.bodyData.RawBody), raw)
+}
 func (s *ServerGuard) parseRequest() {
 	q := &queryParam{}
 
@@ -107,11 +126,11 @@ func (s *ServerGuard) parseRequest() {
 }
 
 //return response
-func (s *ServerGuard) handleRequest() {
-	originMsg, err := s.GetMessage()
-	if err != nil {
-		panic(err.Error())
-	}
+func (s *ServerGuard) handleRequest(originMsg *Message) {
+	// originMsg, err := s.GetMessage()
+	// if err != nil {
+	// 	panic(err.Error())
+	// }
 	var mtype string
 
 	if originMsg.Contains("MsgType") {
