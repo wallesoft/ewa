@@ -16,6 +16,7 @@ import (
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gbase64"
 	"github.com/gogf/gf/os/gfile"
+	"github.com/gogf/gf/util/gutil"
 )
 
 const (
@@ -48,19 +49,26 @@ func (p *Payment) GCMDecryte(associateData, cipherText, nonce string) ([]byte, e
 
 //应答及回调验签
 func (p *Payment) VerifySignature(header http.Header, body []byte) error {
+	var err error
+	gutil.TryCatch(func() {
+		serialNo := header.Get("Wechatpay-Serial")
+		p.setPFPublicCert(serialNo)
+		signatureStr := p.getSignatureStr(header.Get("Wechatpay-Timestamp"), header.Get("Wechatpay-Nonce"), gvar.New(body).String())
+		signature := gbase64.MustDecodeString(header.Get("Wechatpay-Signature"))
+		h := crypto.Hash.New(crypto.SHA256)
+		h.Write(signatureStr)
+		hashed := h.Sum(nil)
+		//证书的问题
+		ok := rsa.VerifyPKCS1v15(p.config.PFPublicCer.PublicKey.(*rsa.PublicKey), crypto.SHA256, hashed, signature)
+		if ok != nil {
+			panic(rsa.ErrVerification.Error())
+		}
 
-	serialNo := header.Get("Wechatpay-Serial")
-	p.setPFPublicCert(serialNo)
-
-	signatureStr := p.getSignatureStr(header.Get("Wechatpay-Timestamp"), header.Get("Wechatpay-Nonce"), gvar.New(body).String())
-	signature := gbase64.MustDecodeString(header.Get("Wechatpay-Signature"))
-	h := crypto.Hash.New(crypto.SHA256)
-	h.Write(signatureStr)
-	hashed := h.Sum(nil)
-	//证书的问题
-	ok := rsa.VerifyPKCS1v15(p.config.PFPublicCer.PublicKey.(*rsa.PublicKey), crypto.SHA256, hashed, signature)
-	if ok != nil {
-		return rsa.ErrVerification
+	}, func(e error) {
+		err = e
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }
