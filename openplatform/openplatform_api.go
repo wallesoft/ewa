@@ -137,10 +137,12 @@ func (op *OpenPlatform) GetPreAuthCode() (string, error) {
 		}
 		if have := v.Contains("pre_auth_code"); have {
 			code = v.GetString("pre_auth_code")
+		} else {
+			panic("Request pre_auth_code fail:" + v.MustToJsonString())
 		}
-		panic("Request pre_auth_code fail:" + v.MustToJsonString())
 	}, func(e error) {
 		err = e
+		op.config.Logger.File(op.config.Logger.ErrorLogPattern).Stdout(op.config.Logger.LogStdout).Print(err.Error())
 	})
 
 	return code, err
