@@ -5,13 +5,17 @@ import (
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/util/gutil"
 )
 
 //GetPreAuthorizationUrl 获取授权页网址
-func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[string]interface{}) string {
+func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[string]interface{}) (string, error) {
 
 	val := url.Values{}
-	authCode := op.GetPreAuthCode()
+	authCode, err := op.GetPreAuthCode()
+	if err != nil {
+		return "", err
+	}
 	val.Add("pre_auth_code", authCode)
 	if len(optional) > 0 {
 		options := optional[0]
@@ -26,13 +30,16 @@ func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[
 	val.Add("component_appid", op.config.AppID)
 	val.Add("redirect_uri", callback)
 
-	return "https://mp.weixin.qq.com/cgi-bin/componentloginpage?" + val.Encode()
+	return "https://mp.weixin.qq.com/cgi-bin/componentloginpage?" + val.Encode(), nil
 }
 
 //GetMobilePreAuthorizationUrl
-func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional ...map[string]interface{}) string {
+func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional ...map[string]interface{}) (string, error) {
 	val := url.Values{}
-	authCode := op.GetPreAuthCode()
+	authCode, err := op.GetPreAuthCode()
+	if err != nil {
+		return "", err
+	}
 	val.Add("pre_auth_code", authCode)
 	if len(optional) > 0 {
 		options := optional[0]
@@ -49,7 +56,7 @@ func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional .
 	val.Add("action", "bindcomponent")
 	val.Add("no_scan", "1")
 
-	return "https://mp.weixin.qq.com/safe/bindcomponent?" + val.Encode() + "#wechat_redirect"
+	return "https://mp.weixin.qq.com/safe/bindcomponent?" + val.Encode() + "#wechat_redirect", nil
 }
 
 //HandleAuthorize
@@ -116,18 +123,25 @@ func (op *OpenPlatform) GetAccessToken() string {
 	return op.accessToken.GetToken()
 }
 
-func (op *OpenPlatform) GetPreAuthCode() string {
-	client := op.getClientWithToken()
-	v := client.RequestJson("POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
-		"component_appid": op.config.AppID,
+func (op *OpenPlatform) GetPreAuthCode() (string, error) {
+	var code string
+	var err error
+	gutil.TryCatch(func() {
+		client := op.getClientWithToken()
+		v := client.RequestJson("POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
+			"component_appid": op.config.AppID,
+		})
+
+		if have := v.Contains("errcode"); have {
+			panic(v.MustToJsonString())
+		}
+		if have := v.Contains("pre_auth_code"); have {
+			code = v.GetString("pre_auth_code")
+		}
+		panic("Request pre_auth_code fail:" + v.MustToJsonString())
+	}, func(e error) {
+		err = e
 	})
 
-	if have := v.Contains("errcode"); have {
-		panic(v.MustToJsonString())
-	}
-	if have := v.Contains("pre_auth_code"); have {
-		return v.GetString("pre_auth_code")
-	}
-	panic("Request pre_auth_code fail:" + v.MustToJsonString())
-
+	return code, err
 }

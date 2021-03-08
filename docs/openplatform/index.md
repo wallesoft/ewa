@@ -103,6 +103,6 @@ token := op.GetAccessToken()
 
 ```golang
 
-code := op.GetPreAuthCode()
+code, err := op.GetPreAuthCode()
 
 ```
