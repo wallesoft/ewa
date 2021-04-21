@@ -195,7 +195,9 @@ func (c *Client) getUri(endpoint string) string {
 	}
 	//token
 	if c.Token != nil {
-		param.Add(c.Token.GetTokenKey(), c.Token.GetToken())
+		// param.Add(c.Token.GetTokenKey(), c.Token.GetToken())
+		param.Add(c.Token.GetTokenKey(), "44_ZfU9WqOpBxZ0DqCRFNlrSNZkzSEdwEji096V_TpjNsv1Yjv5pQzR0zu0BG4CC2Q5gS-lOoUZ4LMnJTPmSHgFzT7-66B8TSTcPLzsBIKHFGCgEuJ4Rr4-nCzFUX2my1zqF8rHhXWiUjjOwmliNDMjABAUKT")
+
 	}
 	//base uri
 	if c.BaseUri != "" {

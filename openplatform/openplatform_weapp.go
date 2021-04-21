@@ -22,3 +22,9 @@ func (op *OpenPlatform) GetTemplateList() *gjson.Json {
 	client := op.getClientWithToken()
 	return client.RequestJson("GET", "wxa/gettemplatelist")
 }
+
+//从模板库中删除对应模板 @see https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Mini_Programs/code_template/deletetemplate.html
+func (op *OpenPlatform) DelTemplate(templateId string) *gjson.Json {
+	client := op.getClientWithToken()
+	return client.RequestJson("POST", "wxa/deletetemplate", g.Map{"template_id": templateId})
+}
