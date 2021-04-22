@@ -9,6 +9,7 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	"gitee.com/wallesoft/ewa/kernel/log"
 	guard "gitee.com/wallesoft/ewa/kernel/server"
+	"gitee.com/wallesoft/ewa/miniprogram"
 	"gitee.com/wallesoft/ewa/openplatform/auth"
 	"gitee.com/wallesoft/ewa/openplatform/server"
 )
@@ -71,4 +72,15 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 	})
 	server.Guard = server
 	return server
+}
+
+//MiniProgram
+func (op *OpenPlatform) MiniProgram(appid string, refreshToken string) *miniprogram.MiniProgram {
+
+	app := miniprogram.New(miniprogram.Config{
+		AppID: appid,
+	})
+	app.RefreshToken = refreshToken
+	app.AccessToken = op.getWeappAccessToken(app)
+	return app
 }

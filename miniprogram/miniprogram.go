@@ -1,45 +1,38 @@
-// Copyright 2020 ewa Author(https://gitee.com/wallesoft/ewa)
-// ewa (https://wallesoft.gitee.io/ewa)
-//
-// 小程序模块
-
 package miniprogram
 
 import (
-	"errors"
+	"fmt"
 
-	"github.com/gogf/gf/os/glog"
-	"github.com/gogf/gf/util/gconv"
+	"gitee.com/wallesoft/ewa/kernel/auth"
+	"gitee.com/wallesoft/ewa/kernel/cache"
+	"gitee.com/wallesoft/ewa/kernel/log"
 )
 
 type MiniProgram struct {
-	config   	 MiniProgramConfig
-	ResponseType string // 返回类型
-	// Logger specifies the logger for miniprogram
-	Logger *glog.Logger
-}
-type MiniProgramConfig struct {
-	Appid  		string  // appid
-	Secret 		string  // scret
+	Config       Config
+	AccessToken  auth.AccessToken
+	RefreshToken string // 第三方平台用
 }
 
-func ConfigFromMap(config map[string]interface{}) (*MiniProgram, error) {
-	mp := new(MiniProgram)
-	if config == nil || len(config) == 0 {
-		return mp, errors.New("Miniprogram configuration cannot be empty")
+//New
+func New(config Config) *MiniProgram {
+	if config.Cache == nil {
+		config.Cache = cache.New("ewa.wechat.miniprogram")
 	}
-	// ResponseType
+	if config.Logger == nil {
+		config.Logger = log.New()
+		if config.Logger.LogPath != "" {
+			if err := config.Logger.SetPath(config.Logger.LogPath); err != nil {
+				panic(fmt.Sprintf("[miniprogram] set log path '%s' error: %v", config.Logger.LogPath, err))
+			}
+		}
 
-	err := gconv.Struct(config, mp)
-	if err != nil {
-		return mp, err
+		// default set close debug / close stdout print
+		config.Logger.LogStdout = false
 	}
-
-	return mp, nil
-}
-func Instance(config map[string]interface{}) *MiniProgram {
-	mp, err := Config(config)
-	if err != nil {
-		// log
+	var app = &MiniProgram{
+		Config: config,
 	}
+	app.AccessToken = app.getDefaultAccessToken()
+	return app
 }
