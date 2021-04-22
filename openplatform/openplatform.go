@@ -77,10 +77,12 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 //MiniProgram
 func (op *OpenPlatform) MiniProgram(appid string, refreshToken string) *miniprogram.MiniProgram {
 
-	app := miniprogram.New(miniprogram.Config{
+	app := miniprogram.NewWithOutToken(miniprogram.Config{
 		AppID: appid,
 	})
+
 	app.RefreshToken = refreshToken
 	app.AccessToken = op.getWeappAccessToken(app)
+
 	return app
 }

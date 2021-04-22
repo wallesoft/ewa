@@ -16,6 +16,12 @@ type MiniProgram struct {
 
 //New
 func New(config Config) *MiniProgram {
+	app := NewWithOutToken(config)
+	app.AccessToken = app.getDefaultAccessToken()
+	return app
+}
+
+func NewWithOutToken(config Config) *MiniProgram {
 	if config.Cache == nil {
 		config.Cache = cache.New("ewa.wechat.miniprogram")
 	}
@@ -33,6 +39,5 @@ func New(config Config) *MiniProgram {
 	var app = &MiniProgram{
 		Config: config,
 	}
-	app.AccessToken = app.getDefaultAccessToken()
 	return app
 }

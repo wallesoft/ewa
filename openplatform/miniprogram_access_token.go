@@ -5,7 +5,6 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/base"
 	"gitee.com/wallesoft/ewa/miniprogram"
 	"github.com/gogf/gf/crypto/gmd5"
-	"github.com/gogf/gf/frame/g"
 )
 
 type MiniProgramCredentials struct {
@@ -30,8 +29,6 @@ func (op *OpenPlatform) getWeappAccessToken(mp *miniprogram.MiniProgram) auth.Ac
 	defaultWeappAccessToken.RequestPostMethod = true
 	defaultWeappAccessToken.Credentials = &MiniProgramCredentials{mp: mp, op: op}
 	defaultWeappAccessToken.CacheKey = "ewa.weapp_access_token." + gmd5.MustEncrypt(defaultWeappAccessToken.Credentials.Get())
-	g.Dump(defaultAccessToken)
 	defaultWeappAccessToken.Client = op.getClientWithToken()
-	g.Dump(defaultAccessToken)
 	return defaultWeappAccessToken
 }
