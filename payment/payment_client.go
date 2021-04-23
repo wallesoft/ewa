@@ -66,7 +66,7 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 	if res.StatusCode == 200 || res.StatusCode == 204 {
 		//response.StatusCode == 200
 		//验签
-		err := c.payment.VerifySignature(res)
+		err := c.payment.VerifySignature(res.Header, res.Body)
 		if err != nil {
 			c.handleErrorLog(err, debugRaw)
 		} else {

@@ -112,18 +112,21 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 }
 
 func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *gjson.Json {
-
+	var response *ghttp.ClientResponse
+	var err error
 	if method == "POST" {
-		c.ContentJson()
+		response, err = c.ContentJson().DoRequest(method, c.getUri(endpoint), data...)
+	} else {
+		response, err = c.DoRequest(method, c.getUri(endpoint), data...)
 	}
-	response, err := c.DoRequest(method, c.getUri(endpoint), data...)
+
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
 
 	debugRaw := response.Raw()
-
 	result := gjson.New(response.ReadAllString())
+
 	if have := result.Contains("errcode"); have {
 		//40001 refresh token try once
 		if result.GetInt("errcode") == 40001 {
@@ -145,21 +148,67 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 			}
 
 		}
+		if result.GetInt("errcode") != 0 {
+			c.handleErrorLog(errors.New("get json with err code."), debugRaw)
+			return result
+		}
 
-		c.handleErrorLog(errors.New("get json with err code."), debugRaw)
-		return result
 	}
 	c.handleAccessLog(debugRaw)
 	return result
+}
+
+//RequestRaw
+func (c *Client) RequestRaw(method string, endpoint string, data ...interface{}) []byte {
+	var response *ghttp.ClientResponse
+	var err error
+	if method == "POST" {
+		response, err = c.ContentJson().DoRequest(method, c.getUri(endpoint), data...)
+	} else {
+		response, err = c.DoRequest(method, c.getUri(endpoint), data...)
+	}
+	if err != nil {
+		c.handleErrorLog(err, response.Raw())
+	}
+	debugRaw := response.Raw()
+	resRaw := response.ReadAll()
+	if gjson.Valid(resRaw) {
+		result := gjson.New(resRaw)
+		if have := result.Contains("errcode"); have {
+			//40001 refresh token try once
+			if result.GetInt("errcode") == 40001 {
+
+				c.Token.GetToken(true)
+
+				resp, err := c.ContentJson().Post(c.getUri(endpoint), data...)
+				var respRaw string = resp.Raw()
+				if err != nil {
+					c.handleErrorLog(err, respRaw)
+				}
+				res := resp.ReadAll()
+				defer resp.Close()
+				if gjson.Valid(res) {
+					resJson := gjson.New(res)
+					if resJson.Contains("errcode") {
+						c.handleErrorLog(errors.New("Refresh Token Result:"), respRaw)
+					}
+				}
+			}
+			if result.GetInt("errcode") != 0 {
+				c.handleErrorLog(errors.New("get json with err code."), debugRaw)
+				return resRaw
+			}
+
+		}
+	}
+	return resRaw
 }
 
 func (c *Client) handleAccessLog(raw string) {
 	if !c.Logger.AccessLogEnabled {
 		return
 	}
-	c.Logger.File(c.Logger.AccessLogPattern).
-		Stdout(c.Logger.LogStdout).
-		Printf("\n=============Response Raw============\n\n %s \n ", raw)
+	c.Logger.File(c.Logger.AccessLogPattern).Stdout(c.Logger.LogStdout).Printf("\n=============Response Raw============\n\n %s \n ", raw)
 }
 
 func (c *Client) handleErrorLog(err error, raw string) {
@@ -177,10 +226,7 @@ func (c *Client) handleErrorLog(err error, raw string) {
 		content += err.Error()
 	}
 	content += "\n =============Reponse Raw [err] ==============\n" + raw
-	c.Logger.
-		File(c.Logger.ErrorLogPattern).
-		Stdout(c.Logger.LogStdout).
-		Print(content)
+	c.Logger.File(c.Logger.ErrorLogPattern).Stdout(c.Logger.LogStdout).Print(content)
 }
 
 //getUri
@@ -194,7 +240,7 @@ func (c *Client) getUri(endpoint string) string {
 	}
 	//token
 	if c.Token != nil {
-		param.Add(c.Token.GetTokenKey(), c.Token.GetToken())
+		param.Add(c.Token.GetRequestTokenKey(), c.Token.GetToken())
 	}
 	//base uri
 	if c.BaseUri != "" {

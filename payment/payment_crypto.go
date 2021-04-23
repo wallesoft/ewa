@@ -11,10 +11,12 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"net/http"
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gbase64"
 	"github.com/gogf/gf/os/gfile"
+	"github.com/gogf/gf/util/gutil"
 )
 
 const (
@@ -23,7 +25,7 @@ const (
 )
 
 //aes-256-gcm
-func (p *Payment) GCMDencryter(associateData, cipherText, nonce string) ([]byte, error) {
+func (p *Payment) GCMDecryte(associateData, cipherText, nonce string) ([]byte, error) {
 	key := []byte(p.config.ApiV3Key)
 	if len(key) != KEY_LENGTH_BYTE {
 		panic("无效的ApiV3Key，长度应该为32字节")
@@ -46,20 +48,27 @@ func (p *Payment) GCMDencryter(associateData, cipherText, nonce string) ([]byte,
 }
 
 //应答及回调验签
-func (p *Payment) VerifySignature(response *Response) error {
+func (p *Payment) VerifySignature(header http.Header, body []byte) error {
+	var err error
+	gutil.TryCatch(func() {
+		serialNo := header.Get("Wechatpay-Serial")
+		p.setPFPublicCert(serialNo)
+		signatureStr := p.getSignatureStr(header.Get("Wechatpay-Timestamp"), header.Get("Wechatpay-Nonce"), gvar.New(body).String())
+		signature := gbase64.MustDecodeString(header.Get("Wechatpay-Signature"))
+		h := crypto.Hash.New(crypto.SHA256)
+		h.Write(signatureStr)
+		hashed := h.Sum(nil)
+		//证书的问题
+		ok := rsa.VerifyPKCS1v15(p.config.PFPublicCer.PublicKey.(*rsa.PublicKey), crypto.SHA256, hashed, signature)
+		if ok != nil {
+			panic(rsa.ErrVerification.Error())
+		}
 
-	serialNo := response.Header.Get("Wechatpay-Serial")
-	p.setPFPublicCert(serialNo)
-
-	signatureStr := p.getSignatureStr(response.Header.Get("Wechatpay-Timestamp"), response.Header.Get("Wechatpay-Nonce"), gvar.New(response.Body).String())
-	signature := gbase64.MustDecodeString(response.Header.Get("Wechatpay-Signature"))
-	h := crypto.Hash.New(crypto.SHA256)
-	h.Write(signatureStr)
-	hashed := h.Sum(nil)
-	//证书的问题
-	ok := rsa.VerifyPKCS1v15(p.config.PFPublicCer.PublicKey.(*rsa.PublicKey), crypto.SHA256, hashed, signature)
-	if ok != nil {
-		return rsa.ErrVerification
+	}, func(e error) {
+		err = e
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -71,8 +80,8 @@ func (p *Payment) getSignatureStr(timestamp, nonce, body string) []byte {
 func (p *Payment) setPFPublicCert(serialNo string) {
 	var err error
 	p.config.PFSerialNo = serialNo
-	if certData := gfile.GetBytes(p.config.PFCertSavePath + p.config.PFCertPrefix + serialNo + ".pem"); certData != nil {
-		panic("平台公钥读取失败")
+	if certData := gfile.GetBytes(p.config.PFCertSavePath + p.config.PFCertPrefix + serialNo + ".pem"); certData == nil {
+		panic(fmt.Sprintf("平台公钥读取失败,path: %s", p.config.PFCertSavePath+p.config.PFCertPrefix+serialNo+".pem"))
 	} else {
 		if block, _ := pem.Decode(certData); block == nil || block.Type != "CERTIFICATE" {
 			panic("平台公钥PEM解码失败")

@@ -16,6 +16,7 @@
 - [开放平台](/openplatform/index)
   - [入门](/openplatform/index)
   - [服务端](/openplatform/server)
+  - [小程序](/openplatform/weapp)
 - [企业微信](/work)
 - [小微商户](/microMerchant)
 - [模块开发](/module)

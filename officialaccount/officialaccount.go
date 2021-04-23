@@ -24,7 +24,10 @@ func New(config Config) *OfficialAccount {
 				panic(fmt.Sprintf("[officialaccount] set log path '%s' error: %v", config.Logger.LogPath, err))
 			}
 		}
+
 		// default set close debug / close stdout print
+		config.Logger.LogStdout = false
+
 		// config.Logger.SetDebug(false)
 		// config.Logger.SetStdoutPrint(false)
 	}

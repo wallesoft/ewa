@@ -1,6 +1,7 @@
 package officialaccount
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gogf/gf/container/gvar"
@@ -35,6 +36,8 @@ func (v *DefaultJsapiTicket) GetTicket() string {
 				panic(err.Error())
 			}
 			return val.GetString("ticket")
+		} else {
+			v.oa.config.Logger.Stdout(v.oa.config.Logger.LogStdout).Print(fmt.Sprintf("[Err] ticket get from api Error: %s", val.MustToJsonString()))
 		}
 	}
 	return gvar.New(ticket).String()

@@ -47,6 +47,6 @@ func (oa *OfficialAccount) getClientWithToken() *base.Client {
 		Client:  ghttp.NewClient(),
 		BaseUri: oa.getBaseUri(),
 		Logger:  oa.config.Logger,
-		Token:   oa.getDefaultAccessToken(),
+		Token:   oa.getDefaultAccessToken(), // >>>>???????? 能否用oa.accessToken
 	}
 }
