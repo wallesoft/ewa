@@ -13,7 +13,8 @@ type AccessToken struct {
 	Cache *gcache.Cache
 	// Appid       string
 	// Secret      string
-	TokenKey          string
+	TokenKey          string //请求结果中
+	RequestTokenKey   string //请求时的 获取token key 与请求时不一致时设置，例如第三方平台带小程序公众号请求
 	isRefresh         bool
 	CacheKey          string
 	Credentials       TokenCredentail
@@ -40,8 +41,18 @@ func (at *AccessToken) GetToken(refresh ...bool) string {
 	return at.requestToken()
 
 }
+
+//GetTokenKey
 func (at *AccessToken) GetTokenKey() string {
 	return at.TokenKey
+}
+
+//GetRequestTokenKey
+func (at *AccessToken) GetRequestTokenKey() string {
+	if at.RequestTokenKey == "" {
+		return at.TokenKey
+	}
+	return at.RequestTokenKey
 }
 
 //Refresh

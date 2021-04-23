@@ -28,6 +28,5 @@ func (op *OpenPlatform) getDefaultAccessToken() auth.AccessToken {
 	defaultAccessToken.Credentials = &Credentials{op: op}
 	defaultAccessToken.CacheKey = "ewa.access_token." + gmd5.MustEncrypt(defaultAccessToken.Credentials.Get())
 	defaultAccessToken.Client = op.getClient()
-	defaultAccessToken.SetToken("44_Xtdx5WA2Py9nCM2BNlA9QUvBdlvIwR3vSddYy_-xgiDHwH4pZ9P9mBo0WcMGmwtIG1b6Drjhv5NmHqmVeGHQ_cV85CFdBgJR24v9m-HVNTbQcuIcrm4pkWmEgpd5YLebKCXLAI0pGC8fhWmgMIWdABAZVJ", 7200)
 	return defaultAccessToken
 }

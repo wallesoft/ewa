@@ -12,7 +12,7 @@ import (
 //小程序码
 type AppCode struct {
 	mp  *MiniProgram
-	raw *gjson.Json
+	raw []byte
 }
 
 //错误
@@ -29,9 +29,9 @@ func (mp *MiniProgram) AppCode() *AppCode {
 }
 
 //ToJson gjson>Json @see https://pkg.go.dev/github.com/gogf/gf/encoding/gjson
-func (c *AppCode) ToJson() *gjson.Json {
-	return c.raw
-}
+// func (c *AppCode) ToJson() *gjson.Json {
+// 	return c.raw
+// }
 
 //Save 保存小程序码到文件
 func (c *AppCode) Save(path string, name ...string) (string, *AppCodeError) {
@@ -41,13 +41,17 @@ func (c *AppCode) Save(path string, name ...string) (string, *AppCodeError) {
 	} else {
 		codeName = guid.S() + ".png"
 	}
-	if c.raw.GetInt("errcode") != 0 {
-		return "", &AppCodeError{
-			ErrCode: c.raw.GetInt("errcode"),
-			ErrMsg:  c.raw.GetString("errmsg"),
+	if gjson.Valid(c.raw) {
+		err := gjson.New(c.raw)
+		if err.GetInt("errcode") != 0 {
+			return "", &AppCodeError{
+				ErrCode: err.GetInt("errcode"),
+				ErrMsg:  err.GetString("errmsg"),
+			}
 		}
 	}
-	err := gfile.PutBytes(fmt.Sprintf("%s/%s", path, codeName), c.raw.GetBytes("buffer"))
+
+	err := gfile.PutBytes(fmt.Sprintf("%s/%s", path, codeName), c.raw)
 	if err != nil {
 		return "", &AppCodeError{
 			ErrCode: -1,
@@ -66,7 +70,7 @@ func (c *AppCode) CreateQrCode(path string, width ...int) *AppCode {
 		param["width"] = width[0]
 	}
 	client := c.mp.getClientWithToken()
-	c.raw = client.RequestJson("POST", "cgi-bin/wxaapp/createwxaqrcode", param)
+	c.raw = client.RequestRaw("POST", "cgi-bin/wxaapp/createwxaqrcode", param)
 	return c
 }
 
@@ -78,7 +82,7 @@ func (c *AppCode) Get(path string, config ...g.Map) *AppCode {
 		param = config[0]
 	}
 	param["path"] = path
-	c.raw = client.RequestJson("POST", "wxa/getwxacode", param)
+	c.raw = client.RequestRaw("POST", "wxa/getwxacode", param)
 	return c
 }
 
@@ -90,6 +94,6 @@ func (c *AppCode) GetUnlimit(scene string, config ...g.Map) *AppCode {
 		param = config[0]
 	}
 	param["scene"] = scene
-	c.raw = client.RequestJson("POST", "wxa/getwxacodeunlimit", param)
+	c.raw = client.RequestRaw("POST", "wxa/getwxacodeunlimit", param)
 	return c
 }

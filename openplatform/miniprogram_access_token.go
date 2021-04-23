@@ -25,6 +25,7 @@ var defaultWeappAccessToken = &base.AccessToken{}
 func (op *OpenPlatform) getWeappAccessToken(mp *miniprogram.MiniProgram) auth.AccessToken {
 	defaultWeappAccessToken.Cache = op.config.Cache
 	defaultWeappAccessToken.TokenKey = "authorizer_access_token"
+	defaultWeappAccessToken.RequestTokenKey = "access_token"
 	defaultWeappAccessToken.EndPoint = "cgi-bin/component/api_authorizer_token"
 	defaultWeappAccessToken.RequestPostMethod = true
 	defaultWeappAccessToken.Credentials = &MiniProgramCredentials{mp: mp, op: op}
