@@ -27,6 +27,6 @@ func (oa *OfficialAccount) getDefaultAccessToken() auth.AccessToken {
 	defaultAccessToken.RequestPostMethod = false // GET 请求
 	defaultAccessToken.Credentials = &Credentials{oa: oa}
 	defaultAccessToken.CacheKey = "ewa.access_token." + gmd5.MustEncrypt(defaultAccessToken.Credentials.Get())
-	defaultAccessToken.Client = oa.getClient()
+	defaultAccessToken.Client = oa.GetClient()
 	return defaultAccessToken
 }

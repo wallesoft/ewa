@@ -27,6 +27,6 @@ func (mp *MiniProgram) getDefaultAccessToken() auth.AccessToken {
 	defaultAccessToken.RequestPostMethod = false // GET 请求
 	defaultAccessToken.Credentials = &Credentials{miniprogram: mp}
 	defaultAccessToken.CacheKey = "ewa.weapp_access_token." + gmd5.MustEncrypt(defaultAccessToken.Credentials.Get())
-	defaultAccessToken.Client = mp.getClient()
+	defaultAccessToken.Client = mp.GetClient()
 	return defaultAccessToken
 }

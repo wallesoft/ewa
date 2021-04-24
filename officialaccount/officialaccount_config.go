@@ -34,7 +34,7 @@ func (oa *OfficialAccount) getBaseUri() string {
 	return "https://api.weixin.qq.com/"
 }
 
-func (oa *OfficialAccount) getClient() *base.Client {
+func (oa *OfficialAccount) GetClient() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: oa.getBaseUri(),
@@ -42,7 +42,7 @@ func (oa *OfficialAccount) getClient() *base.Client {
 	}
 }
 
-func (oa *OfficialAccount) getClientWithToken() *base.Client {
+func (oa *OfficialAccount) GetClientWithToken() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: oa.getBaseUri(),

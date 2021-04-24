@@ -18,7 +18,7 @@ func (mp *MiniProgram) getBaseUri() string {
 	return "https://api.weixin.qq.com/"
 }
 
-func (mp *MiniProgram) getClient() *base.Client {
+func (mp *MiniProgram) GetClient() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: mp.getBaseUri(),
@@ -26,7 +26,7 @@ func (mp *MiniProgram) getClient() *base.Client {
 	}
 }
 
-func (mp *MiniProgram) getClientWithToken() *base.Client {
+func (mp *MiniProgram) GetClientWithToken() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: mp.getBaseUri(),

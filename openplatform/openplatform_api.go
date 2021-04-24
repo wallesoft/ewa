@@ -3,8 +3,8 @@ package openplatform
 import (
 	"net/url"
 
+	"gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/util/gutil"
 )
 
@@ -60,57 +60,68 @@ func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional .
 }
 
 //HandleAuthorize
-func (op *OpenPlatform) HandleAuthorize(code string) *gjson.Json {
+func (op *OpenPlatform) HandleAuthorize(code string) *http.ResponseData {
 
 	client := op.getClientWithToken()
-	return client.RequestJson("POST", "cgi-bin/component/api_query_auth", map[string]string{
-		"component_appid":    op.config.AppID,
-		"authorization_code": code,
-	})
+	return &http.ResponseData{
+		Json: client.RequestJson("POST", "cgi-bin/component/api_query_auth", map[string]string{
+			"component_appid":    op.config.AppID,
+			"authorization_code": code,
+		}),
+	}
 
 }
 
 //GetAuthorizer get authorizer info type as gjson.Json
-func (op *OpenPlatform) GetAuthorizer(appid string) *gjson.Json {
+func (op *OpenPlatform) GetAuthorizer(appid string) *http.ResponseData {
 	client := op.getClientWithToken()
-	return client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_info", map[string]string{
-		"component_appid":  op.config.AppID,
-		"authorizer_appid": appid,
-	})
+	return &http.ResponseData{
+		Json: client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_info", map[string]string{
+			"component_appid":  op.config.AppID,
+			"authorizer_appid": appid,
+		}),
+	}
+
 }
 
 //GetAuthorizers get authorizer list
-func (op *OpenPlatform) GetAuthorizers(offset int, count int) *gjson.Json {
+func (op *OpenPlatform) GetAuthorizers(offset int, count int) *http.ResponseData {
 	if count > 500 {
 		count = 500
 	}
 	client := op.getClientWithToken()
-	return client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_list", map[string]interface{}{
-		"component_appid": op.config.AppID,
-		"offset":          offset,
-		"count":           count,
-	})
+	return &http.ResponseData{
+		Json: client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_list", map[string]interface{}{
+			"component_appid": op.config.AppID,
+			"offset":          offset,
+			"count":           count,
+		}),
+	}
 }
 
 //GetAuthorizerOption get authorizer option info
-func (op *OpenPlatform) GetAuthorizerOption(appid string, name string) *gjson.Json {
+func (op *OpenPlatform) GetAuthorizerOption(appid string, name string) *http.ResponseData {
 	client := op.getClientWithToken()
-	return client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_option", map[string]string{
-		"component_appid":  op.config.AppID,
-		"authorizer_appid": appid,
-		"option_name":      name,
-	})
+	return &http.ResponseData{
+		Json: client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_option", map[string]string{
+			"component_appid":  op.config.AppID,
+			"authorizer_appid": appid,
+			"option_name":      name,
+		}),
+	}
 }
 
 //SetAuthorizerOption set authorizer option
-func (op *OpenPlatform) SetAuthorizerOption(appid string, name string, value string) *gjson.Json {
+func (op *OpenPlatform) SetAuthorizerOption(appid string, name string, value string) *http.ResponseData {
 	client := op.getClientWithToken()
-	return client.RequestJson("POST", "cgi-bin/component/api_set_authorizer_option", map[string]string{
-		"component_appid":  op.config.AppID,
-		"authorizer_appid": appid,
-		"option_name":      name,
-		"option_value":     value,
-	})
+	return &http.ResponseData{
+		Json: client.RequestJson("POST", "cgi-bin/component/api_set_authorizer_option", map[string]string{
+			"component_appid":  op.config.AppID,
+			"authorizer_appid": appid,
+			"option_name":      name,
+			"option_value":     value,
+		}),
+	}
 }
 
 //GetVerifyTicket
