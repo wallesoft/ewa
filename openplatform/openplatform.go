@@ -89,15 +89,4 @@ func (op *OpenPlatform) MiniProgram(appid string, refreshToken string) *MiniProg
 	})
 	app.AccessToken = op.getWeappAccessToken(app)
 	return app
-	// app := miniprogram.NewWithOutToken(miniprogram.Config{
-	// 	AppID: appid,
-	// })
-	// // weapp := &MiniProgram{
-	// // 	MiniProgram: app,
-	// // 	RefreshToken: refreshToken,
-	// // }
-	// // app.RefreshToken = refreshToken
-	// app.AccessToken = op.getWeappAccessToken(app)
-
-	// return app
 }
