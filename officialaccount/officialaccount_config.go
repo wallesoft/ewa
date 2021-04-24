@@ -17,7 +17,7 @@ type Config struct {
 
 //logger -------------
 func (oa *OfficialAccount) ConfigLoggerWithMap(m map[string]interface{}) {
-	oa.config.Logger.SetConfigWithMap(m)
+	oa.Logger.SetConfigWithMap(m)
 }
 
 //SetAccessToken 需要传入满足接口
@@ -38,7 +38,7 @@ func (oa *OfficialAccount) getClient() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: oa.getBaseUri(),
-		Logger:  oa.config.Logger,
+		Logger:  oa.Logger,
 	}
 }
 
@@ -46,7 +46,7 @@ func (oa *OfficialAccount) getClientWithToken() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: oa.getBaseUri(),
-		Logger:  oa.config.Logger,
+		Logger:  oa.Logger,
 		Token:   oa.getDefaultAccessToken(), // >>>>???????? 能否用oa.accessToken
 	}
 }

@@ -37,7 +37,7 @@ func (v *DefaultJsapiTicket) GetTicket() string {
 			}
 			return val.GetString("ticket")
 		} else {
-			v.oa.config.Logger.Stdout(v.oa.config.Logger.LogStdout).Print(fmt.Sprintf("[Err] ticket get from api Error: %s", val.MustToJsonString()))
+			v.oa.Logger.Stdout(v.oa.Logger.LogStdout).Print(fmt.Sprintf("[Err] ticket get from api Error: %s", val.MustToJsonString()))
 		}
 	}
 	return gvar.New(ticket).String()

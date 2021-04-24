@@ -3,13 +3,12 @@ package openplatform
 import (
 	"gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/base"
-	"gitee.com/wallesoft/ewa/miniprogram"
 	"github.com/gogf/gf/crypto/gmd5"
 )
 
 type MiniProgramCredentials struct {
 	op *OpenPlatform
-	mp *miniprogram.MiniProgram
+	mp *MiniProgram
 }
 
 func (c *MiniProgramCredentials) Get() map[string]string {
@@ -22,7 +21,7 @@ func (c *MiniProgramCredentials) Get() map[string]string {
 
 var defaultWeappAccessToken = &base.AccessToken{}
 
-func (op *OpenPlatform) getWeappAccessToken(mp *miniprogram.MiniProgram) auth.AccessToken {
+func (op *OpenPlatform) getWeappAccessToken(mp *MiniProgram) auth.AccessToken {
 	defaultWeappAccessToken.Cache = op.config.Cache
 	defaultWeappAccessToken.TokenKey = "authorizer_access_token"
 	defaultWeappAccessToken.RequestTokenKey = "access_token"

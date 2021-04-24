@@ -142,7 +142,7 @@ func (op *OpenPlatform) GetPreAuthCode() (string, error) {
 		}
 	}, func(e error) {
 		err = e
-		op.config.Logger.File(op.config.Logger.ErrorLogPattern).Stdout(op.config.Logger.LogStdout).Print(err.Error())
+		op.Logger.File(op.Logger.ErrorLogPattern).Stdout(op.Logger.LogStdout).Print(err.Error())
 	})
 
 	return code, err

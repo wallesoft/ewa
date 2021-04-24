@@ -13,8 +13,8 @@ import (
 //Server
 type Server struct {
 	*guard.ServerGuard
-	debug  *gtype.Bool
-	logger *glog.Logger
+	debug  *gtype.Bool  //@deprecated
+	logger *glog.Logger //@deprecated
 }
 
 const (

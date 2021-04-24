@@ -6,12 +6,15 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/log"
+	"github.com/gogf/gf/os/gcache"
 )
 
 type MiniProgram struct {
-	Config       Config
-	AccessToken  auth.AccessToken
-	RefreshToken string // 第三方平台用
+	Config      Config
+	AccessToken auth.AccessToken
+	Logger      *log.Logger
+	Cache       *gcache.Cache
+	// RefreshToken string // 第三方平台用
 }
 
 //New
@@ -38,6 +41,8 @@ func NewWithOutToken(config Config) *MiniProgram {
 	}
 	var app = &MiniProgram{
 		Config: config,
+		Logger: config.Logger,
+		Cache:  config.Cache,
 	}
 	return app
 }
