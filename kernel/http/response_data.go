@@ -9,5 +9,8 @@ type ResponseData struct {
 
 //Ok 当返回errcode=0， errmsg="ok" 时为true errcode != 0 时为false
 func (r *ResponseData) HaveError() bool {
-	return r.GetInt("errcode") != 0
+	if r.Contains("errcode") {
+		return r.GetInt("errcode") != 0
+	}
+	return false
 }

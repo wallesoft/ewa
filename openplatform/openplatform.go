@@ -83,6 +83,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 func (op *OpenPlatform) MiniProgram(appid string, refreshToken string) *MiniProgram {
 	app := &MiniProgram{
 		RefreshToken: refreshToken,
+		Component:    op,
 	}
 	app.MiniProgram = miniprogram.NewWithOutToken(miniprogram.Config{
 		AppID: appid,

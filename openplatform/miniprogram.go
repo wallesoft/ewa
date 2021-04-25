@@ -6,4 +6,5 @@ import "gitee.com/wallesoft/ewa/miniprogram"
 type MiniProgram struct {
 	*miniprogram.MiniProgram
 	RefreshToken string // 刷新token
+	Component    *OpenPlatform
 }
