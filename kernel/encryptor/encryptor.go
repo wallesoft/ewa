@@ -120,6 +120,18 @@ func (e *Encryptor) GetToken() string {
 	return e.Token
 }
 
+//Decrypt
+func Decrypt(cipherText []byte, key []byte, iv []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, NewError(ERROR_DECRYPT_AES, err.Error())
+	}
+	blockMode := cipher.NewCBCDecrypter(block, iv)
+	plainText := make([]byte, len(cipherText))
+	plainText, err = PKCS7Unpad(plainText, 32)
+	////////@@@@@@@@@@@@@###############
+}
+
 //Signature
 func Signature(s []string) string {
 	sort.Strings(s)
