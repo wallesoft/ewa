@@ -34,8 +34,10 @@ func (s *Server) Resolve(msg *guard.Message) bool {
 		var t string
 		if msg.Contains("InfoType") {
 			t = msg.GetString("InfoType")
+		} else if msg.Contains("MsgType") && msg.Contains("Event") {
+			t = msg.GetString("Event")
 		} else {
-			s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid message info type")
+			s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid message type")
 		}
 		s.Dispatch(t, msg)
 		s.Response.Write(guard.SUCCESS_EMPTY_RESPONSE)
