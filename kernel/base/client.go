@@ -8,6 +8,7 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/log"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/errors/gerror"
+	"github.com/gogf/gf/util/gconv"
 
 	// "github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
@@ -111,54 +112,14 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 	return result
 }
 
+//request return json
 func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *gjson.Json {
-	var response *ghttp.ClientResponse
-	var err error
-	if method == "POST" {
-		response, err = c.ContentJson().DoRequest(method, c.getUri(endpoint), data...)
-	} else {
-		response, err = c.DoRequest(method, c.getUri(endpoint), data...)
-	}
-
-	if err != nil {
-		c.handleErrorLog(err, response.Raw())
-	}
-
-	debugRaw := response.Raw()
-	result := gjson.New(response.ReadAllString())
-
-	if have := result.Contains("errcode"); have {
-		//40001 refresh token try once
-		if result.GetInt("errcode") == 40001 {
-
-			c.Token.GetToken(true)
-
-			resp, err := c.ContentJson().Post(c.getUri(endpoint), data...)
-			var respRaw string = resp.Raw()
-			if err != nil {
-				c.handleErrorLog(err, respRaw)
-			}
-			res := gjson.New(resp.ReadAllString())
-			defer resp.Close()
-			if res.Contains("errcode") {
-				c.handleErrorLog(errors.New("Refresh Token Result:"), respRaw)
-			} else {
-				c.handleAccessLog(respRaw)
-				return res
-			}
-
-		}
-		if result.GetInt("errcode") != 0 {
-			c.handleErrorLog(errors.New("get json with err code."), debugRaw)
-			return result
-		}
-
-	}
-	c.handleAccessLog(debugRaw)
-	return result
+	raw := c.RequestRaw(method, endpoint, data...)
+	c.handleAccessLog(gconv.String(raw))
+	return gjson.New(raw)
 }
 
-//RequestRaw
+//Request return Raw
 func (c *Client) RequestRaw(method string, endpoint string, data ...interface{}) []byte {
 	var response *ghttp.ClientResponse
 	var err error
