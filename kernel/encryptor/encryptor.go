@@ -84,22 +84,22 @@ func (e *Encryptor) Encrypt(rawXML []byte, nonce string, timestamp int) ([]byte,
 
 //Decrypt decrypt message
 func (e *Encryptor) Decrypt(content []byte) ([]byte, error) {
-	decoding, err := gbase64.Decode(content)
+	cipherText, err := gbase64.Decode(content)
 	if err != nil {
 		return nil, NewError(ERROR_BASE64_DECODE, err.Error())
 	}
 	iv := gconv.Bytes(gstr.SubStr(e.AesKey, 0, 16))
 
-	if len(decoding)%e.BlockSize != 0 {
+	if len(cipherText)%e.BlockSize != 0 {
 		return nil, NewError(ERROR_DECRYPT_AES, "content is not a multiple of the block size")
 	}
 	block, err := aes.NewCipher(gconv.Bytes(e.AesKey))
 	if err != nil {
 		return nil, NewError(ERROR_DECRYPT_AES, err.Error())
 	}
-	blockModel := cipher.NewCBCDecrypter(block, iv)
-	plainText := make([]byte, len(decoding))
-	blockModel.CryptBlocks(plainText, decoding)
+	blockMode := cipher.NewCBCDecrypter(block, iv)
+	plainText := make([]byte, len(cipherText))
+	blockMode.CryptBlocks(plainText, cipherText)
 	plainText, err = PKCS7Unpad(plainText, e.BlockSize)
 
 	if err != nil {
@@ -128,8 +128,8 @@ func Decrypt(cipherText []byte, key []byte, iv []byte) ([]byte, error) {
 	}
 	blockMode := cipher.NewCBCDecrypter(block, iv)
 	plainText := make([]byte, len(cipherText))
-	plainText, err = PKCS7Unpad(plainText, 32)
-	////////@@@@@@@@@@@@@###############
+	blockMode.CryptBlocks(plainText, cipherText)
+	return plainText, nil
 }
 
 //Signature
