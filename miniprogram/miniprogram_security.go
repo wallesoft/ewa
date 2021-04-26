@@ -11,3 +11,9 @@ func (mp *MiniProgram) CheckText(content string) *http.ResponseData {
 		Json: mp.GetClientWithToken().RequestJson("POST", "wxa/msg_sec_check", g.Map{"content": content}),
 	}
 }
+
+//CheckImage
+func (mp *MiniProgram) CheckImage(path string) *http.ResponseData {
+	/////////// \\\\\\\\\\\\\
+	///////////   \\\\\\\\\\\\\
+}
