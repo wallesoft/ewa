@@ -2,9 +2,10 @@
 
 #### 入门
 
---------
+
 * 服务端主要涉及到微信推送消息/事件，通知等处理，涵盖公众号，小程序，第三方平台等，由于消息/事件等处理逻辑基本一致，将逻辑总结后统一放在此处说明处理
 * 开始之前：**以下官方文档需要仔细阅读并理解其内容/特别注意其消息格式**
+--------
 > * 公众号消息加解密说明：[官方文档](https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Message_encryption_and_decryption_instructions.html)
 > * 公众号接收普通消息: [官方文档](https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_standard_messages.html)
 > * 公众号接收事件消息: [官方文档](https://developers.weixin.qq.com/doc/offiaccount/Message_Management/Receiving_event_pushes.html)
