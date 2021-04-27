@@ -17,6 +17,8 @@
   - [入门](/openplatform/index)
   - [服务端](/openplatform/server)
   - [小程序](/openplatform/weapp)
+- [服务端]
+  - [入门](/server/index)
 - [企业微信](/work)
 - [小微商户](/microMerchant)
 - [模块开发](/module)
