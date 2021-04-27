@@ -5,8 +5,16 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/http"
 	"github.com/gogf/gf/container/gvar"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/util/gutil"
 )
+
+//StartPushTicket 启动ticket推送服务
+func (op *OpenPlatform) StartPushTicket() *http.ResponseData {
+	return &http.ResponseData{
+		Json: op.getClient().RequestJson("POST", "cgi-bin/component/api_start_push_ticket", g.Map{"component_appid": op.config.AppID, "component_secret": op.config.AppSecret}),
+	}
+}
 
 //GetPreAuthorizationUrl 获取授权页网址
 func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[string]interface{}) (string, error) {
