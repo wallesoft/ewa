@@ -1,7 +1,7 @@
 package message
 
-//MessageType
-type MessageType int
+//MessageType 注意int为2的n次方
+type MessageType = int
 
 // //Message type
 // const (

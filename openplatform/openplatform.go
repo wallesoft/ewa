@@ -24,8 +24,7 @@ type OpenPlatform struct {
 	Cache        *gcache.Cache
 }
 
-//New new OpenPlatform
-//@see glog https://goframe.org/os/glog/index
+//New new OpenPlatform @see glog https://goframe.org/os/glog/index
 func New(config Config) *OpenPlatform {
 	if config.Cache == nil {
 		config.Cache = cache.New("ewa.wechat.openplatform")

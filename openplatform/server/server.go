@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	guard "gitee.com/wallesoft/ewa/kernel/server"
-	// "gitee.com/wallesoft/ewa/kernel/"
 
 	"github.com/gogf/gf/container/gtype"
 	"github.com/gogf/gf/os/glog"
@@ -23,7 +22,7 @@ const (
 
 func (s *Server) SetMux() {
 	//init handler
-	s.InitMux(MUX_GROUP, messageType)
+	s.RegisterMessageType(messageType)
 	s.initHandler()
 }
 
@@ -34,8 +33,8 @@ func (s *Server) Resolve(msg *guard.Message) bool {
 		var t string
 		if msg.Contains("InfoType") {
 			t = msg.GetString("InfoType")
-		} else if msg.Contains("MsgType") && msg.Contains("Event") {
-			t = msg.GetString("Event")
+		} else if msg.Contains("MsgType") {
+			t = msg.GetString("MsgType")
 		} else {
 			s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid message type")
 		}
