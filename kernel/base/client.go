@@ -113,7 +113,10 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 
 //request return json
 func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *gjson.Json {
-	c.Client.ContentJson()
+
+	if method == "POST" {
+		c.Client = c.Client.ContentJson()
+	}
 	raw := c.RequestRaw(method, endpoint, data...)
 	c.handleAccessLog(gconv.String(raw))
 	return gjson.New(raw)
@@ -212,7 +215,8 @@ func (c *Client) getUri(endpoint string) string {
 	} else {
 		url = endpoint
 	}
-	if param != nil {
+
+	if param != nil && len(param) > 0 {
 		url = url + "?" + param.Encode()
 	}
 	return url
