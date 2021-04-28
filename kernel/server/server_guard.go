@@ -12,6 +12,7 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"gitee.com/wallesoft/ewa/kernel/log"
+	"gitee.com/wallesoft/ewa/kernel/message"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
 	"github.com/gogf/gf/text/gregex"
@@ -56,7 +57,7 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 		MessageGroup: gmap.NewStrIntMap(),
 		// cache:  cache,
 	}
-
+	g.RegisterMessageType(message.DefaultMessage)
 	g.setRequest(request)
 	g.setResponse(writer)
 	return g
