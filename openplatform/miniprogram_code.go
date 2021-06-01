@@ -28,12 +28,16 @@ func (mp *MiniProgram) GetPage() *http.ResponseData {
 	}
 }
 
-//获取体验二维码 @see https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/Mini_Programs/code/get_qrcode.html
-func (mp *MiniProgram) GetQrcode(path string) *miniprogram.AppCode {
+//获取体验二维码 @see https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/api/code/get_qrcode.html
+func (mp *MiniProgram) GetQrcode(path ...string) *miniprogram.AppCode {
+	var param g.Map
+	if len(path) > 0 {
+		param["path"] = path[0]
+	}
 	client := mp.GetClientWithToken()
 	return &miniprogram.AppCode{
 		Mp:  mp.MiniProgram,
-		Raw: client.RequestRaw("GET", "wxa/get_qrcode", g.Map{"path": path}),
+		Raw: client.RequestRaw("GET", "wxa/get_qrcode", param),
 	}
 }
 

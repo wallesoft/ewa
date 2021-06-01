@@ -31,7 +31,7 @@ type ServerGuard struct {
 	muxGroup       string // @deprecated
 	queryParam     *queryParam
 	bodyData       *bodyData
-	MuxEntry       *garray.Array
+	MuxEntry       *gmap.IntAnyMap
 	MessageGroup   *gmap.StrIntMap
 	// Cache          *gcache.Cache
 }
@@ -53,7 +53,7 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 
 	g := &ServerGuard{
 		Config:       config,
-		MuxEntry:     garray.NewArray(),
+		MuxEntry:     gmap.NewIntAnyMap(),
 		MessageGroup: gmap.NewStrIntMap(),
 		// cache:  cache,
 	}
@@ -148,20 +148,40 @@ func (s *ServerGuard) HandleRequest(originMsg *Message) {
 func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 
 	event := s.TypeToEvent(mtype)
-	s.MuxEntry.Iterator(func(k int, item interface{}) bool {
-		handler := item.(muxEntry)
-		if (handler.Condition & event) == event {
-			res := handler.Handler.Handle(message)
+	if s.MuxEntry.Contains(event) {
+		handlers := s.MuxEntry.Get(event).(*garray.Array)
+		handlers.Iterator(func(k int, h interface{}) bool {
+			handler := h.(Handler)
+			res := handler.Handle(message)
 			switch t := res.(type) {
 			case bool:
 				if t {
 					return false
 				}
 			}
-		}
-		return true
+			return true
+		})
+	}
 
-	})
+	// s.MuxEntry.Iterator(func(pattern int, item interface{}) bool {
+	// 	// handlers := item.(muxEntry)
+	// 	if (pattern & event) == event {
+	// 		handlers := item.(*garray.Array)
+	// 		haddlers.Iterator(func(k int, handler interface{}) bool {
+
+	// 		})
+
+	// 		res := handler.Handler.Handle(message)
+	// 		switch t := res.(type) {
+	// 		case bool:
+	// 			if t {
+	// 				return false
+	// 			}
+	// 		}
+	// 	}
+	// 	return true
+
+	// })
 
 	//*******************************************************
 	// 	handlers := s.GetHandlers()
