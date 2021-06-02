@@ -68,7 +68,7 @@ func (op *OpenPlatform) getClientWithToken() *base.Client {
 		Client:  ghttp.NewClient(),
 		BaseUri: op.getBaseUri(),
 		Logger:  op.Logger,
-		Token:   op.getDefaultAccessToken(),
+		Token:   op.accessToken,
 	}
 }
 
