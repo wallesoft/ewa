@@ -16,8 +16,8 @@ const (
 
 //Config
 type Config struct {
-	AppID string `json:"app_id"`
-	MchID string `json:"mch_id"`
+	AppID string `json:"app_id"` //公众号
+	MchID string `json:"mch_id"` //商户号
 	//v2接口
 	Key      string `json:"key"`       //API 秘钥
 	CertPath string `json:"cert_path"` //API 证书路径 绝对路径！！！

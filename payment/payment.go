@@ -62,3 +62,10 @@ func (p *Payment) Order(config ...map[string]interface{}) *Order {
 		payment: p,
 	}
 }
+
+//Markting
+func (p *Payment) Markting() *Markting {
+	return &Markting{
+		payment: p,
+	}
+}
