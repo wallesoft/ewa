@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gogf/gf/container/gvar"
+	"github.com/gogf/gf/encoding/gjson"
 )
 
 type Response struct {
@@ -11,6 +12,10 @@ type Response struct {
 	StatusCode int
 	Header     http.Header
 	Body       []byte
+}
+
+type ResponseResult struct {
+	*gjson.Json
 }
 
 // func (r *Response) Raw() string {

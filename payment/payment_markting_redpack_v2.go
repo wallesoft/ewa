@@ -37,6 +37,10 @@ func (r *Redpack) Set(pattern string, value interface{}) {
 }
 
 // 红包发送
-func (r *Redpack) Send() {
-
+func (r *Redpack) Send() *ResponseResult {
+	client := r.payment.getClient()
+	response := client.RequestV2("POST", "/mmpaymkttransfers/sendredpack", r.config.MustToXml())
+	return &ResponseResult{
+		Json: gjson.New(response.Body),
+	}
 }

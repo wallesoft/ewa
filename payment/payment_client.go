@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/container/gvar"
+	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/errors/gerror"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gtime"
@@ -30,7 +31,7 @@ const (
 	AUTH_TYPE = "WECHATPAY2-SHA256-RSA2048"
 )
 
-//RequestJson
+//RequestJson v3
 func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *Response {
 	body := ""
 	if len(data) > 0 {
@@ -135,6 +136,35 @@ func (c *Client) getSignature(method string, endpoint string, nonce string, time
 // 	}
 // 	return string(plaintext), nil
 // }
+
+// v2 requst with cert tls
+func (c *Client) RequestV2(method string, endpoint string, data ...interface{}) *Response {
+	_, url := c.getUri(endpoint)
+	err := c.SetTLSKeyCrt(c.payment.config.CertPath, c.payment.config.KeyPath)
+	if err != nil {
+		c.payment.Logger.Errorf("set tls key crt err: %s", err.Error())
+	}
+	response, err := c.DoRequest(method, url, data...)
+
+	if err != nil {
+		c.handleErrorLog(err, response.Raw())
+	}
+
+	raw := gjson.New(response.Raw())
+	res := &Response{
+		Status:     response.Status,
+		StatusCode: response.StatusCode,
+		Header:     response.Header,
+		Body:       response.ReadAll(),
+	}
+
+	if raw.Contains("return_code") && raw.GetString("return_code") != "SUCCESS" {
+		c.handleErrorLog(errors.New("payment.v2.请求错误"), raw.MustToXmlString())
+	}
+	c.handleAccessLog(raw.MustToXmlString())
+	return res
+
+}
 
 func (c *Client) handleAccessLog(raw string) {
 	if !c.payment.Logger.AccessLogEnabled {
