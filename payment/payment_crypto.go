@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/crypto/gmd5"
-	"github.com/gogf/gf/frame/g"
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gbase64"
@@ -143,7 +142,6 @@ func (p *Payment) V2SortKey(text map[string]interface{}) string {
 func (p *Payment) V2MD5(m map[string]interface{}) string {
 	sortStr := p.V2SortKey(m)
 	signTmp := sortStr + "&key=" + p.config.Key
-	g.Dump(signTmp)
 	return strings.ToUpper(gmd5.MustEncryptString(signTmp))
 }
 
