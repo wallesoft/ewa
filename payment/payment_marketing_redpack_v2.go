@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/util/grand"
 )
 
@@ -39,7 +40,21 @@ func (r *Redpack) Set(pattern string, value interface{}) {
 // 红包发送
 func (r *Redpack) Send() *ResponseResult {
 	client := r.payment.getClient()
-	response := client.RequestV2("POST", "/mmpaymkttransfers/sendredpack", r.config.MustToXml())
+	response := client.RequestV2("POST", "/mmpaymkttransfers/sendredpack", r.config.MustToXml("xml"))
+	return &ResponseResult{
+		Json: gjson.New(response.Body),
+	}
+}
+
+//查询红包发送情况，根据商户订单号
+func (r *Redpack) GetInfo(billno string) *ResponseResult {
+	r.Set("appid", r.config.GetString("wxappid"))
+	r.config.Remove("wxappid")
+	r = r.New(g.Map{"mch_billno": billno, "bill_type": "MCHT"})
+	//r.Set("wxappid",nil)
+	client := r.payment.getClient()
+	g.Dump(r.config.MustToXml("xml"))
+	response := client.RequestV2("POST", "/mmpaymkttransfers/gethbinfo", r.config.MustToXml("xml"))
 	return &ResponseResult{
 		Json: gjson.New(response.Body),
 	}

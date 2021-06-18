@@ -3,12 +3,12 @@ package payment
 import "github.com/gogf/gf/encoding/gjson"
 
 //营销
-type Markting struct {
+type Marketing struct {
 	payment *Payment
 }
 
 //红包
-func (m *Markting) Redpack() *Redpack {
+func (m *Marketing) Redpack() *Redpack {
 	r := &Redpack{
 		config:  gjson.New(nil),
 		payment: m.payment,
