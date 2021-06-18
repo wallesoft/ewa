@@ -26,7 +26,7 @@ type Config struct {
 
 //logger -------------
 func (op *OpenPlatform) ConfigLoggerWithMap(m map[string]interface{}) {
-	op.config.Logger.SetConfigWithMap(m)
+	op.Logger.SetConfigWithMap(m)
 }
 
 // func (op *OpenPlatform) ConfigLogger(config glog.Config) {
@@ -59,7 +59,7 @@ func (op *OpenPlatform) getClient() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: op.getBaseUri(),
-		Logger:  op.config.Logger,
+		Logger:  op.Logger,
 	}
 }
 
@@ -67,42 +67,42 @@ func (op *OpenPlatform) getClientWithToken() *base.Client {
 	return &base.Client{
 		Client:  ghttp.NewClient(),
 		BaseUri: op.getBaseUri(),
-		Logger:  op.config.Logger,
-		Token:   op.getDefaultAccessToken(),
+		Logger:  op.Logger,
+		Token:   op.accessToken,
 	}
 }
 
 // SetLogStdout sets whether output the logging content to stdout.
 func (op *OpenPlatform) SetLogStdout(enabled bool) {
-	op.config.Logger.LogStdout = enabled
+	op.Logger.LogStdout = enabled
 }
 
 // SetAccessLogEnabled enables/disables the access log.
 func (op *OpenPlatform) SetAccessLogEnabled(enabled bool) {
-	op.config.Logger.AccessLogEnabled = enabled
+	op.Logger.AccessLogEnabled = enabled
 }
 
 // SetErrorLogEnabled enables/disables the error log.
 func (op *OpenPlatform) SetErrorLogEnabled(enabled bool) {
-	op.config.Logger.ErrorLogEnabled = enabled
+	op.Logger.ErrorLogEnabled = enabled
 }
 
 // SetErrorStack enables/disables the error stack feature.
 func (op *OpenPlatform) SetErrorStack(enabled bool) {
-	op.config.Logger.ErrorStack = enabled
+	op.Logger.ErrorStack = enabled
 }
 
 // GetLogPath returns the log path.
 func (op *OpenPlatform) GetLogPath() string {
-	return op.config.Logger.LogPath
+	return op.Logger.LogPath
 }
 
 // IsAccessLogEnabled checks whether the access log enabled.
 func (op *OpenPlatform) IsAccessLogEnabled() bool {
-	return op.config.Logger.AccessLogEnabled
+	return op.Logger.AccessLogEnabled
 }
 
 // IsErrorLogEnabled checks whether the error log enabled.
 func (op *OpenPlatform) IsErrorLogEnabled() bool {
-	return op.config.Logger.ErrorLogEnabled
+	return op.Logger.ErrorLogEnabled
 }

@@ -4,18 +4,26 @@ import (
 	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/hmac"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/pem"
 	"fmt"
 	"net/http"
+	"sort"
+	"strings"
+
+	"github.com/gogf/gf/crypto/gmd5"
 
 	"github.com/gogf/gf/container/gvar"
 	"github.com/gogf/gf/encoding/gbase64"
 	"github.com/gogf/gf/os/gfile"
+	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gutil"
 )
 
@@ -114,4 +122,33 @@ func (p *Payment) rsaDecrypt(ciphertext string) (string, error) {
 		return "", err
 	}
 	return string(plaintext), nil
+}
+
+//v2排序
+func (p *Payment) V2SortKey(text map[string]interface{}) string {
+	tmpStrs := make([]string, 0)
+
+	for key, val := range text {
+		s := gconv.String(val)
+		if s != "" {
+			tmpStrs = append(tmpStrs, key+"="+s)
+		}
+	}
+	sort.Strings(tmpStrs)
+	return strings.Join(tmpStrs, "&")
+}
+
+//v2 md5签名
+func (p *Payment) V2MD5(m map[string]interface{}) string {
+	sortStr := p.V2SortKey(m)
+	signTmp := sortStr + "&key=" + p.config.Key
+	return strings.ToUpper(gmd5.MustEncryptString(signTmp))
+}
+
+//v2加密
+func (p *Payment) V2Signature(str string) string {
+
+	h := hmac.New(sha256.New, gconv.Bytes(p.config.Key))
+	h.Write(gconv.Bytes(str))
+	return strings.ToUpper(hex.EncodeToString(h.Sum(nil)))
 }

@@ -1,11 +1,10 @@
 package openplatform
 
-// import baseauth "gitee.com/wallesoft/ewa/kernel/auth"
+import "gitee.com/wallesoft/ewa/miniprogram"
 
-// //小程序
-// type MiniProgram struct {
-// 	OpenPlatform *OpenPlatform
-// 	accessToken  baseauth.AccessToken
-// 	AppID        string
-// 	RefreshToken string
-// }
+//MiniProgram
+type MiniProgram struct {
+	*miniprogram.MiniProgram
+	RefreshToken string // 刷新token
+	Component    *OpenPlatform
+}

@@ -6,11 +6,14 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/log"
+	"github.com/gogf/gf/os/gcache"
 )
 
 type OfficialAccount struct {
 	config      Config
 	accessToken auth.AccessToken
+	Logger      *log.Logger
+	Cache       *gcache.Cache
 }
 
 func New(config Config) *OfficialAccount {
@@ -33,6 +36,8 @@ func New(config Config) *OfficialAccount {
 	}
 	var oa = &OfficialAccount{
 		config: config,
+		Logger: config.Logger,
+		Cache:  config.Cache,
 	}
 	oa.accessToken = oa.getDefaultAccessToken()
 	return oa

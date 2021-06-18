@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -49,7 +50,7 @@ func New(path string, ext ...string) gcache.Adapter {
 //
 // It does not expire if <duration> == 0.
 // It deletes the <key> if <duration> < 0.
-func (c *FileCache) Set(key interface{}, value interface{}, duration time.Duration) error {
+func (c *FileCache) Set(ctx context.Context, key interface{}, value interface{}, duration time.Duration) error {
 	var err error
 	f := c.path + gvar.New(key).String() + c.ext
 	if value == nil || duration < 0 {
@@ -73,13 +74,13 @@ func (c *FileCache) Set(key interface{}, value interface{}, duration time.Durati
 //
 // It does not expire if <duration> == 0.
 // It deletes the keys of <data> if <duration> < 0 or given <value> is nil.
-func (c *FileCache) Sets(data map[interface{}]interface{}, duration time.Duration) error {
+func (c *FileCache) Sets(ctx context.Context, data map[interface{}]interface{}, duration time.Duration) error {
 	if len(data) == 0 {
 		return nil
 	}
 	var err error
 	for k, v := range data {
-		if err = c.Set(k, v, duration); err != nil {
+		if err = c.Set(ctx, k, v, duration); err != nil {
 			return err
 		}
 	}
@@ -95,7 +96,7 @@ func (c *FileCache) Sets(data map[interface{}]interface{}, duration time.Duratio
 //
 // It does not expire if <duration> == 0.
 // It deletes the <key> if <duration> < 0 or given <value> is nil.
-func (c *FileCache) SetIfNotExist(key interface{}, value interface{}, duration time.Duration) (bool, error) {
+func (c *FileCache) SetIfNotExist(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (bool, error) {
 	var err error
 	if f, ok := value.(func() (interface{}, error)); ok {
 		value, err = f()
@@ -119,7 +120,7 @@ func (c *FileCache) SetIfNotExist(key interface{}, value interface{}, duration t
 	if exist := gfile.IsFile(f); exist {
 		return false, err
 	} else {
-		err = c.Set(key, value, duration)
+		err = c.Set(ctx, key, value, duration)
 		if err != nil {
 			return false, err
 		}
@@ -129,7 +130,7 @@ func (c *FileCache) SetIfNotExist(key interface{}, value interface{}, duration t
 
 // Get retrieves and returns the associated value of given <key>.
 // It returns nil if it does not exist or its value is nil.
-func (c *FileCache) Get(key interface{}) (interface{}, error) {
+func (c *FileCache) Get(ctx context.Context, key interface{}) (interface{}, error) {
 	var err error
 	f := c.path + gvar.New(key).String() + c.ext
 	//now := gtime.Timestamp()
@@ -160,13 +161,13 @@ func (c *FileCache) Get(key interface{}) (interface{}, error) {
 // It does not expire if <duration> == 0.
 // It deletes the <key> if <duration> < 0 or given <value> is nil, but it does nothing
 // if <value> is a function and the function result is nil.
-func (c *FileCache) GetOrSet(key interface{}, value interface{}, duration time.Duration) (interface{}, error) {
-	v, err := c.Get(key)
+func (c *FileCache) GetOrSet(ctx context.Context, key interface{}, value interface{}, duration time.Duration) (interface{}, error) {
+	v, err := c.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 	if v == nil {
-		return value, c.Set(key, value, duration)
+		return value, c.Set(ctx, key, value, duration)
 	} else {
 		return v, nil
 	}
@@ -180,8 +181,8 @@ func (c *FileCache) GetOrSet(key interface{}, value interface{}, duration time.D
 // It does not expire if <duration> == 0.
 // It deletes the <key> if <duration> < 0 or given <value> is nil, but it does nothing
 // if <value> is a function and the function result is nil.
-func (c *FileCache) GetOrSetFunc(key interface{}, f func() (interface{}, error), duration time.Duration) (interface{}, error) {
-	v, err := c.Get(key)
+func (c *FileCache) GetOrSetFunc(ctx context.Context, key interface{}, f func() (interface{}, error), duration time.Duration) (interface{}, error) {
+	v, err := c.Get(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +194,7 @@ func (c *FileCache) GetOrSetFunc(key interface{}, f func() (interface{}, error),
 		if value == nil {
 			return nil, nil
 		}
-		return value, c.Set(key, value, duration)
+		return value, c.Set(ctx, key, value, duration)
 	} else {
 		return v, nil
 	}
@@ -208,15 +209,15 @@ func (c *FileCache) GetOrSetFunc(key interface{}, f func() (interface{}, error),
 //
 // Note that the function <f> should be executed within writing mutex lock for concurrent
 // safety purpose.
-func (c *FileCache) GetOrSetFuncLock(key interface{}, f func() (interface{}, error), duration time.Duration) (interface{}, error) {
-	return c.GetOrSetFunc(key, f, duration)
+func (c *FileCache) GetOrSetFuncLock(ctx context.Context, key interface{}, f func() (interface{}, error), duration time.Duration) (interface{}, error) {
+	return c.GetOrSetFunc(ctx, key, f, duration)
 }
 
 // Contains returns true if <key> exists in the cache, or else returns false.
-func (c *FileCache) Contains(key interface{}) (bool, error) {
+func (c *FileCache) Contains(ctx context.Context, key interface{}) (bool, error) {
 	// f := c.path + gvar.New(key).String() + c.ext
 	// return gfile.IsFile(f), nil
-	val, err := c.Get(key)
+	val, err := c.Get(ctx, key)
 	if val == nil || err != nil {
 		return false, err
 	}
@@ -227,7 +228,7 @@ func (c *FileCache) Contains(key interface{}) (bool, error) {
 //
 // It returns 0 if the <key> does not expire.
 // It returns -1 if the <key> does not exist in the cache.
-func (c *FileCache) GetExpire(key interface{}) (time.Duration, error) {
+func (c *FileCache) GetExpire(ctx context.Context, key interface{}) (time.Duration, error) {
 	f := c.path + gvar.New(key).String() + c.ext
 	if v := gfile.IsFile(f); !v {
 		return -1, nil
@@ -241,11 +242,11 @@ func (c *FileCache) GetExpire(key interface{}) (time.Duration, error) {
 
 // Remove deletes one or more keys from cache, and returns its value.
 // If multiple keys are given, it returns the value of the last deleted item.
-func (c *FileCache) Remove(keys ...interface{}) (value interface{}, err error) {
+func (c *FileCache) Remove(ctx context.Context, keys ...interface{}) (value interface{}, err error) {
 	if len(keys) == 0 {
 		return nil, nil
 	}
-	if val, err := c.Get(keys[len(keys)-1]); err != nil {
+	if val, err := c.Get(ctx, keys[len(keys)-1]); err != nil {
 		return nil, err
 	} else {
 		value = val
@@ -267,7 +268,7 @@ LOOP:
 //
 // It deletes the <key> if given <value> is nil.
 // It does nothing if <key> does not exist in the cache.
-func (c *FileCache) Update(key interface{}, value interface{}) (oldValue interface{}, exist bool, err error) {
+func (c *FileCache) Update(ctx context.Context, key interface{}, value interface{}) (oldValue interface{}, exist bool, err error) {
 	f := c.path + gvar.New(key).String() + c.ext
 	if have := gfile.IsFile(f); !have {
 		// it does not exist.
@@ -277,12 +278,12 @@ func (c *FileCache) Update(key interface{}, value interface{}) (oldValue interfa
 	if len(val) < 8 || gvar.New(val[0:8]).Int64()-gtime.Timestamp() < 0 {
 		return nil, false, gfile.Remove(f)
 	}
-	oldValue, err = c.Get(key)
+	oldValue, err = c.Get(ctx, key)
 	if err != nil {
 		return nil, false, err
 	}
 	//UPDATE.
-	err = c.Set(key, value, gvar.New(val[0:8]).Duration())
+	err = c.Set(ctx, key, value, gvar.New(val[0:8]).Duration())
 
 	return oldValue, true, err
 }
@@ -291,7 +292,7 @@ func (c *FileCache) Update(key interface{}, value interface{}) (oldValue interfa
 //
 // It returns -1 and does nothing if the <key> does not exist in the cache.
 // It deletes the <key> if <duration> < 0.
-func (c *FileCache) UpdateExpire(key interface{}, duration time.Duration) (oldDuration time.Duration, err error) {
+func (c *FileCache) UpdateExpire(ctx context.Context, key interface{}, duration time.Duration) (oldDuration time.Duration, err error) {
 	f := c.path + gvar.New(key).String() + c.ext
 	if have := gfile.IsFile(f); !have {
 		// it does not exist.
@@ -304,12 +305,12 @@ func (c *FileCache) UpdateExpire(key interface{}, duration time.Duration) (oldDu
 	}
 	oldDuration = gvar.New(val[0:8]).Duration()
 	// UPDATE
-	err = c.Set(key, val[8:], duration)
+	err = c.Set(ctx, key, val[8:], duration)
 	return
 }
 
 // Size returns the number of items in the cache.
-func (c *FileCache) Size() (size int, err error) {
+func (c *FileCache) Size(ctx context.Context) (size int, err error) {
 	list, err := gfile.ScanDirFile(c.path, "")
 	return len(list), err
 }
@@ -317,20 +318,20 @@ func (c *FileCache) Size() (size int, err error) {
 // Data returns a copy of all key-value pairs in the cache as map type.
 // Note that this function may leads lots of memory usage, you can implement this function
 // if necessary.
-func (c *FileCache) Data() (map[interface{}]interface{}, error) {
+func (c *FileCache) Data(ctx context.Context) (map[interface{}]interface{}, error) {
 	//容易引起读写瓶颈，不去实现
 	return nil, nil
 }
 
 // Keys returns all keys in the cache as slice.
 //容易引起读写瓶颈，慎用
-func (c *FileCache) Keys() ([]interface{}, error) {
+func (c *FileCache) Keys(ctx context.Context) ([]interface{}, error) {
 	keys, err := gfile.ScanDirFile(c.path, "")
 	return gvar.New(keys).Slice(), err
 }
 
 // Values returns all values in the cache as slice.
-func (c *FileCache) Values() ([]interface{}, error) {
+func (c *FileCache) Values(ctx context.Context) ([]interface{}, error) {
 	//容易引起读写瓶颈，不去实现
 	return nil, nil
 }
@@ -338,12 +339,12 @@ func (c *FileCache) Values() ([]interface{}, error) {
 // Clear clears all data of the cache.
 // Note that this function is sensitive and should be carefully used.
 //小心使用，将删除所有
-func (c *FileCache) Clear() error {
+func (c *FileCache) Clear(ctx context.Context) error {
 	return gfile.Remove(c.path)
 }
 
 // Close closes the cache if necessary.
-func (c *FileCache) Close() error {
+func (c *FileCache) Close(ctx context.Context) error {
 	//it does nothing
 	return nil
 }

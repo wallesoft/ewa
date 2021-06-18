@@ -34,17 +34,3 @@ func New(dir ...string) *gcache.Cache {
 func Get() *gcache.Cache {
 	return defaultCache
 }
-
-// func (c *DefaultCache) Get(key string) interface{} {
-// 	return c.Cache.Get(key)
-// }
-// func (c *DefaultCache) Set(key string, value interface{}, duration time.Duration) {
-// 	c.Cache.Set(key, value, duration)
-// }
-// func (c *DefaultCache) Contains(key string) bool {
-// 	return c.Cache.Contains(key)
-// }
-// func (c *DefaultCache) Remove(key string) error {
-// 	c.Cache.Remove(key)
-// 	return nil
-// }

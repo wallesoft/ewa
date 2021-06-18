@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gogf/gf/container/garray"
+	"github.com/gogf/gf/container/gmap"
+
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"gitee.com/wallesoft/ewa/kernel/log"
+	"gitee.com/wallesoft/ewa/kernel/message"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/encoding/gxml"
-	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/os/gtime"
 	"github.com/gogf/gf/text/gregex"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gutil"
@@ -26,9 +28,11 @@ type ServerGuard struct {
 	Response       *ehttp.Response
 	Logger         *log.Logger
 	Encryptor      *encryptor.Encryptor
-	muxGroup       string
+	muxGroup       string // @deprecated
 	queryParam     *queryParam
 	bodyData       *bodyData
+	MuxEntry       *gmap.IntAnyMap
+	MessageGroup   *gmap.StrIntMap
 	// Cache          *gcache.Cache
 }
 type queryParam struct {
@@ -48,9 +52,12 @@ type bodyData struct {
 func New(config Config, request *http.Request, writer http.ResponseWriter) *ServerGuard {
 
 	g := &ServerGuard{
-		Config: config,
+		Config:       config,
+		MuxEntry:     gmap.NewIntAnyMap(),
+		MessageGroup: gmap.NewStrIntMap(),
 		// cache:  cache,
 	}
+	g.RegisterMessageType(message.DefaultMessage)
 	g.setRequest(request)
 	g.setResponse(writer)
 	return g
@@ -60,7 +67,6 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 func (s *ServerGuard) Serve() {
 	gutil.TryCatch(func() {
 		s.parseRequest()
-		// s.Logger.Debugf("Request Received:\n URL: %s%s \n Content: %s \n\n", s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody))
 		s.Validate().resolve()
 	}, func(err error) {
 		switch err.Error() {
@@ -75,6 +81,8 @@ func (s *ServerGuard) Serve() {
 	//输出缓冲区
 	s.Response.Output()
 }
+
+//resolve
 func (s *ServerGuard) resolve() {
 	message, err := s.GetMessage()
 	if err != nil {
@@ -84,7 +92,7 @@ func (s *ServerGuard) resolve() {
 	s.handleAccessLog(message.MustToXmlString())
 
 	if !s.Guard.Resolve(message) {
-		s.handleRequest(message)
+		s.HandleRequest(message)
 	}
 	// if !s.Guard.Resolve() {
 	// 	s.handleRequest()
@@ -105,13 +113,6 @@ func (s *ServerGuard) resolve() {
 
 }
 
-//logger
-func (s *ServerGuard) handleAccessLog(raw string) {
-	if !s.Logger.AccessLogEnabled {
-		return
-	}
-	s.Logger.File(s.Logger.AccessLogPattern).Stdout(s.Logger.LogStdout).Printf("[Access]:Request Received-%s:\n Params:%s \n Raw:%s \n Parsed: %s \n", gtime.Datetime(), s.Request.URL.String(), gconv.String(s.bodyData.RawBody), raw)
-}
 func (s *ServerGuard) parseRequest() {
 	q := &queryParam{}
 
@@ -126,7 +127,7 @@ func (s *ServerGuard) parseRequest() {
 }
 
 //return response
-func (s *ServerGuard) handleRequest(originMsg *Message) {
+func (s *ServerGuard) HandleRequest(originMsg *Message) {
 	// originMsg, err := s.GetMessage()
 	// if err != nil {
 	// 	panic(err.Error())
@@ -145,28 +146,65 @@ func (s *ServerGuard) handleRequest(originMsg *Message) {
 }
 
 func (s *ServerGuard) Dispatch(mtype string, message *Message) {
-	// 1 mtype => message.MessageType
-	// g.Dump("mux group: %s", s.muxGroup)
 
-	handlers := s.GetHandlers()
 	event := s.TypeToEvent(mtype)
-	for _, mux := range handlers {
-		if (mux.Condition & event) == event {
-			result := mux.Handler.Handle(message)
-			switch result.(type) {
+	if s.MuxEntry.Contains(event) {
+		handlers := s.MuxEntry.Get(event).(*garray.Array)
+		handlers.Iterator(func(k int, h interface{}) bool {
+			handler := h.(Handler)
+			res := handler.Handle(message)
+			switch t := res.(type) {
 			case bool:
-				if ok, _ := result.(bool); ok {
-					goto LOOP
+				if t {
+					return false
 				}
-			default:
-				g.Dump("handler happy go")
-				// if ok := handler.Handle(message); ok {
-				// 	g.Dump(";;;;;;")
-				// }
 			}
-		}
+			return true
+		})
 	}
-LOOP:
+
+	// s.MuxEntry.Iterator(func(pattern int, item interface{}) bool {
+	// 	// handlers := item.(muxEntry)
+	// 	if (pattern & event) == event {
+	// 		handlers := item.(*garray.Array)
+	// 		haddlers.Iterator(func(k int, handler interface{}) bool {
+
+	// 		})
+
+	// 		res := handler.Handler.Handle(message)
+	// 		switch t := res.(type) {
+	// 		case bool:
+	// 			if t {
+	// 				return false
+	// 			}
+	// 		}
+	// 	}
+	// 	return true
+
+	// })
+
+	//*******************************************************
+	// 	handlers := s.GetHandlers()
+	// 	event := s.TypeToEvent(mtype)
+	// 	for _, mux := range handlers {
+	// 		if (mux.Condition & event) == event {
+	// 			result := mux.Handler.Handle(message)
+	// 			switch result.(type) {
+	// 			case bool:
+	// 				if ok, _ := result.(bool); ok {
+	// 					goto LOOP
+	// 				}
+	// 			default:
+	// 				g.Dump("handler happy go")
+	// 				// if ok := handler.Handle(message); ok {
+	// 				// 	g.Dump(";;;;;;")
+	// 				// }
+	// 			}
+	// 		}
+	// 	}
+	// LOOP:
+	// *****************************************************
+
 	// g.Dump("out loop and success!!!")
 
 	// 2 Get Mux by group name
@@ -303,6 +341,8 @@ func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	}
 	return content, nil
 }
+
+//check data type json/xml
 func checkDataType(content []byte) string {
 	if json.Valid(content) {
 		return "json"

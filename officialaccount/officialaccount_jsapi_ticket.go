@@ -29,7 +29,7 @@ func (v *DefaultJsapiTicket) GetTicket() string {
 	}
 	if ticket == nil {
 		//get & cache
-		client := v.oa.getClientWithToken()
+		client := v.oa.GetClientWithToken()
 		val := client.RequestJson("GET", "cgi-bin/ticket/getticket", "type=jsapi")
 		if val.GetInt("errcode") == 0 && val.Contains("ticket") {
 			if err := v.cache.Set(v.getKey(), val.GetString("ticket"), time.Second*7200); err != nil {
@@ -37,7 +37,7 @@ func (v *DefaultJsapiTicket) GetTicket() string {
 			}
 			return val.GetString("ticket")
 		} else {
-			v.oa.config.Logger.Stdout(v.oa.config.Logger.LogStdout).Print(fmt.Sprintf("[Err] ticket get from api Error: %s", val.MustToJsonString()))
+			v.oa.Logger.Stdout(v.oa.Logger.LogStdout).Print(fmt.Sprintf("[Err] ticket get from api Error: %s", val.MustToJsonString()))
 		}
 	}
 	return gvar.New(ticket).String()

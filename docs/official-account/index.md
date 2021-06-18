@@ -1,9 +1,9 @@
 ### 公众号
 
 #### 入门
-----
-微信公众号官方文档[https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html](https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html) ,建议仔细阅读
-----
+
+> 微信公众号官方文档[https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html](https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html) ,建议仔细阅读
+
 
 #### 开始
 * 初始化

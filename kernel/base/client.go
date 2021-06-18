@@ -8,13 +8,13 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/log"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/errors/gerror"
+	"github.com/gogf/gf/util/gconv"
 
-	// "github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 )
 
 type Client struct {
-	*ghttp.Client
+	Client    *ghttp.Client
 	BaseUri   string
 	UrlValues url.Values
 	Logger    *log.Logger
@@ -28,7 +28,7 @@ func (c *Client) PostJson(endpoint string, data ...interface{}) *gjson.Json {
 	// if len(data) > 0 {
 	// 	val = data[0]
 	// }
-	response, err := c.ContentJson().Post(c.getUri(endpoint), data...)
+	response, err := c.Client.ContentJson().Post(c.getUri(endpoint), data...)
 	var debugRaw string = response.Raw()
 	if err != nil {
 		c.handleErrorLog(err, debugRaw)
@@ -44,7 +44,7 @@ func (c *Client) PostJson(endpoint string, data ...interface{}) *gjson.Json {
 
 			c.Token.GetToken(true)
 
-			resp, err := c.ContentJson().Post(c.getUri(endpoint), data...)
+			resp, err := c.Client.ContentJson().Post(c.getUri(endpoint), data...)
 			var respRaw string = resp.Raw()
 			if err != nil {
 				c.handleErrorLog(err, respRaw)
@@ -74,7 +74,7 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 	// if len(data) > 0 {
 	// 	val = data[0]
 	// }
-	response, err := c.Get(c.getUri(endpoint), data...)
+	response, err := c.Client.Get(c.getUri(endpoint), data...)
 	var debugRaw string = response.Raw()
 	if err != nil {
 		c.handleErrorLog(err, debugRaw)
@@ -88,7 +88,7 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 
 			c.Token.GetToken(true)
 
-			resp, err := c.ContentJson().Get(c.getUri(endpoint), data...)
+			resp, err := c.Client.ContentJson().Get(c.getUri(endpoint), data...)
 			var respRaw string = resp.Raw()
 			if err != nil {
 				c.handleErrorLog(err, respRaw)
@@ -111,62 +111,29 @@ func (c *Client) GetJson(endpoint string, data ...interface{}) *gjson.Json {
 	return result
 }
 
+//request return json
 func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *gjson.Json {
-	var response *ghttp.ClientResponse
-	var err error
+
 	if method == "POST" {
-		response, err = c.ContentJson().DoRequest(method, c.getUri(endpoint), data...)
-	} else {
-		response, err = c.DoRequest(method, c.getUri(endpoint), data...)
+		c.Client = c.Client.ContentJson()
 	}
-
-	if err != nil {
-		c.handleErrorLog(err, response.Raw())
-	}
-
-	debugRaw := response.Raw()
-	result := gjson.New(response.ReadAllString())
-
-	if have := result.Contains("errcode"); have {
-		//40001 refresh token try once
-		if result.GetInt("errcode") == 40001 {
-
-			c.Token.GetToken(true)
-
-			resp, err := c.ContentJson().Post(c.getUri(endpoint), data...)
-			var respRaw string = resp.Raw()
-			if err != nil {
-				c.handleErrorLog(err, respRaw)
-			}
-			res := gjson.New(resp.ReadAllString())
-			defer resp.Close()
-			if res.Contains("errcode") {
-				c.handleErrorLog(errors.New("Refresh Token Result:"), respRaw)
-			} else {
-				c.handleAccessLog(respRaw)
-				return res
-			}
-
-		}
-		if result.GetInt("errcode") != 0 {
-			c.handleErrorLog(errors.New("get json with err code."), debugRaw)
-			return result
-		}
-
-	}
-	c.handleAccessLog(debugRaw)
-	return result
+	raw := c.RequestRaw(method, endpoint, data...)
+	c.handleAccessLog(gconv.String(raw))
+	return gjson.New(raw)
 }
 
-//RequestRaw
+//request Post retrun Json !!!上传文件图片 内容安全等接口用 配合 @file:
+func (c *Client) RequestPost(endpoint string, data ...interface{}) *gjson.Json {
+	raw := c.RequestRaw("POST", endpoint, data...)
+	c.handleAccessLog(gconv.String(raw))
+	return gjson.New(raw)
+}
+
+//Request return Raw
 func (c *Client) RequestRaw(method string, endpoint string, data ...interface{}) []byte {
 	var response *ghttp.ClientResponse
 	var err error
-	if method == "POST" {
-		response, err = c.ContentJson().DoRequest(method, c.getUri(endpoint), data...)
-	} else {
-		response, err = c.DoRequest(method, c.getUri(endpoint), data...)
-	}
+	response, err = c.Client.DoRequest(method, c.getUri(endpoint), data...)
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
@@ -180,7 +147,7 @@ func (c *Client) RequestRaw(method string, endpoint string, data ...interface{})
 
 				c.Token.GetToken(true)
 
-				resp, err := c.ContentJson().Post(c.getUri(endpoint), data...)
+				resp, err := c.Client.ContentJson().Post(c.getUri(endpoint), data...)
 				var respRaw string = resp.Raw()
 				if err != nil {
 					c.handleErrorLog(err, respRaw)
@@ -248,7 +215,8 @@ func (c *Client) getUri(endpoint string) string {
 	} else {
 		url = endpoint
 	}
-	if param != nil {
+
+	if param != nil && len(param) > 0 {
 		url = url + "?" + param.Encode()
 	}
 	return url
