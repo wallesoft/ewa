@@ -5,11 +5,12 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/message"
 	"github.com/gogf/gf/container/garray"
+	"github.com/gogf/gf/container/gmap"
 )
 
 //muxEntry
 type muxEntry struct {
-	Handler   Handler
+	Handlers  *garray.Array
 	Condition message.MessageType
 }
 
@@ -28,15 +29,30 @@ func (s *ServerGuard) PushFunc(handler HandlerFunc, pattern message.MessageType)
 
 //Push
 func (s *ServerGuard) Push(handler Handler, pattern message.MessageType) {
-	var me muxEntry
-	me.Handler = handler
-	me.Condition = pattern
-	// add to slice head
-	s.MuxEntry.InsertBefore(0, me)
+	//var me muxEntry
+	// var h *garray.Array
+	h := garray.New()
+	var err error
+	// var me *gmap.IntAnyMap
+	if s.MuxEntry.Contains(pattern) {
+		handlers := s.MuxEntry.Get(pattern)
+		h = handlers.(*garray.Array)
+	}
+
+	if h.Len() == 0 {
+		h.Append(handler)
+	} else {
+		err = h.InsertBefore(0, handler)
+	}
+	s.MuxEntry.Set(pattern, h)
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 //GetHandlers
-func (s *ServerGuard) GetHandlers() *garray.Array {
+func (s *ServerGuard) GetHandlers() *gmap.IntAnyMap {
 	return s.MuxEntry
 }
 
