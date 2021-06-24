@@ -21,6 +21,7 @@ type AccessToken struct {
 	EndPoint          string
 	RequestPostMethod bool
 	Client            *Client
+	RefreshTokenCode  int //接口返回错误
 }
 type Token struct {
 }
@@ -40,6 +41,14 @@ func (at *AccessToken) GetToken(refresh ...bool) string {
 	}
 	return at.requestToken()
 
+}
+func (at *AccessToken) GetRefreshTokenCode() int {
+	//兼容字节跳动
+	if at.RefreshTokenCode != 0 {
+		return at.RefreshTokenCode
+	}
+	//微信默认
+	return 40001
 }
 
 //GetTokenKey

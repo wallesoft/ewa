@@ -40,7 +40,7 @@ func (c *Client) PostJson(endpoint string, data ...interface{}) *gjson.Json {
 
 	if have := result.Contains("errcode"); have {
 		//40001 refresh token
-		if result.GetInt("errcode") == 40001 {
+		if result.GetInt("errcode") == c.Token.GetRefreshTokenCode() {
 
 			c.Token.GetToken(true)
 
