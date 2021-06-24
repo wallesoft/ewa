@@ -12,14 +12,16 @@ import (
 )
 
 type Jssdk struct {
-	Debug     bool     `json:"debug"`
-	AppID     string   `json:"appId"`
-	Timestamp string   `json:"timestamp"`
-	NonceStr  string   `json:"nonceStr"`
-	Signature string   `json:"signature"`
-	JsApiList []string `json:"jsApiList"`
+	Debug       bool     `json:"debug"`
+	AppID       string   `json:"appId"`
+	Timestamp   string   `json:"timestamp"`
+	NonceStr    string   `json:"nonceStr"`
+	Signature   string   `json:"signature"`
+	JsApiList   []string `json:"jsApiList"`
+	OpenTagList []string `json:"openTagList"`
 }
 
+// 获取jssdk config
 func (oa *OfficialAccount) Jssdk(url string, list []string) *Jssdk {
 	ticket := oa.JsapiTicket().GetTicket()
 	timestamp := gtime.TimestampStr()
@@ -37,6 +39,13 @@ func (oa *OfficialAccount) Jssdk(url string, list []string) *Jssdk {
 	return j
 }
 
+//open tag 开方标签配置
+func (j *Jssdk) WithOpenTag(list []string) *Jssdk {
+	j.OpenTagList = list
+	return j
+}
+
+//设置调试模式
 func (j *Jssdk) SetDebug(debug ...bool) {
 	if len(debug) > 0 {
 		j.Debug = debug[0]
@@ -45,7 +54,7 @@ func (j *Jssdk) SetDebug(debug ...bool) {
 }
 
 //JsonString
-func (j *Jssdk) JsonString() string {
+func (j *Jssdk) ToJsonString() string {
 	return gjson.New(j).MustToJsonString()
 }
 
