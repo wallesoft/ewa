@@ -1,4 +1,4 @@
-package bytedance
+package miniapp
 
 import (
 	"fmt"
@@ -13,20 +13,20 @@ import (
 //字节跳动小程序
 
 type MiniApp struct {
-	Config      AppConfig
+	Config      Config
 	AccessToken auth.AccessToken
 	Logger      *log.Logger
 	Cache       *gcache.Cache
 }
 
 //New
-func New(config AppConfig) *MiniApp {
+func New(config Config) *MiniApp {
 	app := NewWithOutToken(config)
 	app.AccessToken = app.getDefaultAccessToken()
 	return app
 }
 
-func NewWithOutToken(config AppConfig) *MiniApp {
+func NewWithOutToken(config Config) *MiniApp {
 	if config.Cache == nil {
 		config.Cache = cache.New("ewa.wechat.miniprogram")
 	}

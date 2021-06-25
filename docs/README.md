@@ -1,13 +1,15 @@
 ### Ewa
 Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模块
 * 文档地址：[ http://wallesoft.gitee.io/ewa]( http://wallesoft.gitee.io/ewa)
-
+* 直达： [微信](/official-account/) /  [字节跳动](/bytedance/)
 #### 开始之前
 
 在使用此模块前，请确保做好以下工作:
 > * 具备golang语言的基础知识，这里是一个学习的好地方：[Go 语言中文网-这里有基本的教程资料，请仔细阅读，一遍不够，多读几遍](https://books.studygolang.com)
-> * 为了不重复造轮子，引用了第三方开发框架 [GF (Go Frame)](https://goframe.go) (感谢为生态圈做的贡献)，建议去官方网站熟读文档和源码实现，这将是非常有价值的
+> * 为了不重复造轮子，引用了第三方开发框架 [GF (Go Frame)](https://goframe.org) (感谢为生态圈做的贡献)，建议去官方网站熟读文档和源码实现，这将是非常有价值的
 > * **仔细阅读并看懂**[微信官方文档](https://developers.weixin.qq.com/doc/)
+> * **仔细阅读并看懂**[字节跳动文档](https://microapp.bytedance.com/docs/zh-CN/mini-app/introduction/
+> * **仔细阅读并看懂**[抖音开发文档](https://open.douyin.com/platform/doc/6848834666171009035)
 > * 基本知识的掌握：基本的HTTP协议，请求方式(_GET \ POST \ PUT \ PATCH \ DELETE_)等
 
 此外，你完全有必要看一下以下的链接：

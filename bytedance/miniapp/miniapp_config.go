@@ -1,4 +1,4 @@
-package bytedance
+package miniapp
 
 import (
 	"gitee.com/wallesoft/ewa/kernel/base"
@@ -7,7 +7,7 @@ import (
 	"github.com/gogf/gf/os/gcache"
 )
 
-type AppConfig struct {
+type Config struct {
 	AppID  string // appid
 	Secret string // secret
 	Cache  *gcache.Cache

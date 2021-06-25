@@ -15,7 +15,7 @@ OAuth是一个关于授权（authorization）的开放网络标准，在全世�
     （E）客户端使用令牌，向资源服务器申请获取资源。
     （F）资源服务器确认令牌无误，同意向客户端开放资源。
 
-关于 OAuth 协议我们就简单了解到这里，如果还有不熟悉的同学，请 [Google 相关资料](https://www.google.com.hk/?gws_rd=ssl#safe=strict&q=OAuth2)
+关于 OAuth 协议我们就简单了解到这里，如果还有不熟悉的同学，请 [*百度](https://www.baidu.com/s?wd=oauth2.0)
 
 #### 微信 OAuth
 

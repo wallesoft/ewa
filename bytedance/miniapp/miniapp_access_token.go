@@ -1,4 +1,4 @@
-package bytedance
+package miniapp
 
 import (
 	"gitee.com/wallesoft/ewa/kernel/auth"
