@@ -56,7 +56,7 @@ func (c *AppCode) Save(path string, name ...string) (string, *AppCodeError) {
 }
 
 //获取小程序码
-func (c *AppCode) CreateQrCode(path string, width ...int) *AppCode {
+func (c *AppCode) CreateQRCode(path string, width ...int) *AppCode {
 	var param = g.Map{
 		"path": path,
 	}
