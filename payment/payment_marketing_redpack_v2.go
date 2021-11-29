@@ -27,7 +27,7 @@ func (r *Redpack) New(config map[string]interface{}) *Redpack {
 	}
 
 	//signature
-	r.Set("sign", r.payment.V2MD5(r.config.ToMap()))
+	r.Set("sign", r.payment.V2MD5(r.config.Map()))
 
 	return r
 }
