@@ -1,12 +1,14 @@
 package openplatform
 
 import (
+	"context"
+
 	"gitee.com/wallesoft/ewa/kernel/http"
-	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 //小程序登录
-func (mp *MiniProgram) Session(code string) *http.ResponseData {
+func (mp *MiniProgram) Session(ctx context.Context, code string) *http.ResponseData {
 	data := g.Map{
 		"appid":           mp.Config.AppID,
 		"js_code":         code,
@@ -14,6 +16,6 @@ func (mp *MiniProgram) Session(code string) *http.ResponseData {
 		"component_appid": mp.Component.config.AppID,
 	}
 	return &http.ResponseData{
-		Json: mp.Component.getClientWithToken().RequestJson("GET", "sns/component/jscode2session", data),
+		Json: mp.Component.getClientWithToken().RequestJson(ctx, "GET", "sns/component/jscode2session", data),
 	}
 }

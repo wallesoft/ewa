@@ -1,6 +1,7 @@
 package openplatform
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -12,7 +13,7 @@ import (
 	"gitee.com/wallesoft/ewa/miniprogram"
 	"gitee.com/wallesoft/ewa/openplatform/auth"
 	"gitee.com/wallesoft/ewa/openplatform/server"
-	"github.com/gogf/gf/os/gcache"
+	"github.com/gogf/gf/v2/os/gcache"
 )
 
 //OpenPlatform
@@ -25,7 +26,7 @@ type OpenPlatform struct {
 }
 
 //New new OpenPlatform @see glog https://goframe.org/os/glog/index
-func New(config Config) *OpenPlatform {
+func New(ctx context.Context, config Config) *OpenPlatform {
 	if config.Cache == nil {
 		config.Cache = cache.New("ewa.wechat.openplatform")
 	}
@@ -47,7 +48,7 @@ func New(config Config) *OpenPlatform {
 		Cache:        config.Cache,
 		verifyTicket: auth.GetVerifyTicket(config.AppID, config.Cache),
 	}
-	op.accessToken = op.getDefaultAccessToken()
+	op.accessToken = op.getDefaultAccessToken(ctx)
 	return op
 }
 
@@ -79,7 +80,7 @@ func (op *OpenPlatform) Server(request *http.Request, writer http.ResponseWriter
 }
 
 //MiniProgram
-func (op *OpenPlatform) MiniProgram(appid string, refreshToken string) *MiniProgram {
+func (op *OpenPlatform) MiniProgram(ctx context.Context, appid string, refreshToken string) *MiniProgram {
 	app := &MiniProgram{
 		RefreshToken: refreshToken,
 		Component:    op,
@@ -87,6 +88,6 @@ func (op *OpenPlatform) MiniProgram(appid string, refreshToken string) *MiniProg
 	app.MiniProgram = miniprogram.NewWithOutToken(miniprogram.Config{
 		AppID: appid,
 	})
-	app.AccessToken = op.getWeappAccessToken(app)
+	app.AccessToken = op.getWeappAccessToken(ctx, app)
 	return app
 }

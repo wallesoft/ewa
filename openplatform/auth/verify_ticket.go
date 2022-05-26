@@ -1,15 +1,16 @@
 package auth
 
 import (
+	"context"
 	"time"
 
 	"gitee.com/wallesoft/ewa/kernel/server"
-	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/os/gcache"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/os/gcache"
 )
 
 type VerifyTicket interface {
-	GetTicket() string
+	GetTicket(ctx context.Context) string
 }
 
 type DefaultVerifyTicket struct {
@@ -31,11 +32,11 @@ func GetDefaultVerifyTicket() *DefaultVerifyTicket {
 }
 
 //Handle
-func (v *DefaultVerifyTicket) Handle(m *server.Message) interface{} {
+func (v *DefaultVerifyTicket) Handle(ctx context.Context, m *server.Message) interface{} {
 	var verifyTicket string
 	if have := m.Contains("ComponentVerifyTicket"); have {
-		verifyTicket = m.GetString("ComponentVerifyTicket")
-		if err := v.cache.Set(v.getKey(), verifyTicket, time.Second*3600); err != nil {
+		verifyTicket = m.Get("ComponentVerifyTicket").String()
+		if err := v.cache.Set(ctx, v.getKey(), verifyTicket, time.Second*3600); err != nil {
 			panic(err.Error())
 		}
 	}
@@ -43,8 +44,8 @@ func (v *DefaultVerifyTicket) Handle(m *server.Message) interface{} {
 }
 
 //GetTicket
-func (v *DefaultVerifyTicket) GetTicket() string {
-	ticket, err := v.cache.Get(v.getKey())
+func (v *DefaultVerifyTicket) GetTicket(ctx context.Context) string {
+	ticket, err := v.cache.Get(ctx, v.getKey())
 	if err != nil {
 		panic(err.Error())
 	}

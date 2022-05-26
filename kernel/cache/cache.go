@@ -2,8 +2,8 @@ package cache
 
 import (
 	"gitee.com/wallesoft/ewa/kernel/cache/adapter"
-	"github.com/gogf/gf/os/gcache"
-	"github.com/gogf/gf/os/gfile"
+	"github.com/gogf/gf/v2/os/gcache"
+	"github.com/gogf/gf/v2/os/gfile"
 )
 
 // type Cache interface {
@@ -21,9 +21,9 @@ import (
 var defaultCache = New("ewawechat")
 
 func New(dir ...string) *gcache.Cache {
-	tmp := gfile.TempDir() + "/"
+	tmp := gfile.Temp() + "/"
 	if len(dir) > 0 {
-		tmp = gfile.TempDir() + "/" + dir[0] + "/"
+		tmp = gfile.Temp() + "/" + dir[0] + "/"
 	}
 	cache := gcache.New()
 	adapter := adapter.New(tmp)

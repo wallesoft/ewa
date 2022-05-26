@@ -1,12 +1,13 @@
 package payment
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/util/gconv"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 //支付通知
@@ -58,33 +59,33 @@ func (p *Payment) Notify(r *http.Request, w http.ResponseWriter) *Notify {
 }
 
 //支付通知处理
-func (n *Notify) HandlePaid(f func(message *NotifyMessage) (bool, error)) {
+func (n *Notify) HandlePaid(ctx context.Context, f func(message *NotifyMessage) (bool, error)) {
 
 	//验签
 	err := n.payment.VerifySignature(n.Request.Header, n.bodyData)
 	if err != nil {
-		n.output(http.StatusInternalServerError, "UNVALID_SIGNATURE", err.Error())
+		n.output(ctx, http.StatusInternalServerError, "UNVALID_SIGNATURE", err.Error())
 	}
 	data := n.Message.Raw //gjson.New(n.bodyData)
-	if data.GetString("event_type") == MessageEventType {
-		decrypted, err := n.payment.GCMDecryte(data.GetString("resource.associated_data"), data.GetString("resource.ciphertext"), data.GetString("resource.nonce"))
+	if data.Get("event_type").String() == MessageEventType {
+		decrypted, err := n.payment.GCMDecryte(data.Get("resource.associated_data").String(), data.Get("resource.ciphertext").String(), data.Get("resource.nonce").String())
 		if err != nil {
-			n.output(http.StatusInternalServerError, "AES_256_GCM_UNDECRYPTED", err.Error())
+			n.output(ctx, http.StatusInternalServerError, "AES_256_GCM_UNDECRYPTED", err.Error())
 		}
 		n.Message.Json = gjson.New(decrypted)
 		if ok, err := f(n.Message); ok {
-			n.output(http.StatusOK, MessageResCode, "")
+			n.output(ctx, http.StatusOK, MessageResCode, "")
 		} else {
-			n.output(http.StatusInternalServerError, "NOTIFY_MSG_HANDLE_ERROR", err.Error())
+			n.output(ctx, http.StatusInternalServerError, "NOTIFY_MSG_HANDLE_ERROR", err.Error())
 		}
 	}
 
 }
 
 //output response output
-func (n *Notify) output(status int, code string, message string) {
+func (n *Notify) output(ctx context.Context, status int, code string, message string) {
 	if status != http.StatusOK {
-		n.payment.Logger.File(n.payment.Logger.ErrorLogPattern).Print(fmt.Sprintf("[Erro] %s {%s} \n %s \n", code, message, gconv.String(n.bodyData)))
+		n.payment.Logger.File(n.payment.Logger.ErrorLogPattern).Print(ctx, fmt.Sprintf("[Erro] %s {%s} \n %s \n", code, message, gconv.String(n.bodyData)))
 	}
 	res := &NotifyRes{
 		Code:    code,

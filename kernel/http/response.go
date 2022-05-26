@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"net/http"
 
-	"github.com/gogf/gf/encoding/gparser"
-	"github.com/gogf/gf/util/gconv"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/encoding/gxml"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 // Response
@@ -60,7 +61,8 @@ func (r *Response) WriteXml(content interface{}, rootTag ...string) error {
 		return nil
 	}
 	// Else use gparser.VarToXml function to encode the parameter.
-	if b, err := gparser.VarToXml(content, rootTag...); err != nil {
+
+	if b, err := gxml.Encode(gvar.New(content).Map(), rootTag...); err != nil {
 		return err
 	} else {
 		r.Header().Set("Content-Type", "application/xml")

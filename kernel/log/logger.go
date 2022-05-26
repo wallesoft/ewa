@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/gogf/gf/os/glog"
+	"github.com/gogf/gf/v2/os/glog"
 )
 
 //Logger

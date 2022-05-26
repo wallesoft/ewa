@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/log"
-	"github.com/gogf/gf/net/ghttp"
-	"github.com/gogf/gf/os/gfile"
+	"github.com/gogf/gf/v2/net/gclient"
+	"github.com/gogf/gf/v2/os/gfile"
 )
 
 const (
@@ -90,7 +90,7 @@ func (p *Payment) setConfig(config Config, compatible ...bool) Config {
 }
 func (p *Payment) getClient() *Client {
 	return &Client{
-		Client:  ghttp.NewClient(),
+		Client:  gclient.New(),
 		BaseUri: p.getBaseUri(),
 		payment: p,
 	}

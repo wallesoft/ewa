@@ -3,8 +3,8 @@ package miniprogram
 import (
 	"gitee.com/wallesoft/ewa/kernel/base"
 	"gitee.com/wallesoft/ewa/kernel/log"
-	"github.com/gogf/gf/net/ghttp"
-	"github.com/gogf/gf/os/gcache"
+	"github.com/gogf/gf/v2/net/gclient"
+	"github.com/gogf/gf/v2/os/gcache"
 )
 
 type Config struct {
@@ -20,7 +20,7 @@ func (mp *MiniProgram) getBaseUri() string {
 
 func (mp *MiniProgram) GetClient() *base.Client {
 	return &base.Client{
-		Client:  ghttp.NewClient(),
+		Client:  gclient.New(),
 		BaseUri: mp.getBaseUri(),
 		Logger:  mp.Logger,
 	}
@@ -28,7 +28,7 @@ func (mp *MiniProgram) GetClient() *base.Client {
 
 func (mp *MiniProgram) GetClientWithToken() *base.Client {
 	return &base.Client{
-		Client:  ghttp.NewClient(),
+		Client:  gclient.New(),
 		BaseUri: mp.getBaseUri(),
 		Logger:  mp.Logger,
 		Token:   mp.AccessToken,

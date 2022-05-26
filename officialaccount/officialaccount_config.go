@@ -4,8 +4,8 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/base"
 	"gitee.com/wallesoft/ewa/kernel/log"
-	"github.com/gogf/gf/net/ghttp"
-	"github.com/gogf/gf/os/gcache"
+	"github.com/gogf/gf/v2/net/gclient"
+	"github.com/gogf/gf/v2/os/gcache"
 )
 
 type Config struct {
@@ -36,7 +36,7 @@ func (oa *OfficialAccount) getBaseUri() string {
 
 func (oa *OfficialAccount) GetClient() *base.Client {
 	return &base.Client{
-		Client:  ghttp.NewClient(),
+		Client:  gclient.New(),
 		BaseUri: oa.getBaseUri(),
 		Logger:  oa.Logger,
 	}
@@ -44,7 +44,7 @@ func (oa *OfficialAccount) GetClient() *base.Client {
 
 func (oa *OfficialAccount) GetClientWithToken() *base.Client {
 	return &base.Client{
-		Client:  ghttp.NewClient(),
+		Client:  gclient.New(),
 		BaseUri: oa.getBaseUri(),
 		Logger:  oa.Logger,
 		Token:   oa.getDefaultAccessToken(), // >>>>???????? 能否用oa.accessToken

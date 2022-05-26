@@ -1,12 +1,13 @@
 package payment
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
 
-	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/encoding/gjson"
 )
 
 type Order struct {
@@ -84,10 +85,10 @@ func (o *Order) Set(pattern string, value interface{}) {
 }
 
 //Jsapi 下单
-func (o *Order) Jsapi() (string, error) {
-	response := o.payment.getClient().RequestJson("POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
+func (o *Order) Jsapi(ctx context.Context) (string, error) {
+	response := o.payment.getClient().RequestJson(ctx, "POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
 	if response.StatusCode == 200 {
-		return gjson.New(response.Body).GetString("prepay_id"), nil
+		return gjson.New(response.Body).Get("prepay_id").String(), nil
 	}
 	return gvar.New(response.Body).String(), errors.New(fmt.Sprintf("[Error] %s", response.Status))
 }
@@ -98,14 +99,14 @@ func (o *Order) H5() {
 }
 
 //Query 订单查询
-func (o *Order) Query() *QueryOrder {
+func (o *Order) Query(ctx context.Context) *QueryOrder {
 	client := o.payment.getClient()
 	client.UrlValues = url.Values{}
 	client.UrlValues.Add("mchid", o.payment.config.MchID)
 	var response *Response
 	if o.config.Contains("transaction_id") {
 		//根据微信支付订单号查询
-		response = client.RequestJson("GET", "/v3/pay/transactions/id/"+o.config.GetString("transaction_id"))
+		response = client.RequestJson(ctx, "GET", "/v3/pay/transactions/id/"+o.config.Get("transaction_id").String())
 		if response.StatusCode == 200 {
 			return &QueryOrder{
 				Code: response.StatusCode,
@@ -116,7 +117,7 @@ func (o *Order) Query() *QueryOrder {
 	}
 	if o.config.Contains("out_trade_no") {
 		//根据商户订单号查询
-		response = client.RequestJson("GET", "/v3/pay/transactions/out-trade-no/"+o.config.GetString("out_trade_no"))
+		response = client.RequestJson(ctx, "GET", "/v3/pay/transactions/out-trade-no/"+o.config.Get("out_trade_no").String())
 		if response.StatusCode == 200 {
 			return &QueryOrder{
 				Code: 200,

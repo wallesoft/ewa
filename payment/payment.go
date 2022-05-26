@@ -1,13 +1,14 @@
 package payment
 
 import (
+	"context"
 	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/log"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/os/gcache"
-	"github.com/gogf/gf/util/gutil"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/os/gcache"
+	"github.com/gogf/gf/v2/util/gutil"
 )
 
 type Payment struct {
@@ -39,7 +40,7 @@ func New(config Config, compatible ...bool) *Payment {
 	gutil.TryCatch(func() {
 		payment.config = payment.setConfig(config, compatible...)
 	}, func(err error) {
-		payment.Logger.File(payment.Logger.ErrorLogPattern).Print(fmt.Sprintf("[Erro] %s", err.Error()))
+		payment.Logger.File(payment.Logger.ErrorLogPattern).Error(context.TODO(), fmt.Sprintf("[Erro] %s", err.Error()))
 	})
 
 	return payment

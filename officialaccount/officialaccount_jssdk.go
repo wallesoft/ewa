@@ -1,14 +1,15 @@
 package officialaccount
 
 import (
+	"context"
 	"sort"
 	"strings"
 
-	"github.com/gogf/gf/crypto/gsha1"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/os/gtime"
-	"github.com/gogf/gf/text/gstr"
-	"github.com/gogf/gf/util/grand"
+	"github.com/gogf/gf/v2/crypto/gsha1"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/text/gstr"
+	"github.com/gogf/gf/v2/util/grand"
 )
 
 type Jssdk struct {
@@ -22,8 +23,8 @@ type Jssdk struct {
 }
 
 // 获取jssdk config
-func (oa *OfficialAccount) Jssdk(url string, list []string) *Jssdk {
-	ticket := oa.JsapiTicket().GetTicket()
+func (oa *OfficialAccount) Jssdk(ctx context.Context, url string, list []string) *Jssdk {
+	ticket := oa.JsapiTicket().GetTicket(ctx)
 	timestamp := gtime.TimestampStr()
 	nonceStr := grand.S(16)
 

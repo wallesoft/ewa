@@ -1,11 +1,12 @@
 package server
 
 import (
+	"context"
 	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/message"
-	"github.com/gogf/gf/container/garray"
-	"github.com/gogf/gf/container/gmap"
+	"github.com/gogf/gf/v2/container/garray"
+	"github.com/gogf/gf/v2/container/gmap"
 )
 
 //muxEntry
@@ -15,11 +16,11 @@ type muxEntry struct {
 }
 
 //HandlerFunc
-type HandlerFunc func(*Message) interface{}
+type HandlerFunc func(context.Context, *Message) interface{}
 
 //Handle by func
-func (h HandlerFunc) Handle(m *Message) interface{} {
-	return h(m)
+func (h HandlerFunc) Handle(ctx context.Context, m *Message) interface{} {
+	return h(ctx, m)
 }
 
 //PushFunc

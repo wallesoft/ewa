@@ -3,7 +3,7 @@ package base
 import (
 	"net/http"
 
-	"github.com/gogf/gf/container/gvar"
+	"github.com/gogf/gf/v2/container/gvar"
 )
 
 type Response struct {

@@ -8,9 +8,9 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	"gitee.com/wallesoft/ewa/kernel/server"
-	"github.com/gogf/gf/encoding/gbase64"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/v2/encoding/gbase64"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 // 部分数据敏感，已通过测试，敏感数据去除

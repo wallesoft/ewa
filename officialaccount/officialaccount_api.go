@@ -1,6 +1,8 @@
 package officialaccount
 
+import "context"
+
 //GetToken
-func (oa *OfficialAccount) GetToken() string {
-	return oa.accessToken.GetToken()
+func (oa *OfficialAccount) GetToken(ctx context.Context) string {
+	return oa.accessToken.GetToken(ctx)
 }
