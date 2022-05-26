@@ -1,6 +1,6 @@
 package payment
 
-import "github.com/gogf/gf/encoding/gjson"
+import "github.com/gogf/gf/v2/encoding/gjson"
 
 //营销
 type Marketing struct {

@@ -3,9 +3,9 @@ package payment
 import (
 	"fmt"
 
-	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/os/gtime"
-	"github.com/gogf/gf/util/grand"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/util/grand"
 )
 
 type Jssdk struct {

@@ -1,8 +1,10 @@
 package auth
 
+import "context"
+
 //AccessToken interface
 type AccessToken interface {
-	GetToken(refresh ...bool) string
+	GetToken(ctx context.Context, refresh ...bool) string
 	GetTokenKey() string
 	GetRequestTokenKey() string
 }

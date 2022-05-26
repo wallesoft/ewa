@@ -1,30 +1,31 @@
 package payment
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 
-	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/errors/gerror"
-	"github.com/gogf/gf/net/ghttp"
-	"github.com/gogf/gf/os/gtime"
-	"github.com/gogf/gf/util/gconv"
-	"github.com/gogf/gf/util/grand"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/gogf/gf/v2/net/gclient"
+	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/gogf/gf/v2/util/grand"
 )
 
 type Client struct {
-	*ghttp.Client
+	*gclient.Client
 	payment   *Payment
 	UrlValues url.Values
 	// Logger  *log.Logger
 	BaseUri string
 }
 type ClientResponse struct {
-	*ghttp.ClientResponse
+	*gclient.Response
 }
 
 const (
@@ -32,7 +33,7 @@ const (
 )
 
 //RequestJson v3
-func (c *Client) RequestJson(method string, endpoint string, data ...interface{}) *Response {
+func (c *Client) RequestJson(ctx context.Context, method string, endpoint string, data ...interface{}) *Response {
 	body := ""
 	if len(data) > 0 {
 		switch data[0].(type) {
@@ -40,7 +41,7 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 			body = gconv.String(data[0])
 		default:
 			if b, err := json.Marshal(data[0]); err != nil {
-				c.payment.Logger.Errorf("Request json marshal err: %s", err.Error())
+				c.payment.Logger.Errorf(ctx, "Request json marshal err: %s", err.Error())
 			} else {
 				body = gconv.UnsafeBytesToStr(b)
 			}
@@ -52,7 +53,7 @@ func (c *Client) RequestJson(method string, endpoint string, data ...interface{}
 		"Authorization": authorization,
 		"User-Agent":    "ewa-payment-client/1.0",
 		"Accept":        "application/json",
-	}).ContentJson().DoRequest(method, url, data...)
+	}).ContentJson().DoRequest(ctx, method, url, data...)
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
 	}
@@ -138,13 +139,13 @@ func (c *Client) getSignature(method string, endpoint string, nonce string, time
 // }
 
 // v2 requst with cert tls
-func (c *Client) RequestV2(method string, endpoint string, data ...interface{}) *Response {
+func (c *Client) RequestV2(ctx context.Context, method string, endpoint string, data ...interface{}) *Response {
 	_, url := c.getUri(endpoint)
 	err := c.SetTLSKeyCrt(c.payment.config.CertPath, c.payment.config.KeyPath)
 	if err != nil {
-		c.payment.Logger.Errorf("set tls key crt err: %s", err.Error())
+		c.payment.Logger.Errorf(ctx, "set tls key crt err: %s", err.Error())
 	}
-	response, err := c.DoRequest(method, url, data...)
+	response, err := c.DoRequest(ctx, method, url, data...)
 
 	if err != nil {
 		c.handleErrorLog(err, response.Raw())
@@ -158,7 +159,7 @@ func (c *Client) RequestV2(method string, endpoint string, data ...interface{}) 
 		Body:       response.ReadAll(),
 	}
 
-	if raw.Contains("return_code") && raw.GetString("return_code") != "SUCCESS" {
+	if raw.Contains("return_code") && raw.Get("return_code").String() != "SUCCESS" {
 		c.handleErrorLog(errors.New("payment.v2.请求错误"), raw.MustToXmlString())
 	}
 	c.handleAccessLog(raw.MustToXmlString())
@@ -172,7 +173,7 @@ func (c *Client) handleAccessLog(raw string) {
 	}
 	c.payment.Logger.File(c.payment.Logger.AccessLogPattern).
 		Stdout(c.payment.Logger.LogStdout).
-		Printf("\n=============Response Raw============\n\n %s \n ", raw)
+		Printf(context.TODO(), "\n=============Response Raw============\n\n %s \n ", raw)
 }
 
 func (c *Client) handleErrorLog(err error, raw string) {
@@ -193,5 +194,5 @@ func (c *Client) handleErrorLog(err error, raw string) {
 	c.payment.Logger.
 		File(c.payment.Logger.ErrorLogPattern).
 		Stdout(c.payment.Logger.LogStdout).
-		Print(content)
+		Print(context.TODO(), content)
 }

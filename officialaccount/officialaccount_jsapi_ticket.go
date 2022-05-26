@@ -1,11 +1,12 @@
 package officialaccount
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/os/gcache"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/os/gcache"
 )
 
 type JsapiTicket interface {
@@ -22,22 +23,22 @@ func (oa *OfficialAccount) JsapiTicket() *DefaultJsapiTicket {
 		oa:    oa,
 		cache: oa.config.Cache}
 }
-func (v *DefaultJsapiTicket) GetTicket() string {
-	ticket, err := v.cache.Get(v.getKey())
+func (v *DefaultJsapiTicket) GetTicket(ctx context.Context) string {
+	ticket, err := v.cache.Get(ctx, v.getKey())
 	if err != nil {
 		panic(err.Error())
 	}
 	if ticket == nil {
 		//get & cache
 		client := v.oa.GetClientWithToken()
-		val := client.RequestJson("GET", "cgi-bin/ticket/getticket", "type=jsapi")
-		if val.GetInt("errcode") == 0 && val.Contains("ticket") {
-			if err := v.cache.Set(v.getKey(), val.GetString("ticket"), time.Second*7200); err != nil {
+		val := client.RequestJson(ctx, "GET", "cgi-bin/ticket/getticket", "type=jsapi")
+		if val.Get("errcode").Int() == 0 && val.Contains("ticket") {
+			if err := v.cache.Set(ctx, v.getKey(), val.Get("ticket").String(), time.Second*7200); err != nil {
 				panic(err.Error())
 			}
-			return val.GetString("ticket")
+			return val.Get("ticket").String()
 		} else {
-			v.oa.Logger.Stdout(v.oa.Logger.LogStdout).Print(fmt.Sprintf("[Err] ticket get from api Error: %s", val.MustToJsonString()))
+			v.oa.Logger.Stdout(v.oa.Logger.LogStdout).Print(ctx, fmt.Sprintf("[Err] ticket get from api Error: %s", val.MustToJsonString()))
 		}
 	}
 	return gvar.New(ticket).String()

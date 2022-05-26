@@ -3,8 +3,8 @@ package payment
 import (
 	"net/http"
 
-	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/encoding/gjson"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/encoding/gjson"
 )
 
 type Response struct {

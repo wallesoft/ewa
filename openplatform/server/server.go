@@ -5,8 +5,8 @@ import (
 
 	guard "gitee.com/wallesoft/ewa/kernel/server"
 
-	"github.com/gogf/gf/container/gtype"
-	"github.com/gogf/gf/os/glog"
+	"github.com/gogf/gf/v2/container/gtype"
+	"github.com/gogf/gf/v2/os/glog"
 )
 
 //Server
@@ -32,9 +32,9 @@ func (s *Server) Resolve(msg *guard.Message) bool {
 	if msg != nil {
 		var t string
 		if msg.Contains("InfoType") {
-			t = msg.GetString("InfoType")
+			t = msg.Get("InfoType").String()
 		} else if msg.Contains("MsgType") {
-			t = msg.GetString("MsgType")
+			t = msg.Get("MsgType").String()
 		} else {
 			s.Response.WriteStatusExit(http.StatusBadRequest, "Invalid message type")
 		}

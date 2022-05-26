@@ -1,12 +1,13 @@
 package miniprogram
 
 import (
+	"context"
 	"fmt"
 
 	"gitee.com/wallesoft/ewa/kernel/auth"
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/log"
-	"github.com/gogf/gf/os/gcache"
+	"github.com/gogf/gf/v2/os/gcache"
 )
 
 type MiniProgram struct {
@@ -18,9 +19,9 @@ type MiniProgram struct {
 }
 
 //New
-func New(config Config) *MiniProgram {
+func New(ctx context.Context, config Config) *MiniProgram {
 	app := NewWithOutToken(config)
-	app.AccessToken = app.getDefaultAccessToken()
+	app.AccessToken = app.getDefaultAccessToken(ctx)
 	return app
 }
 

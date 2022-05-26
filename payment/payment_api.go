@@ -1,11 +1,13 @@
 package payment
 
 import (
-	"github.com/gogf/gf/frame/g"
+	"context"
+
+	"github.com/gogf/gf/v2/frame/g"
 )
 
 func (p *Payment) Certificates() {
-	response := p.getClient().RequestJson("GET", "/v3/certificates")
+	response := p.getClient().RequestJson(context.TODO(), "GET", "/v3/certificates")
 	g.Dump("certs:----------------------------\n", response.ReadAllString())
 	// @todo
 }

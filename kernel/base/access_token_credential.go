@@ -1,5 +1,7 @@
 package base
 
+import "context"
+
 type TokenCredentail interface {
-	Get() map[string]string
+	Get(ctx context.Context) map[string]string
 }

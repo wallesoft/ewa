@@ -1,26 +1,27 @@
 package openplatform
 
 import (
+	"context"
 	"net/url"
 
 	"gitee.com/wallesoft/ewa/kernel/http"
-	"github.com/gogf/gf/container/gvar"
-	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/util/gutil"
+	"github.com/gogf/gf/v2/container/gvar"
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gutil"
 )
 
 //StartPushTicket 启动ticket推送服务
-func (op *OpenPlatform) StartPushTicket() *http.ResponseData {
+func (op *OpenPlatform) StartPushTicket(ctx context.Context) *http.ResponseData {
 	return &http.ResponseData{
-		Json: op.getClient().RequestJson("POST", "cgi-bin/component/api_start_push_ticket", g.Map{"component_appid": op.config.AppID, "component_secret": op.config.AppSecret}),
+		Json: op.getClient().RequestJson(ctx, "POST", "cgi-bin/component/api_start_push_ticket", g.Map{"component_appid": op.config.AppID, "component_secret": op.config.AppSecret}),
 	}
 }
 
 //GetPreAuthorizationUrl 获取授权页网址
-func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[string]interface{}) (string, error) {
+func (op *OpenPlatform) GetPreAuthorizationUrl(ctx context.Context, callback string, optional ...map[string]interface{}) (string, error) {
 
 	val := url.Values{}
-	authCode, err := op.GetPreAuthCode()
+	authCode, err := op.GetPreAuthCode(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -42,9 +43,9 @@ func (op *OpenPlatform) GetPreAuthorizationUrl(callback string, optional ...map[
 }
 
 //GetMobilePreAuthorizationUrl
-func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional ...map[string]interface{}) (string, error) {
+func (op *OpenPlatform) GetMobilePreAuthorizationUrl(ctx context.Context, callback string, optional ...map[string]interface{}) (string, error) {
 	val := url.Values{}
-	authCode, err := op.GetPreAuthCode()
+	authCode, err := op.GetPreAuthCode(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -68,11 +69,11 @@ func (op *OpenPlatform) GetMobilePreAuthorizationUrl(callback string, optional .
 }
 
 //HandleAuthorize
-func (op *OpenPlatform) HandleAuthorize(code string) *http.ResponseData {
+func (op *OpenPlatform) HandleAuthorize(ctx context.Context, code string) *http.ResponseData {
 
 	client := op.getClientWithToken()
 	return &http.ResponseData{
-		Json: client.RequestJson("POST", "cgi-bin/component/api_query_auth", map[string]string{
+		Json: client.RequestJson(ctx, "POST", "cgi-bin/component/api_query_auth", map[string]string{
 			"component_appid":    op.config.AppID,
 			"authorization_code": code,
 		}),
@@ -81,10 +82,10 @@ func (op *OpenPlatform) HandleAuthorize(code string) *http.ResponseData {
 }
 
 //GetAuthorizer get authorizer info type as gjson.Json
-func (op *OpenPlatform) GetAuthorizer(appid string) *http.ResponseData {
+func (op *OpenPlatform) GetAuthorizer(ctx context.Context, appid string) *http.ResponseData {
 	client := op.getClientWithToken()
 	return &http.ResponseData{
-		Json: client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_info", map[string]string{
+		Json: client.RequestJson(ctx, "POST", "cgi-bin/component/api_get_authorizer_info", map[string]string{
 			"component_appid":  op.config.AppID,
 			"authorizer_appid": appid,
 		}),
@@ -93,13 +94,13 @@ func (op *OpenPlatform) GetAuthorizer(appid string) *http.ResponseData {
 }
 
 //GetAuthorizers get authorizer list
-func (op *OpenPlatform) GetAuthorizers(offset int, count int) *http.ResponseData {
+func (op *OpenPlatform) GetAuthorizers(ctx context.Context, offset int, count int) *http.ResponseData {
 	if count > 500 {
 		count = 500
 	}
 	client := op.getClientWithToken()
 	return &http.ResponseData{
-		Json: client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_list", map[string]interface{}{
+		Json: client.RequestJson(ctx, "POST", "cgi-bin/component/api_get_authorizer_list", map[string]interface{}{
 			"component_appid": op.config.AppID,
 			"offset":          offset,
 			"count":           count,
@@ -108,10 +109,10 @@ func (op *OpenPlatform) GetAuthorizers(offset int, count int) *http.ResponseData
 }
 
 //GetAuthorizerOption get authorizer option info
-func (op *OpenPlatform) GetAuthorizerOption(appid string, name string) *http.ResponseData {
+func (op *OpenPlatform) GetAuthorizerOption(ctx context.Context, appid string, name string) *http.ResponseData {
 	client := op.getClientWithToken()
 	return &http.ResponseData{
-		Json: client.RequestJson("POST", "cgi-bin/component/api_get_authorizer_option", map[string]string{
+		Json: client.RequestJson(ctx, "POST", "cgi-bin/component/api_get_authorizer_option", map[string]string{
 			"component_appid":  op.config.AppID,
 			"authorizer_appid": appid,
 			"option_name":      name,
@@ -120,10 +121,10 @@ func (op *OpenPlatform) GetAuthorizerOption(appid string, name string) *http.Res
 }
 
 //SetAuthorizerOption set authorizer option
-func (op *OpenPlatform) SetAuthorizerOption(appid string, name string, value string) *http.ResponseData {
+func (op *OpenPlatform) SetAuthorizerOption(ctx context.Context, appid string, name string, value string) *http.ResponseData {
 	client := op.getClientWithToken()
 	return &http.ResponseData{
-		Json: client.RequestJson("POST", "cgi-bin/component/api_set_authorizer_option", map[string]string{
+		Json: client.RequestJson(ctx, "POST", "cgi-bin/component/api_set_authorizer_option", map[string]string{
 			"component_appid":  op.config.AppID,
 			"authorizer_appid": appid,
 			"option_name":      name,
@@ -133,21 +134,21 @@ func (op *OpenPlatform) SetAuthorizerOption(appid string, name string, value str
 }
 
 //GetVerifyTicket
-func (op *OpenPlatform) GetVerifyTicket() string {
-	return op.verifyTicket.GetTicket()
+func (op *OpenPlatform) GetVerifyTicket(ctx context.Context) string {
+	return op.verifyTicket.GetTicket(ctx)
 }
 
 //GetAccessToken
-func (op *OpenPlatform) GetAccessToken() string {
-	return op.accessToken.GetToken()
+func (op *OpenPlatform) GetAccessToken(ctx context.Context) string {
+	return op.accessToken.GetToken(ctx)
 }
 
-func (op *OpenPlatform) GetPreAuthCode() (string, error) {
+func (op *OpenPlatform) GetPreAuthCode(ctx context.Context) (string, error) {
 	var code string
 	var err error
 	gutil.TryCatch(func() {
 		client := op.getClientWithToken()
-		v := client.RequestJson("POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
+		v := client.RequestJson(ctx, "POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
 			"component_appid": op.config.AppID,
 		})
 
@@ -155,13 +156,13 @@ func (op *OpenPlatform) GetPreAuthCode() (string, error) {
 			panic(v.MustToJsonString())
 		}
 		if have := v.Contains("pre_auth_code"); have {
-			code = v.GetString("pre_auth_code")
+			code = v.Get("pre_auth_code").String()
 		} else {
 			panic("Request pre_auth_code fail:" + v.MustToJsonString())
 		}
 	}, func(e error) {
 		err = e
-		op.Logger.File(op.Logger.ErrorLogPattern).Stdout(op.Logger.LogStdout).Print(err.Error())
+		op.Logger.File(op.Logger.ErrorLogPattern).Stdout(op.Logger.LogStdout).Error(ctx, err.Error())
 	})
 
 	return code, err

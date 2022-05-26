@@ -5,8 +5,8 @@ import (
 	"gitee.com/wallesoft/ewa/kernel/base"
 	"gitee.com/wallesoft/ewa/kernel/log"
 	"gitee.com/wallesoft/ewa/openplatform/auth"
-	"github.com/gogf/gf/net/ghttp"
-	"github.com/gogf/gf/os/gcache"
+	"github.com/gogf/gf/v2/net/gclient"
+	"github.com/gogf/gf/v2/os/gcache"
 )
 
 type Config struct {
@@ -57,7 +57,7 @@ func (op *OpenPlatform) getBaseUri() string {
 
 func (op *OpenPlatform) getClient() *base.Client {
 	return &base.Client{
-		Client:  ghttp.NewClient(),
+		Client:  gclient.New(),
 		BaseUri: op.getBaseUri(),
 		Logger:  op.Logger,
 	}
@@ -65,7 +65,7 @@ func (op *OpenPlatform) getClient() *base.Client {
 
 func (op *OpenPlatform) getClientWithToken() *base.Client {
 	return &base.Client{
-		Client:  ghttp.NewClient(),
+		Client:  gclient.New(),
 		BaseUri: op.getBaseUri(),
 		Logger:  op.Logger,
 		Token:   op.accessToken,

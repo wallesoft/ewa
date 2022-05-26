@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
-	"github.com/gogf/gf/crypto/gsha1"
-	"github.com/gogf/gf/encoding/gbase64"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/util/gconv"
+	"github.com/gogf/gf/v2/crypto/gsha1"
+	"github.com/gogf/gf/v2/encoding/gbase64"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 //签名校验 @see https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/signature.html

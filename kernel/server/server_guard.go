@@ -1,23 +1,24 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/gogf/gf/container/garray"
-	"github.com/gogf/gf/container/gmap"
+	"github.com/gogf/gf/v2/container/garray"
+	"github.com/gogf/gf/v2/container/gmap"
 
 	"gitee.com/wallesoft/ewa/kernel/encryptor"
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"gitee.com/wallesoft/ewa/kernel/log"
 	"gitee.com/wallesoft/ewa/kernel/message"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/encoding/gxml"
-	"github.com/gogf/gf/text/gregex"
-	"github.com/gogf/gf/util/gconv"
-	"github.com/gogf/gf/util/gutil"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/encoding/gxml"
+	"github.com/gogf/gf/v2/text/gregex"
+	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/gogf/gf/v2/util/gutil"
 )
 
 type ServerGuard struct {
@@ -74,7 +75,7 @@ func (s *ServerGuard) Serve() {
 			return
 		default:
 			//LOG
-			s.Logger.File(s.Logger.ErrorLogPattern).Print(fmt.Sprintf("[Erro] %s\n ================== Request Received =============\n [URL]: %s%s \n [Content]: %s \n ================================================\n", err.Error(), s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody)))
+			s.Logger.File(s.Logger.ErrorLogPattern).Error(context.TODO(), fmt.Sprintf("[Erro] %s\n ================== Request Received =============\n [URL]: %s%s \n [Content]: %s \n ================================================\n", err.Error(), s.Request.Host, s.Request.URL.String(), gconv.String(s.bodyData.RawBody)))
 		}
 	})
 
@@ -89,7 +90,7 @@ func (s *ServerGuard) resolve() {
 		panic(err.Error())
 	}
 	//logger
-	s.handleAccessLog(message.MustToXmlString())
+	s.handleAccessLog(context.TODO(), message.MustToXmlString())
 
 	if !s.Guard.Resolve(message) {
 		s.HandleRequest(message)
@@ -135,9 +136,9 @@ func (s *ServerGuard) HandleRequest(originMsg *Message) {
 	var mtype string
 
 	if originMsg.Contains("MsgType") {
-		mtype = originMsg.GetString("MsgType")
+		mtype = originMsg.Get("MsgType").String()
 	} else if originMsg.Contains("msg_type") {
-		mtype = originMsg.GetString("msg_type")
+		mtype = originMsg.Get("msg_type").String()
 	} else {
 		mtype = "text"
 	}
@@ -152,7 +153,7 @@ func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 		handlers := s.MuxEntry.Get(event).(*garray.Array)
 		handlers.Iterator(func(k int, h interface{}) bool {
 			handler := h.(Handler)
-			res := handler.Handle(message)
+			res := handler.Handle(context.TODO(), message)
 			switch t := res.(type) {
 			case bool:
 				if t {
@@ -272,7 +273,7 @@ func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err er
 		return nil, err
 	}
 	if s.IsSafeMode() && j.Contains("Encrypt") {
-		decrypted, err := s.decryptMessage(j.GetBytes("Encrypt"))
+		decrypted, err := s.decryptMessage(j.Get("Encrypt").Bytes())
 		if err != nil {
 			return nil, err
 		}
