@@ -2,11 +2,10 @@ package payment
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 
-	"github.com/gogf/gf/v2/container/gvar"
+	"gitee.com/wallesoft/ewa/payment/model/jsapi"
 	"github.com/gogf/gf/v2/encoding/gjson"
 )
 
@@ -15,7 +14,7 @@ type Order struct {
 	payment *Payment
 }
 
-//订单
+// 订单
 type OrderConfig struct {
 	AppID string `json:"appid"`
 	MchID string `json:"mchid"`
@@ -73,32 +72,34 @@ type OrderConfig struct {
 // 	Address  string `json:"address"`
 // }
 
-//QueryOrder @see https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_2.shtml 返回参数
+// QueryOrder @see https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_2.shtml 返回参数
 type QueryOrder struct {
 	Code int
 	*gjson.Json
 }
 
-//Set
+// Set
 func (o *Order) Set(pattern string, value interface{}) {
 	o.config.Set(pattern, value)
 }
 
-//Jsapi 下单
-func (o *Order) Jsapi(ctx context.Context) (string, error) {
-	response := o.payment.getClient().RequestJson(ctx, "POST", "/v3/pay/transactions/jsapi", o.config.MustToJsonString())
+// Jsapi 下单
+func (o *Order) Jsapi(ctx context.Context, prepay jsapi.PrepayRequest) (p jsapi.PrepayRes, err error) {
+	response := o.payment.getClient().RequestJson(ctx, "POST", "/v3/pay/transactions/jsapi", prepay)
 	if response.StatusCode == 200 {
-		return gjson.New(response.Body).Get("prepay_id").String(), nil
+		p.PrepayId = gjson.New(response.Body).Get("prepay_id").String()
+		return
 	}
-	return gvar.New(response.Body).String(), errors.New(fmt.Sprintf("[Error] %s", response.Status))
+	err = fmt.Errorf("[Error] %s", response.Status)
+	return
 }
 
-//H5下单
+// H5下单
 func (o *Order) H5() {
 
 }
 
-//Query 订单查询
+// Query 订单查询
 func (o *Order) Query(ctx context.Context) *QueryOrder {
 	client := o.payment.getClient()
 	client.UrlValues = url.Values{}

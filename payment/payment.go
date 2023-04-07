@@ -6,7 +6,6 @@ import (
 
 	"gitee.com/wallesoft/ewa/kernel/cache"
 	"gitee.com/wallesoft/ewa/kernel/log"
-	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/os/gcache"
 	"github.com/gogf/gf/v2/util/gutil"
 )
@@ -17,7 +16,7 @@ type Payment struct {
 	Cache  *gcache.Cache
 }
 
-//New
+// New
 func New(config Config, compatible ...bool) *Payment {
 	if config.Logger == nil {
 		config.Logger = log.New()
@@ -46,25 +45,25 @@ func New(config Config, compatible ...bool) *Payment {
 	return payment
 }
 
-//Order
-func (p *Payment) Order(config ...map[string]interface{}) *Order {
-	c := &OrderConfig{
-		AppID: p.config.AppID,
-		MchID: p.config.MchID,
-	}
-	oj := gjson.New(c)
-	if len(config) > 0 {
-		for pattern, val := range config[0] {
-			oj.Set(pattern, val)
-		}
-	}
+// Order
+func (p *Payment) Order() *Order {
+	// c := &OrderConfig{
+	// 	AppID: p.config.AppID,
+	// 	MchID: p.config.MchID,
+	// }
+	// oj := gjson.New(c)
+	// if len(config) > 0 {
+	// 	for pattern, val := range config[0] {
+	// 		oj.Set(pattern, val)
+	// 	}
+	// }
 	return &Order{
-		config:  oj,
+		// config:  oj,
 		payment: p,
 	}
 }
 
-//Markting
+// Markting
 func (p *Payment) Marketing() *Marketing {
 	return &Marketing{
 		payment: p,
