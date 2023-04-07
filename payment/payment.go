@@ -17,7 +17,7 @@ type Payment struct {
 }
 
 // New
-func New(config Config, compatible ...bool) *Payment {
+func New(ctx context.Context, config Config, compatible ...bool) *Payment {
 	if config.Logger == nil {
 		config.Logger = log.New()
 		if config.LogPath != "" {
@@ -36,10 +36,10 @@ func New(config Config, compatible ...bool) *Payment {
 		Cache:  cache.New("ewa.wechat.payment"),
 	}
 
-	gutil.TryCatch(func() {
+	gutil.TryCatch(ctx, func(ctx context.Context) {
 		payment.config = payment.setConfig(config, compatible...)
-	}, func(err error) {
-		payment.Logger.File(payment.Logger.ErrorLogPattern).Error(context.TODO(), fmt.Sprintf("[Erro] %s", err.Error()))
+	}, func(ctx context.Context, err error) {
+		payment.Logger.File(payment.Logger.ErrorLogPattern).Error(ctx, fmt.Sprintf("[Erro] %s", err.Error()))
 	})
 
 	return payment

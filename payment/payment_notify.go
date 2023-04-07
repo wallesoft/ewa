@@ -62,7 +62,7 @@ func (p *Payment) Notify(r *http.Request, w http.ResponseWriter) *Notify {
 func (n *Notify) HandlePaid(ctx context.Context, f func(message *NotifyMessage) (bool, error)) {
 
 	//验签
-	err := n.payment.VerifySignature(n.Request.Header, n.bodyData)
+	err := n.payment.VerifySignature(ctx, n.Request.Header, n.bodyData)
 	if err != nil {
 		n.output(ctx, http.StatusInternalServerError, "UNVALID_SIGNATURE", err.Error())
 	}

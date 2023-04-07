@@ -1,6 +1,7 @@
 package payment
 
 import (
+	"context"
 	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
@@ -56,9 +57,9 @@ func (p *Payment) GCMDecryte(associateData, cipherText, nonce string) ([]byte, e
 }
 
 //应答及回调验签
-func (p *Payment) VerifySignature(header http.Header, body []byte) error {
+func (p *Payment) VerifySignature(ctx context.Context, header http.Header, body []byte) error {
 	var err error
-	gutil.TryCatch(func() {
+	gutil.TryCatch(ctx, func(ctx context.Context) {
 		serialNo := header.Get("Wechatpay-Serial")
 		p.setPFPublicCert(serialNo)
 		signatureStr := p.getSignatureStr(header.Get("Wechatpay-Timestamp"), header.Get("Wechatpay-Nonce"), gvar.New(body).String())
@@ -72,7 +73,7 @@ func (p *Payment) VerifySignature(header http.Header, body []byte) error {
 			panic(rsa.ErrVerification.Error())
 		}
 
-	}, func(e error) {
+	}, func(ctx context.Context, e error) {
 		err = e
 	})
 	if err != nil {
