@@ -10,14 +10,14 @@ import (
 	"github.com/gogf/gf/v2/util/gutil"
 )
 
-//StartPushTicket 启动ticket推送服务
+// StartPushTicket 启动ticket推送服务
 func (op *OpenPlatform) StartPushTicket(ctx context.Context) *http.ResponseData {
 	return &http.ResponseData{
 		Json: op.getClient().RequestJson(ctx, "POST", "cgi-bin/component/api_start_push_ticket", g.Map{"component_appid": op.config.AppID, "component_secret": op.config.AppSecret}),
 	}
 }
 
-//GetPreAuthorizationUrl 获取授权页网址
+// GetPreAuthorizationUrl 获取授权页网址
 func (op *OpenPlatform) GetPreAuthorizationUrl(ctx context.Context, callback string, optional ...map[string]interface{}) (string, error) {
 
 	val := url.Values{}
@@ -42,7 +42,7 @@ func (op *OpenPlatform) GetPreAuthorizationUrl(ctx context.Context, callback str
 	return "https://mp.weixin.qq.com/cgi-bin/componentloginpage?" + val.Encode(), nil
 }
 
-//GetMobilePreAuthorizationUrl
+// GetMobilePreAuthorizationUrl
 func (op *OpenPlatform) GetMobilePreAuthorizationUrl(ctx context.Context, callback string, optional ...map[string]interface{}) (string, error) {
 	val := url.Values{}
 	authCode, err := op.GetPreAuthCode(ctx)
@@ -68,7 +68,7 @@ func (op *OpenPlatform) GetMobilePreAuthorizationUrl(ctx context.Context, callba
 	return "https://mp.weixin.qq.com/safe/bindcomponent?" + val.Encode() + "#wechat_redirect", nil
 }
 
-//HandleAuthorize
+// HandleAuthorize
 func (op *OpenPlatform) HandleAuthorize(ctx context.Context, code string) *http.ResponseData {
 
 	client := op.getClientWithToken()
@@ -81,7 +81,7 @@ func (op *OpenPlatform) HandleAuthorize(ctx context.Context, code string) *http.
 
 }
 
-//GetAuthorizer get authorizer info type as gjson.Json
+// GetAuthorizer get authorizer info type as gjson.Json
 func (op *OpenPlatform) GetAuthorizer(ctx context.Context, appid string) *http.ResponseData {
 	client := op.getClientWithToken()
 	return &http.ResponseData{
@@ -93,7 +93,7 @@ func (op *OpenPlatform) GetAuthorizer(ctx context.Context, appid string) *http.R
 
 }
 
-//GetAuthorizers get authorizer list
+// GetAuthorizers get authorizer list
 func (op *OpenPlatform) GetAuthorizers(ctx context.Context, offset int, count int) *http.ResponseData {
 	if count > 500 {
 		count = 500
@@ -108,7 +108,7 @@ func (op *OpenPlatform) GetAuthorizers(ctx context.Context, offset int, count in
 	}
 }
 
-//GetAuthorizerOption get authorizer option info
+// GetAuthorizerOption get authorizer option info
 func (op *OpenPlatform) GetAuthorizerOption(ctx context.Context, appid string, name string) *http.ResponseData {
 	client := op.getClientWithToken()
 	return &http.ResponseData{
@@ -120,7 +120,7 @@ func (op *OpenPlatform) GetAuthorizerOption(ctx context.Context, appid string, n
 	}
 }
 
-//SetAuthorizerOption set authorizer option
+// SetAuthorizerOption set authorizer option
 func (op *OpenPlatform) SetAuthorizerOption(ctx context.Context, appid string, name string, value string) *http.ResponseData {
 	client := op.getClientWithToken()
 	return &http.ResponseData{
@@ -133,12 +133,12 @@ func (op *OpenPlatform) SetAuthorizerOption(ctx context.Context, appid string, n
 	}
 }
 
-//GetVerifyTicket
+// GetVerifyTicket
 func (op *OpenPlatform) GetVerifyTicket(ctx context.Context) string {
 	return op.verifyTicket.GetTicket(ctx)
 }
 
-//GetAccessToken
+// GetAccessToken
 func (op *OpenPlatform) GetAccessToken(ctx context.Context) string {
 	return op.accessToken.GetToken(ctx)
 }
@@ -146,7 +146,7 @@ func (op *OpenPlatform) GetAccessToken(ctx context.Context) string {
 func (op *OpenPlatform) GetPreAuthCode(ctx context.Context) (string, error) {
 	var code string
 	var err error
-	gutil.TryCatch(func() {
+	gutil.TryCatch(ctx, func(ctx context.Context) {
 		client := op.getClientWithToken()
 		v := client.RequestJson(ctx, "POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
 			"component_appid": op.config.AppID,
@@ -160,7 +160,7 @@ func (op *OpenPlatform) GetPreAuthCode(ctx context.Context) (string, error) {
 		} else {
 			panic("Request pre_auth_code fail:" + v.MustToJsonString())
 		}
-	}, func(e error) {
+	}, func(ctx context.Context, e error) {
 		err = e
 		op.Logger.File(op.Logger.ErrorLogPattern).Stdout(op.Logger.LogStdout).Error(ctx, err.Error())
 	})
