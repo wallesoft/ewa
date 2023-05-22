@@ -4,7 +4,7 @@ import (
 	"github.com/gogf/gf/v2/os/glog"
 )
 
-//Logger
+// Logger
 type Logger struct {
 	*glog.Logger
 	// LogPath specifies the directory for storing logging files.
@@ -32,6 +32,18 @@ type Logger struct {
 func New() *Logger {
 	return &Logger{
 		Logger:           glog.New(),
+		LogStdout:        true,
+		ErrorStack:       true,
+		ErrorLogEnabled:  true,
+		ErrorLogPattern:  "error-{Ymd}.log",
+		AccessLogEnabled: false,
+		AccessLogPattern: "access-{Ymd}.log",
+	}
+}
+
+func NewWithLog(log *glog.Logger) *Logger {
+	return &Logger{
+		Logger:           log,
 		LogStdout:        true,
 		ErrorStack:       true,
 		ErrorLogEnabled:  true,
