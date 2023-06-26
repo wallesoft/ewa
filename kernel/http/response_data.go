@@ -7,7 +7,7 @@ type ResponseData struct {
 	*gjson.Json
 }
 
-//Ok 当返回errcode=0， errmsg="ok" 时为false errcode != 0 时为true
+//HaveError Ok 当返回errcode=0， errmsg="ok" 时为false errcode != 0 时为true
 func (r *ResponseData) HaveError() bool {
 	if r.Contains("errcode") {
 		return r.Get("errcode").Int() != 0

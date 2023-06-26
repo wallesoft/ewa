@@ -1,6 +1,11 @@
 ### Ewa
 Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模块
+#### 重要提示
+* 由于github,pkg.go.dev在国内的访问问题，请下载后再go.mod中添加 
 
+>    `replace gitee.com/wallesoft/ewa => your-save-dir\ewa`
+
+替换为本地后使用
 #### 开始之前
 
 在使用此模块前，请确保做好以下工作:
