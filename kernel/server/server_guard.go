@@ -65,11 +65,11 @@ func New(config Config, request *http.Request, writer http.ResponseWriter) *Serv
 }
 
 // Serve
-func (s *ServerGuard) Serve() {
-	gutil.TryCatch(func() {
+func (s *ServerGuard) Serve(ctx context.Context) {
+	gutil.TryCatch(ctx, func(ctx context.Context) {
 		s.parseRequest()
 		s.Validate().resolve()
-	}, func(err error) {
+	}, func(ctx context.Context, err error) {
 		switch err.Error() {
 		case ehttp.EXCEPTION_EXIT:
 			return
@@ -83,7 +83,7 @@ func (s *ServerGuard) Serve() {
 	s.Response.Output()
 }
 
-//resolve
+// resolve
 func (s *ServerGuard) resolve() {
 	message, err := s.GetMessage()
 	if err != nil {
@@ -127,7 +127,7 @@ func (s *ServerGuard) parseRequest() {
 	s.bodyData = b
 }
 
-//return response
+// return response
 func (s *ServerGuard) HandleRequest(originMsg *Message) {
 	// originMsg, err := s.GetMessage()
 	// if err != nil {
@@ -223,7 +223,7 @@ func (s *ServerGuard) Dispatch(mtype string, message *Message) {
 	// // LOOP:
 }
 
-//ParseMessage parse message from raw input.
+// ParseMessage parse message from raw input.
 func (s *ServerGuard) parseMessage() (msg *Message, err error) {
 	content := s.bodyData.RawBody
 	mtype := checkDataType(content)
@@ -287,7 +287,7 @@ func (s *ServerGuard) parseJSONMessage(content []byte) (message *Message, err er
 	}, nil
 }
 
-//GetMessage
+// GetMessage
 func (s *ServerGuard) GetMessage() (message *Message, err error) {
 	message, err = s.parseMessage()
 	//is nil
@@ -306,7 +306,7 @@ func (s *ServerGuard) signature() string {
 	return encryptor.Signature(a)
 }
 
-//Validate validate request source
+// Validate validate request source
 func (s *ServerGuard) Validate() *ServerGuard {
 	if !s.AlwaysValidate && !s.IsSafeMode() {
 		return s
@@ -318,18 +318,18 @@ func (s *ServerGuard) Validate() *ServerGuard {
 	return s
 }
 
-//ForceValidate set to force validation the request
+// ForceValidate set to force validation the request
 func (s *ServerGuard) ForceValidate() *ServerGuard {
 	s.AlwaysValidate = true
 	return s
 }
 
-//IsSafeMode check the request message is the safe mode.
+// IsSafeMode check the request message is the safe mode.
 func (s *ServerGuard) IsSafeMode() bool {
 	return s.queryParam.Signature != "" && s.queryParam.EncryptType == "aes"
 }
 
-//DecryptMessage decrypt message
+// DecryptMessage decrypt message
 func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	a := []string{s.Config.Token, s.queryParam.Timestamp, s.queryParam.Nonce, gconv.String(message)}
 
@@ -343,7 +343,7 @@ func (s *ServerGuard) decryptMessage(message []byte) ([]byte, error) {
 	return content, nil
 }
 
-//check data type json/xml
+// check data type json/xml
 func checkDataType(content []byte) string {
 	if json.Valid(content) {
 		return "json"
