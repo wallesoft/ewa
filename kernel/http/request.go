@@ -10,7 +10,7 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
-//Request struct
+// Request struct
 type Request struct {
 	*http.Request
 	bodyContent []byte
@@ -18,7 +18,7 @@ type Request struct {
 	queryMap    map[string]interface{}
 }
 
-//Get get query param by key.
+// Get get query param by key.
 func (r *Request) Get(key string, def ...interface{}) interface{} {
 	r.parseQuery()
 	if len(r.queryMap) > 0 {
@@ -37,7 +37,7 @@ func (r *Request) GetString(key string, def ...interface{}) string {
 	return gvar.New(r.Get(key, def...)).String()
 }
 
-//parseQuery parses query string into r.queryMap.
+// parseQuery parses query string into r.queryMap.
 func (r *Request) parseQuery() {
 	if r.parsedQuery {
 		return
@@ -52,13 +52,13 @@ func (r *Request) parseQuery() {
 	}
 }
 
-//GetURL returns current URL of this request.
+// GetURL returns current URL of this request.
 func (r *Request) GetURL() string {
 	scheme := "http"
 	if r.TLS != nil {
 		scheme = "https"
 	}
-	return fmt.Sprintf(`%s://s%s%`, scheme, r.Host, r.URL.String())
+	return fmt.Sprintf(`%s://%s%s`, scheme, r.Host, r.URL.String())
 }
 
 // GetBody retrieves and returns request body content as bytes.
