@@ -23,6 +23,7 @@ func (c *MiniProgramCredentials) Get(ctx context.Context) map[string]string {
 
 var defaultWeappAccessToken = &base.AccessToken{}
 
+// getWeappAccessToken 获取微信开放平台的访问令牌
 func (op *OpenPlatform) getWeappAccessToken(ctx context.Context, mp *MiniProgram) auth.AccessToken {
 	defaultWeappAccessToken.Cache = op.config.Cache
 	defaultWeappAccessToken.TokenKey = "authorizer_access_token"

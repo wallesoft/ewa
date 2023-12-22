@@ -31,7 +31,7 @@ func GetDefaultVerifyTicket() *DefaultVerifyTicket {
 	return defaultVerifyTicket
 }
 
-//Handle
+// Handle
 func (v *DefaultVerifyTicket) Handle(ctx context.Context, m *server.Message) interface{} {
 	var verifyTicket string
 	if have := m.Contains("ComponentVerifyTicket"); have {
@@ -43,7 +43,7 @@ func (v *DefaultVerifyTicket) Handle(ctx context.Context, m *server.Message) int
 	return true
 }
 
-//GetTicket
+// GetTicket
 func (v *DefaultVerifyTicket) GetTicket(ctx context.Context) string {
 	ticket, err := v.cache.Get(ctx, v.getKey())
 	if err != nil {
@@ -52,7 +52,7 @@ func (v *DefaultVerifyTicket) GetTicket(ctx context.Context) string {
 	return gvar.New(ticket).String()
 }
 
+// getKey函数用于获取DefaultVerifyTicket对象的key值
 func (v *DefaultVerifyTicket) getKey() string {
 	return "ewawechat.open_platform.verify_ticket." + v.appid
-
 }
