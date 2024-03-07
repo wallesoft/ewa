@@ -17,6 +17,32 @@ func (op *OpenPlatform) StartPushTicket(ctx context.Context) *http.ResponseData 
 	}
 }
 
+// GetPreAuthCode 获取预授权码
+func (op *OpenPlatform) GetPreAuthCode(ctx context.Context) (string, error) {
+	var code string
+	var err error
+	gutil.TryCatch(ctx, func(ctx context.Context) {
+		client := op.getClientWithToken()
+		v := client.RequestJson(ctx, "POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
+			"component_appid": op.config.AppID,
+		})
+
+		if have := v.Contains("errcode"); have {
+			panic(v.MustToJsonString())
+		}
+		if have := v.Contains("pre_auth_code"); have {
+			code = v.Get("pre_auth_code").String()
+		} else {
+			panic("Request pre_auth_code fail:" + v.MustToJsonString())
+		}
+	}, func(ctx context.Context, e error) {
+		err = e
+		op.Logger.File(op.Logger.ErrorLogPattern).Stdout(op.Logger.LogStdout).Error(ctx, err.Error())
+	})
+
+	return code, err
+}
+
 // GetPreAuthorizationUrl 获取授权页网址
 func (op *OpenPlatform) GetPreAuthorizationUrl(ctx context.Context, callback string, optional ...map[string]interface{}) (string, error) {
 
@@ -141,29 +167,4 @@ func (op *OpenPlatform) GetVerifyTicket(ctx context.Context) string {
 // GetAccessToken
 func (op *OpenPlatform) GetAccessToken(ctx context.Context) string {
 	return op.accessToken.GetToken(ctx)
-}
-
-func (op *OpenPlatform) GetPreAuthCode(ctx context.Context) (string, error) {
-	var code string
-	var err error
-	gutil.TryCatch(ctx, func(ctx context.Context) {
-		client := op.getClientWithToken()
-		v := client.RequestJson(ctx, "POST", "cgi-bin/component/api_create_preauthcode", map[string]string{
-			"component_appid": op.config.AppID,
-		})
-
-		if have := v.Contains("errcode"); have {
-			panic(v.MustToJsonString())
-		}
-		if have := v.Contains("pre_auth_code"); have {
-			code = v.Get("pre_auth_code").String()
-		} else {
-			panic("Request pre_auth_code fail:" + v.MustToJsonString())
-		}
-	}, func(ctx context.Context, e error) {
-		err = e
-		op.Logger.File(op.Logger.ErrorLogPattern).Stdout(op.Logger.LogStdout).Error(ctx, err.Error())
-	})
-
-	return code, err
 }

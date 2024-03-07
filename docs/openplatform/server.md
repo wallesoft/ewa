@@ -37,7 +37,7 @@
 >   * 授权成功   -    authorized
 >   * 更新授权   -    updateauthorized
 >   * 取消授权   -    unauthorized
->   * VerifyTicket - componetn_verify_ticket
+>   * VerifyTicket - component_verify_ticket
 >   * 快速注册小程序 - notify_third_fasteregister
 
 
