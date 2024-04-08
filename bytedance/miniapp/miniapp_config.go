@@ -8,27 +8,32 @@ import (
 )
 
 type Config struct {
-	AppID  string // appid
-	Secret string // secret
-	Cache  *gcache.Cache
-	Logger *log.Logger
+	AppID   string // appid
+	Secret  string // secret
+	Cache   *gcache.Cache
+	Logger  *log.Logger
+	Sandbox bool
 }
 
 // 默认接口配置地址
-func (app *MiniAPP) getBaseUri() string {
+func (app *MiniApp) getBaseUri() string {
 	return "https://developer.toutiao.com/api/apps/v2/"
 }
 
 // 沙盒接口地址
-func (app *MiniAPP) getSandboxBaseUri() string {
+func (app *MiniApp) getSandboxBaseUri() string {
 	return "https://open-sandbox.douyin.com/api/apps/v2/"
 }
 
 // client  default without token
-func (app *MiniAPP) GetClient() *base.Client {
+func (app *MiniApp) GetClient() *base.Client {
+	baseUri := app.getBaseUri()
+	if app.Config.Sandbox {
+		baseUri = app.getSandboxBaseUri()
+	}
 	return &base.Client{
 		Client:  gclient.New(),
-		BaseUri: app.getBaseUri(),
+		BaseUri: baseUri, //app.getBaseUri(),
 		Logger:  app.Logger,
 	}
 }

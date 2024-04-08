@@ -22,7 +22,7 @@ type Client struct {
 	Token     auth.AccessToken
 }
 
-//PostJson request by post method and return gjson.Json
+// PostJson request by post method and return gjson.Json
 // **** Deprecated use RequestJson instead
 func (c *Client) PostJson(ctx context.Context, endpoint string, data ...interface{}) *gjson.Json {
 	// var val interface{}
@@ -112,7 +112,7 @@ func (c *Client) GetJson(ctx context.Context, endpoint string, data ...interface
 	return result
 }
 
-//request return json
+// request return json
 func (c *Client) RequestJson(ctx context.Context, method string, endpoint string, data ...interface{}) *gjson.Json {
 
 	if method == "POST" {
@@ -123,14 +123,14 @@ func (c *Client) RequestJson(ctx context.Context, method string, endpoint string
 	return gjson.New(raw)
 }
 
-//request Post retrun Json !!!上传文件图片 内容安全等接口用 配合 @file:
+// request Post retrun Json !!!上传文件图片 内容安全等接口用 配合 @file:
 func (c *Client) RequestPost(ctx context.Context, endpoint string, data ...interface{}) *gjson.Json {
 	raw := c.RequestRaw(ctx, "POST", endpoint, data...)
 	c.handleAccessLog(ctx, gconv.String(raw))
 	return gjson.New(raw)
 }
 
-//Request return Raw
+// Request return Raw
 func (c *Client) RequestRaw(ctx context.Context, method string, endpoint string, data ...interface{}) []byte {
 	var response *gclient.Response
 	var err error
@@ -197,7 +197,7 @@ func (c *Client) handleErrorLog(ctx context.Context, err error, raw string) {
 	c.Logger.File(c.Logger.ErrorLogPattern).Stdout(c.Logger.LogStdout).Print(ctx, content)
 }
 
-//getUri 将api与接口地址url进行拼接
+// getUri 将api与接口地址url进行拼接
 func (c *Client) getUri(ctx context.Context, endpoint string) string {
 
 	var param = url.Values{}
