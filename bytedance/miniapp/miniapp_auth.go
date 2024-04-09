@@ -20,6 +20,6 @@ func (app *MiniApp) Session(ctx context.Context, code string, anonymousCode ...s
 		data["anonymous_code"] = anonymousCode[0]
 	}
 	return &http.ResponseData{
-		Json: app.GetClient().RequestJson(ctx, "POST", "apps/jscode2session", data),
+		Json: app.GetClient().RequestJson(ctx, "POST", "jscode2session", data),
 	}
 }

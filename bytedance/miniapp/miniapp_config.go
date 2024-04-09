@@ -1,7 +1,8 @@
 package miniapp
 
 import (
-	"gitee.com/wallesoft/ewa/kernel/base"
+	"gitee.com/wallesoft/ewa/bytedance/http"
+
 	"gitee.com/wallesoft/ewa/kernel/log"
 	"github.com/gogf/gf/v2/net/gclient"
 	"github.com/gogf/gf/v2/os/gcache"
@@ -26,12 +27,12 @@ func (app *MiniApp) getSandboxBaseUri() string {
 }
 
 // client  default without token
-func (app *MiniApp) GetClient() *base.Client {
+func (app *MiniApp) GetClient() *http.Client {
 	baseUri := app.getBaseUri()
 	if app.Config.Sandbox {
 		baseUri = app.getSandboxBaseUri()
 	}
-	return &base.Client{
+	return &http.Client{
 		Client:  gclient.New(),
 		BaseUri: baseUri, //app.getBaseUri(),
 		Logger:  app.Logger,
