@@ -97,7 +97,7 @@ func (c *Client) GetJson(ctx context.Context, endpoint string, data ...interface
 			res := gjson.New(resp.ReadAllString())
 			defer resp.Close()
 			if res.Contains("errcode") {
-				c.handleErrorLog(ctx, errors.New("Refresh Token Result:"), respRaw)
+				c.handleErrorLog(ctx, errors.New("Refresh Token Result"), respRaw)
 			} else {
 				c.handleAccessLog(ctx, respRaw)
 				return res
@@ -105,7 +105,7 @@ func (c *Client) GetJson(ctx context.Context, endpoint string, data ...interface
 
 		}
 
-		c.handleErrorLog(ctx, errors.New("get json with err code."), debugRaw)
+		c.handleErrorLog(ctx, errors.New("get json with err code"), debugRaw)
 		return result
 	}
 	c.handleAccessLog(ctx, debugRaw)
@@ -158,12 +158,13 @@ func (c *Client) RequestRaw(ctx context.Context, method string, endpoint string,
 				if gjson.Valid(res) {
 					resJson := gjson.New(res)
 					if resJson.Contains("errcode") {
-						c.handleErrorLog(ctx, errors.New("Refresh Token Result:"), respRaw)
+						c.handleErrorLog(ctx, errors.New("Refresh Token Result"), respRaw)
 					}
 				}
+				return res
 			}
 			if result.Get("errcode").Int() != 0 {
-				c.handleErrorLog(ctx, errors.New("get json with err code."), debugRaw)
+				c.handleErrorLog(ctx, errors.New("get json with err code"), debugRaw)
 				return resRaw
 			}
 
@@ -217,7 +218,7 @@ func (c *Client) getUri(ctx context.Context, endpoint string) string {
 		url = endpoint
 	}
 
-	if param != nil && len(param) > 0 {
+	if len(param) > 0 {
 		url = url + "?" + param.Encode()
 	}
 	return url
