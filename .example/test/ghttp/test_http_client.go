@@ -15,16 +15,18 @@ import (
 
 func main() {
 	client := &ehttp.Client{
-		Client:       gclient.New(),
-		BaseUri:      "http://test.com/",
-		AfterReponse: afterFunc,
+		Client:  gclient.New(),
+		BaseUri: "http://127.0.0.1:4523/m1/4319745-0-default/api/",
+		// AfterReponse: afterFunc,
 	}
+	client.Client.SetHeader("access-token", "abc")
 	logger := log.New()
 	logger.SetPath("d:/tmp/logs")
+	client.Client.Use(afterFunc)
 	client.Logger = logger
 	client.Logger.LogStdout = true
 	client.Logger.AccessLogEnabled = true
-	client.RequestJson(gctx.New(), "GET", "index.php", g.Map{"test": "tttest body"})
+	client.RequestJson(gctx.New(), "GET", "location/geoAddress", g.Map{"test": "tttest body"})
 }
 
 func afterFunc(c *gclient.Client, r *http.Request) (resp *gclient.Response, err error) {
@@ -40,6 +42,12 @@ func afterFunc(c *gclient.Client, r *http.Request) (resp *gclient.Response, err 
 	// resp.RawDump()
 	// s := gconv.String(bodyContent)
 	g.Dump(resp.Raw())
-	resp.SetBodyContent(bodyContent)
+	r.Body = utils.NewReadCloser(bodyContent, false)
+	r.Header.Set("access-token", "112233")
+	resps, err := c.Do(r)
+	resp.Response = resps
+	g.Dump(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;")
+	g.Dump(resp.Raw())
+	// resp.SetBodyContent(bodyContent)
 	return resp, err
 }

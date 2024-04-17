@@ -12,12 +12,12 @@ import (
 )
 
 type Client struct {
-	Client        *gclient.Client
-	BeforeRequest gclient.HandlerFunc
-	AfterReponse  gclient.HandlerFunc
-	BaseUri       string // 请求接口通用前缀
-	Logger        *log.Logger
-	UrlValues     url.Values
+	Client *gclient.Client
+	// BeforeRequest gclient.HandlerFunc
+	// AfterReponse  gclient.HandlerFunc
+	BaseUri   string // 请求接口通用前缀
+	Logger    *log.Logger
+	UrlValues url.Values
 }
 
 // request
@@ -39,20 +39,21 @@ func (c *Client) RequestPost(ctx context.Context, endpoint string, data ...inter
 // request raw
 // retrun []byte
 func (c *Client) RequestRaw(ctx context.Context, method string, endpoint string, data ...interface{}) []byte {
-	if c.BeforeRequest != nil {
-		c.Client = c.Client.Use(c.BeforeRequest)
-	}
-	if c.AfterReponse != nil {
-		c.Client = c.Client.Use(c.AfterReponse)
-	}
+	// if c.BeforeRequest != nil {
+	// 	c.Client = c.Client.Use(c.BeforeRequest)
+	// }
+	// if c.AfterReponse != nil {
+	// 	c.Client = c.Client.Use(c.AfterReponse)
+	// }
 	response, err := c.Client.DoRequest(ctx, method, c.parseUrl(endpoint), data...)
+
 	if err != nil {
 		// log
 		c.handleErrorLog(ctx, err, response.Raw())
-		// return nil
+		return response.ReadAll()
 	}
-	defer response.Close()
 
+	defer response.Close()
 	// handle log
 	if c.Logger != nil && c.Logger.AccessLogEnabled {
 		c.handleAccessLog(ctx, response.Raw())

@@ -3,7 +3,7 @@ package miniapp
 import (
 	// "gitee.com/wallesoft/ewa/bytedance/http"
 
-	"net/http"
+	"context"
 
 	ehttp "gitee.com/wallesoft/ewa/kernel/http"
 	"gitee.com/wallesoft/ewa/kernel/log"
@@ -19,6 +19,14 @@ type Config struct {
 	Sandbox bool
 }
 
+// token注入与返回拦截，采用gclient的拦截器写法
+// 参考 https://goframe.org/pages/viewpage.action?pageId=7301625
+// 注意 前置与后置的写法
+type TokenHanler interface {
+	SetToken(ctx context.Context) gclient.HandlerFunc       // 前置拦截，将token注入到请求链路中
+	VerifyResponse(ctx context.Context) gclient.HandlerFunc // 请求后置拦截， 判断token是否过期，用于刷新token
+}
+
 // 默认接口配置地址
 func (app *MiniApp) getBaseUri() string {
 	return "https://developer.toutiao.com/api/apps/v2/"
@@ -30,7 +38,7 @@ func (app *MiniApp) getSandboxBaseUri() string {
 }
 
 // client  default without token
-func (app *MiniApp) GetClient(WithToken ...bool) *ehttp.Client {
+func (app *MiniApp) GetClient(WithToken ...TokenHanler) *ehttp.Client {
 	baseUri := app.getBaseUri()
 	if app.Config.Sandbox {
 		baseUri = app.getSandboxBaseUri()
@@ -41,24 +49,27 @@ func (app *MiniApp) GetClient(WithToken ...bool) *ehttp.Client {
 		BaseUri: baseUri, //app.getBaseUri(),
 		Logger:  app.Logger,
 	}
-	if len(WithToken) > 0 && WithToken[0] {
-		client.BeforeRequest = handleBeforeRequest
-		client.AfterReponse = handleAfterResponse
+	if len(WithToken) > 0 {
+		handler := WithToken[0]
+		client.Client = client.Client.Use(handler.SetToken(), handler.VerifyResponse())
 	}
+	// 	client.BeforeRequest = handleBeforeRequest
+	// 	client.AfterReponse = handleAfterResponse
+	// }
 	return client
 }
 
-// client before request  set token etc...
-func handleBeforeRequest(c *gclient.Client, r *http.Request) (resp *gclient.Response, err error) {
-	// r.Header.Add("")
-	resp, err = c.Next(r)
-	return
-}
+// // client before request  set token etc...
+// func handleBeforeRequest(c *gclient.Client, r *http.Request) (resp *gclient.Response, err error) {
+// 	// r.Header.Add("")
+// 	resp, err = c.Next(r)
+// 	return
+// }
 
-// client after resposne
-func handleAfterResponse(c *gclient.Client, r *http.Request) (resp *gclient.Response, err error) {
-	return
-}
+// // client after resposne
+// func handleAfterResponse(c *gclient.Client, r *http.Request) (resp *gclient.Response, err error) {
+// 	return
+// }
 
 // client with token
 // func(app *MiniAPP) GetClientWithToken() *base.Client {

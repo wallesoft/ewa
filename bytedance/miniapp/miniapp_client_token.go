@@ -2,8 +2,12 @@ package miniapp
 
 import (
 	"context"
+	"io"
+	"net/http"
 
-	"gitee.com/wallesoft/ewa/kernel/http"
+	"gitee.com/wallesoft/ewa/internal/utils"
+	ehttp "gitee.com/wallesoft/ewa/kernel/http"
+	"github.com/gogf/gf/v2/net/gclient"
 	"github.com/gogf/gf/v2/os/gcache"
 )
 
@@ -25,15 +29,68 @@ func (c *Credentials) Get(ctx context.Context) map[string]string {
 
 type ClientToken struct {
 	Cache  *gcache.Cache
-	Client *http.Client
+	Client *ehttp.Client
 }
 
+const (
+	// 接口需要携带的token key
+	clientTokenKey = "access-token"
+	// client token 错误码
+	clientTokenErrorCode = 28001003
+)
+
+// GetToken
 func (ct *ClientToken) GetToken(ctx context.Context, refresh ...bool) string {
 
 	return ""
 }
 
+// SetToken 前置注入请求token
+func (ct *ClientToken) SetToken(ctx context.Context) gclient.HandlerFunc {
+	return func(c *gclient.Client, r *http.Request) (*gclient.Response, error) {
+		// 在此处注入token
+		c.SetHeader(clientTokenKey, ct.GetToken(ctx))
+		resp, err := c.Next(r)
+		return resp, err
+	}
+}
+
+// VerifyResponse 后置校验响应状态码, 如果token过期，刷新token
+func (ct *ClientToken) VerifyResponse(ctx context.Context) gclient.HandlerFunc {
+	return func(c *gclient.Client, r *http.Request) (resp *gclient.Response, err error) {
+		reqBodyContent, _ := io.ReadAll(r.Body)
+		r.Body = utils.NewReadCloser(reqBodyContent, false)
+		resp, err = c.Next(r)
+		// 此处校验，刷新逻辑
+		bodyContent := resp.ReadAll()
+		if ct.isExpired(bodyContent) {
+			token := ct.GetToken(ctx, true)
+			// 重新请求
+			r.Header.Set(clientTokenKey, token)
+			r.Body = utils.NewReadCloser(bodyContent, false)
+			retryResp, err := c.Do(r)
+			resp.Response = retryResp
+			return resp, err
+		}
+		resp.SetBodyContent(bodyContent)
+		return resp, err
+	}
+}
+
+// 检查返回错误
+func (ct *ClientToken) isExpired(content []byte) bool {
+	// if gjson.Valid(content) {
+	// 	res := gjson.New(content)
+	// 	if have := res.Cont
+	// }
+	return false
+}
+
 var defaultClientToken = &ClientToken{}
+
+func (app *MiniApp) getClientToken() *ClientToken {
+	return defaultClientToken
+}
 
 // func (app *MiniApp) getDefaultAccessToken(ctx context.Context) *ClientToken {
 // 	defaultClientToken.Cache = app.Config.Cache
