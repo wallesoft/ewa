@@ -38,7 +38,7 @@ func (app *MiniApp) getSandboxBaseUri() string {
 }
 
 // client  default without token
-func (app *MiniApp) GetClient(WithToken ...TokenHanler) *ehttp.Client {
+func (app *MiniApp) GetClient(ctx context.Context, WithToken ...TokenHanler) *ehttp.Client {
 	baseUri := app.getBaseUri()
 	if app.Config.Sandbox {
 		baseUri = app.getSandboxBaseUri()
@@ -51,7 +51,7 @@ func (app *MiniApp) GetClient(WithToken ...TokenHanler) *ehttp.Client {
 	}
 	if len(WithToken) > 0 {
 		handler := WithToken[0]
-		client.Client = client.Client.Use(handler.SetToken(), handler.VerifyResponse())
+		client.Client = client.Client.Use(handler.SetToken(ctx), handler.VerifyResponse(ctx))
 	}
 	// 	client.BeforeRequest = handleBeforeRequest
 	// 	client.AfterReponse = handleAfterResponse
