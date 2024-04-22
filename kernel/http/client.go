@@ -87,7 +87,7 @@ func (c *Client) handleAccessLog(ctx context.Context, raw string) {
 	if !c.Logger.AccessLogEnabled {
 		return
 	}
-	c.Logger.File(c.Logger.AccessLogPattern).Stdout(c.Logger.LogStdout).Printf(ctx, "\n================ Request Success Debug ===============\n\n %s \n", raw)
+	c.Logger.File(c.Logger.AccessLogPattern).Stdout(c.Logger.LogStdout).Printf(ctx, "\n================ Request Success Debug ===============\n\n%s\n", raw)
 }
 
 // hanle error
