@@ -7,33 +7,47 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 )
 
-// 登录凭证校验
-// Session 根据用户授权代码或匿名代码获取会话信息。
-// 该方法用于交换微信小程序的用户会话密钥，可以通过用户授权的code或匿名code来获取。
-// 参数:
+// Validates login credentials and fetches session information.
+// The Session function is used to exchange the WeChat Mini Program session key,
+// which can be obtained through the user-authorized code or anonymous code.
+// Parameters:
 //
-//	ctx: 上下文对象，用于传递请求期间的共享信息。
-//	code: 用户授权后返回的code，用于获取用户会话信息。
-//	anonymousCode: 可选参数，用于匿名登录的code。
+//	ctx: Context object for sharing information during the request.
+//	code: The code returned after user authorization, used to get session info.
+//	anonymousCode: Optional parameter for anonymous login code.
 //
-// 返回值:
+// Returns:
 //
-//	*http.ResponseData: 包含请求结果的响应数据对象。
+//	*http.ResponseData: A response data object containing the result of the request.
+//
+// Validates login credentials and fetches session information.
+// The Session function is used to exchange the WeChat Mini Program session key,
+// which can be obtained through the user-authorized code or anonymous code.
+// Parameters:
+//
+//	ctx: Context object for sharing information during the request.
+//	code: The code returned after user authorization, used to get session info.
+//	anonymousCode: Optional parameter for anonymous login code.
+//
+// Returns:
+//
+//	*http.ResponseData: A response data object containing the result of the request.
 func (app *MiniApp) Session(ctx context.Context, code string, anonymousCode ...string) *http.ResponseData {
-	// 初始化请求数据，包含应用的ID和密钥。
+	// Initializes request data, including the application ID and secret.
 	data := g.Map{
 		"appid":  app.Config.AppID,
 		"secret": app.Config.Secret,
 	}
-	// 如果提供了用户授权的code，则将其添加到请求数据中。
+	// If a user-authorized code is provided, it is added to the request data.
 	if code != "" {
 		data["code"] = code
 	}
-	// 如果提供了匿名code，并且这是第一个匿名code，则将其添加到请求数据中。
+	// If an anonymous code is provided and this is the first anonymous code,
+	// it is added to the request data.
 	if len(anonymousCode) > 0 {
 		data["anonymous_code"] = anonymousCode[0]
 	}
-	// 发起POST请求，交换会话信息，并返回响应数据。
+	// Initiates a POST request to exchange session information and returns the response data.
 	return &http.ResponseData{
 		Json: app.GetClient(ctx).RequestJson(ctx, "POST", "jscode2session", data),
 	}
