@@ -5,6 +5,11 @@ Ewa 是一款go语言的 微信 非官方开发框架，提供常用的开发模
 
 >    `replace gitee.com/wallesoft/ewa => your-save-dir\ewa`
 
+* v2.0.0版本,请使用如下命令引入
+>    `go get gitee.com/wallesoft/ewa@v2.0.0`
+or 
+>    `go get github.com/wallesoft/ewa@v2.0.0`
+
 替换为本地后使用
 #### 开始之前
 

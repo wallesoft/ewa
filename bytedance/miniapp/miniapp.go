@@ -22,6 +22,9 @@ func New(ctx context.Context, config Config) *MiniApp {
 	return app
 }
 
+// NewWithOutToken creates a new MiniApp instance based on the provided configuration.
+// If no cache or logger instances are supplied in the configuration, default instances will be created.
+// This function facilitates creating a MiniApp instance without requiring a token.
 func NewWithOutToken(config Config) *MiniApp {
 	if config.Cache == nil {
 		config.Cache = cache.New("ewa.toutiao.miniapp")
